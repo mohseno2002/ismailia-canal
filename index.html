@@ -813,7 +813,7 @@ VIEWS.overview = () => {
     <div class="kpi-strip">
       ${kpiCard(ICON.branches,"إجمالى الفروع",fmt(branchCount),"نقطة رصد",'--brand')}
       ${kpiCard('📏',"إجمالى الأطوال",fmt(totalLen,1),"كم",'--accent')}
-      ${kpiCard(ICON.balance,"الزمام المقرر",fmt(totalZimaam/1000,1),"ألف فدان",'--pen-green')}
+      ${kpiCard(ICON.balance,"الزمام المقرر",fmt(State.config.officialZimaamK||(totalZimaam/1000),1),"ألف فدان",'--pen-green')}
       ${kpiCard('🌊',"الطلب اليومى",fmt((agQ+drinkQ+indQ)/1e6,1),"م.م³/يوم",'--brand')}
       ${kpiCard('🏛️',"الأحباس",fmt(reachCount),"حبس مائى",'--pen-purple')}
       ${kpiCard('🎯',"المحطات",fmt((STATIONS_DATA.drinking||[]).length+(STATIONS_DATA.industrial||[]).length),"شرب وصناعة",'--gold')}
