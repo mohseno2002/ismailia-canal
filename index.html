@@ -221,18 +221,9 @@ tbody tr:last-child td{border-bottom:none}
 
 
 /* ── التراكب الكمى ── */
-.overlay-strip{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:14px}
-@media(max-width:900px){.overlay-strip{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:560px){.overlay-strip{grid-template-columns:1fr}}
-.overlay-kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-s);padding:12px 14px;box-shadow:var(--shadow)}
-.overlay-kpi .t{font-size:.76rem;color:var(--ink-2);font-weight:700;margin-bottom:4px}
-.overlay-kpi .v{font-family:var(--mono);font-size:1.25rem;font-weight:700}
 .qbar{height:9px;background:var(--surface-2);border-radius:99px;overflow:hidden;border:1px solid var(--line)}
 .qbar>span{display:block;height:100%;border-radius:99px;background:var(--brand);transition:.25s}
 .qbar>span.ok{background:var(--ok)}.qbar>span.warn{background:var(--warn)}.qbar>span.danger{background:var(--danger)}
-.overlay-map{display:flex;gap:0;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;min-height:82px;background:var(--surface)}
-.overlay-cell{flex:1;min-width:110px;padding:10px 8px;color:#fff;display:flex;flex-direction:column;justify-content:space-between;gap:5px;position:relative}
-.overlay-cell .name{font-weight:800;font-size:.82rem;line-height:1.25}.overlay-cell .num{font-size:.72rem;opacity:.95}.overlay-cell .state{font-size:.7rem;font-weight:800;background:rgba(255,255,255,.18);border-radius:12px;padding:2px 7px;align-self:flex-start}
 .qhint{font-size:.8rem;color:var(--ink-2);background:linear-gradient(90deg,var(--brand-bg),var(--surface));border:1px solid var(--line);border-radius:var(--radius-s);padding:11px 14px;margin-bottom:14px}
 
 </style>
@@ -397,7 +388,6 @@ const ICON = {
   branches:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg>',
   readings:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg>',
   balance:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18"/><path d="M3 7l9-4 9 4"/><path d="M3 7l3 7a3 3 0 0 0 6 0"/><path d="M21 7l-3 7a3 3 0 0 1-6 0"/></svg>',
-  overlay:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V5"/><path d="M4 19h16"/><rect x="7" y="11" width="3" height="5" rx="1"/><rect x="12" y="8" width="3" height="8" rx="1"/><rect x="17" y="6" width="3" height="10" rx="1"/></svg>',
   setup:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>',
   plus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>',
   edit:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4z"/></svg>',
@@ -422,7 +412,6 @@ const TABS = [
   { id:"branches", label:"الترع والفروع", icon:ICON.branches },
   { id:"readings", label:"القراءات اليومية", icon:ICON.readings },
   { id:"balance",  label:"الميزان المائى", icon:ICON.balance },
-  { id:"overlay",  label:"التراكب الكمى", icon:ICON.overlay },
   { id:"stations", label:"الشرب والصناعة", icon:ICON.stations },
   { id:"setup",    label:"إعداد الشبكة", icon:ICON.setup }
 ];
@@ -789,93 +778,6 @@ AFTER.balance = () => {
 <script>
 "use strict";
 
-
-/* ===== التراكب الكمى ===== */
-function readingFlow(branchId){
-  const day = State.readings[State.readDate] || {};
-  const r = day[branchId] || {};
-  return +r.flow || 0;
-}
-function branchDemandFlow(b){
-  return ((+b.zimaam || 0) * currentMoqannan()) / 86400; /* م³/ث */
-}
-function qStatus(coverage){
-  if(!(coverage >= 0)) return {key:"brand", txt:"بدون بيانات", color:"var(--brand)"};
-  if(coverage >= 95) return {key:"ok", txt:"متزن", color:"var(--ok)"};
-  if(coverage >= 80) return {key:"warn", txt:"عجز محدود", color:"var(--warn)"};
-  return {key:"danger", txt:"عجز حرج", color:"var(--danger)"};
-}
-function overlayRows(){
-  return [...State.branches].sort((a,b)=>(+a.km||0)-(+b.km||0)).map(b=>{
-    const demandQ = branchDemandFlow(b);
-    const measuredQ = readingFlow(b.id);
-    const designQ = branchQ(b);
-    const usedQ = measuredQ || designQ || 0;
-    const coverage = demandQ>0 && usedQ>0 ? usedQ/demandQ*100 : NaN;
-    const deficitQ = demandQ - usedQ;
-    const s = qStatus(coverage);
-    return {b,demandQ,measuredQ,designQ,usedQ,coverage,deficitQ,status:s};
-  });
-}
-VIEWS.overlay = () => `
-  ${setupBanner()}
-  <div class="section-title">${ICON.overlay} التراكب الكمى للتصرفات والاحتياجات</div>
-  <div class="qhint">يعرض التراكب الكمى حالة كل ترعة أو حبس بمقارنة <strong>الطلب المائى اللحظى</strong> المحسوب من الزمام والمقنن مع <strong>التصرف المقاس</strong> من قراءات اليوم، أو التصرف التصميمى عند عدم وجود قراءة.</div>
-  <div class="toolbar">
-    <div class="field" style="margin:0"><input type="date" value="${State.readDate}" onchange="changeReadDate(this.value)" style="width:auto"></div>
-    <div class="grow"></div>
-    <span class="card-sub">تاريخ التحليل: <span class="mono">${State.readDate}</span></span>
-  </div>
-  <div id="overlayHost"></div>
-`;
-AFTER.overlay = () => {
-  const host = $("#overlayHost");
-  if(!State.branches.length){
-    host.innerHTML = `<div class="card"><div class="empty">${ICON.empty}<div class="t">لا توجد ترع للتراكب الكمى</div><div class="d">أضِف الترع والزمام والقطاع الهيدروليكى ثم أدخل القراءات اليومية.</div></div></div>`;
-    return;
-  }
-  const rows = overlayRows();
-  const totalDemand = rows.reduce((s,r)=>s+r.demandQ,0);
-  const totalUsed = rows.reduce((s,r)=>s+r.usedQ,0);
-  const totalMeasured = rows.reduce((s,r)=>s+r.measuredQ,0);
-  const totalDesign = rows.reduce((s,r)=>s+r.designQ,0);
-  const avgCov = totalDemand>0 ? totalUsed/totalDemand*100 : NaN;
-  const st = qStatus(avgCov);
-  const worst = [...rows].filter(r=>isFinite(r.coverage)).sort((a,b)=>a.coverage-b.coverage)[0];
-  const table = rows.map(r=>{
-    const pct = isFinite(r.coverage) ? Math.max(0,Math.min(140,r.coverage)) : 0;
-    return `<tr>
-      <td style="font-weight:700">${esc(r.b.name)}</td>
-      <td>${esc(adminName(r.b.admin))}</td>
-      <td class="num">${fmt(r.b.zimaam)}</td>
-      <td class="num">${fmt(r.demandQ,3)}</td>
-      <td class="num">${r.measuredQ?fmt(r.measuredQ,3):"—"}</td>
-      <td class="num">${r.designQ?fmt(r.designQ,3):"—"}</td>
-      <td class="num">${r.usedQ?fmt(r.usedQ,3):"—"}</td>
-      <td style="min-width:140px"><div class="qbar"><span class="${r.status.key}" style="width:${Math.min(100,pct)}%"></span></div><div class="mono" style="font-size:.72rem;color:var(--ink-2);margin-top:3px">${isFinite(r.coverage)?fmt(r.coverage,1)+'%':'—'}</div></td>
-      <td class="num" style="color:${r.deficitQ>0?'var(--danger)':'var(--ok)'}">${r.usedQ?fmt(r.deficitQ,3):"—"}</td>
-      <td><span class="badge ${r.status.key}">${r.status.txt}</span></td>
-    </tr>`;
-  }).join("");
-  const reachMap = (State.config.reaches||[]).length ? `<div class="card" style="margin-bottom:14px"><div class="card-head"><div class="card-title"><span class="dot"></span>خريطة التراكب على الأحباس</div></div><div class="card-body"><div class="overlay-map">${State.config.reaches.map(rch=>{
-    const inR = rows.filter(r=>(+r.b.km>=rch.from)&&(+r.b.km<=rch.to));
-    const d = inR.reduce((s,r)=>s+r.demandQ,0), u = inR.reduce((s,r)=>s+r.usedQ,0);
-    const cov = d>0 ? u/d*100 : NaN, rs = qStatus(cov);
-    return `<div class="overlay-cell" style="background:${rs.color}"><div class="name">${esc(rch.name)}</div><div class="num">تغطية ${isFinite(cov)?fmt(cov,1)+'%':'—'} · ${inR.length} ترع</div><div class="state">${rs.txt}</div></div>`;
-  }).join("")}</div></div></div>` : "";
-  host.innerHTML = `
-    <div class="overlay-strip">
-      <div class="overlay-kpi"><div class="t">إجمالى الطلب</div><div class="v">${fmt(totalDemand,2)} <span class="unit">م³/ث</span></div></div>
-      <div class="overlay-kpi"><div class="t">المتاح/المستخدم</div><div class="v">${fmt(totalUsed,2)} <span class="unit">م³/ث</span></div></div>
-      <div class="overlay-kpi"><div class="t">المقاس اليومى</div><div class="v">${fmt(totalMeasured,2)} <span class="unit">م³/ث</span></div></div>
-      <div class="overlay-kpi"><div class="t">التصميمى</div><div class="v">${fmt(totalDesign,2)} <span class="unit">م³/ث</span></div></div>
-      <div class="overlay-kpi"><div class="t">نسبة التغطية</div><div class="v" style="color:${st.color}">${isFinite(avgCov)?fmt(avgCov,1):'—'}%</div></div>
-    </div>
-    ${worst?`<div class="hint">أكثر نقطة حرجة حاليًا: <strong>${esc(worst.b.name)}</strong> بنسبة تغطية <span class="mono">${fmt(worst.coverage,1)}%</span>.</div>`:""}
-    ${reachMap}
-    <div class="card"><div class="card-head"><div class="card-title"><span class="dot"></span>جدول التراكب الكمى للترع</div><span class="card-sub">العجز = الطلب - المستخدم</span></div>
-    <div class="tbl-wrap"><table><thead><tr><th>الترعة</th><th>الإدارة</th><th class="num">الزمام</th><th class="num">الطلب م³/ث</th><th class="num">المقاس</th><th class="num">التصميمى</th><th class="num">المستخدم</th><th>التغطية</th><th class="num">العجز/الفائض</th><th>الحالة</th></tr></thead><tbody>${table}</tbody></table></div></div>`;
-};
 
 /* ===== إعداد الشبكة ===== */
 
