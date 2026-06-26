@@ -1,0 +1,1089 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0e5a8a">
+<meta name="description" content="منصة عامة لإدارة شبكات الرى — توأم رقمى هيدروليكى">
+<title>التوأم الرقمى — منصة شبكات الرى</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Tajawal:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* ── الهوية اللونية (Light) ── */
+  --bg:#eef2f6;            /* خلفية عامة هادئة */
+  --surface:#ffffff;       /* البطاقات */
+  --surface-2:#f6f9fc;     /* سطح ثانوى */
+  --ink:#0f2233;           /* نص أساسى */
+  --ink-2:#5b7185;         /* نص ثانوى */
+  --ink-3:#90a4b6;         /* نص باهت */
+  --line:#dde6ee;          /* حدود */
+  --brand:#0e5a8a;         /* أزرق بترولى مؤسسى */
+  --brand-dark:#093f63;
+  --accent:#13a3b5;        /* فيروزى */
+  --ok:#1c8a4d;
+  --warn:#b9760a;
+  --danger:#c2392b;
+  --ok-bg:#e7f5ec;--warn-bg:#fbf2e2;--danger-bg:#fbeae8;--brand-bg:#e6f0f7;
+  --radius:14px;--radius-s:9px;
+  --shadow:0 1px 2px rgba(15,34,51,.04),0 4px 16px rgba(15,34,51,.06);
+  --shadow-l:0 8px 30px rgba(15,34,51,.10);
+  --mono:'JetBrains Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:'Tajawal',system-ui,sans-serif;
+  background:var(--bg);color:var(--ink);
+  line-height:1.6;-webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+h1,h2,h3,.disp{font-family:'Cairo',sans-serif;font-weight:700;line-height:1.3}
+.mono,.num{font-family:var(--mono);font-feature-settings:"tnum"}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,select,textarea{font-family:inherit;font-size:inherit}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-thumb{background:#c4d2de;border-radius:6px}
+::-webkit-scrollbar-track{background:transparent}
+
+/* ── الشريط العلوى ── */
+.topbar{
+  position:sticky;top:0;z-index:50;
+  background:linear-gradient(180deg,var(--brand) 0%,var(--brand-dark) 100%);
+  color:#fff;padding:env(safe-area-inset-top) 0 0;
+  box-shadow:0 2px 14px rgba(9,63,99,.22);
+}
+.topbar-inner{display:flex;align-items:center;gap:14px;padding:13px 18px;max-width:1280px;margin:0 auto}
+.logo{width:40px;height:40px;border-radius:10px;background:rgba(255,255,255,.14);
+  display:grid;place-items:center;flex-shrink:0;border:1px solid rgba(255,255,255,.18)}
+.logo svg{width:24px;height:24px}
+.brand-txt{display:flex;flex-direction:column;min-width:0}
+.brand-txt .net{font-family:'Cairo';font-weight:700;font-size:1.05rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.brand-txt .sub{font-size:.72rem;opacity:.82;font-weight:500}
+.topbar-spacer{flex:1}
+.icon-btn{width:38px;height:38px;border-radius:9px;display:grid;place-items:center;
+  background:rgba(255,255,255,.12);transition:.15s;border:1px solid rgba(255,255,255,.14)}
+.icon-btn:hover{background:rgba(255,255,255,.22)}
+.icon-btn svg{width:19px;height:19px}
+
+/* ── التبويبات ── */
+.tabs{position:sticky;top:62px;z-index:40;background:var(--surface);
+  border-bottom:1px solid var(--line);overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tabs-inner{display:flex;gap:2px;padding:0 12px;max-width:1280px;margin:0 auto}
+.tab{padding:13px 16px;font-weight:600;color:var(--ink-2);white-space:nowrap;
+  border-bottom:2.5px solid transparent;transition:.15s;font-size:.92rem;display:flex;align-items:center;gap:7px}
+.tab svg{width:17px;height:17px}
+.tab:hover{color:var(--brand)}
+.tab.active{color:var(--brand);border-bottom-color:var(--brand)}
+
+/* ── الحاوية ── */
+.wrap{max-width:1280px;margin:0 auto;padding:18px}
+.view{display:none;animation:fade .25s ease}
+.view.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* ── البطاقات ── */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);overflow:hidden}
+.card-head{padding:15px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:10px}
+.card-title{font-family:'Cairo';font-weight:700;font-size:1.02rem;display:flex;align-items:center;gap:9px}
+.card-title .dot{width:8px;height:8px;border-radius:50%;background:var(--accent)}
+.card-sub{font-size:.78rem;color:var(--ink-3);font-weight:500}
+.card-body{padding:18px}
+
+.grid{display:grid;gap:14px}
+.grid.cols-2{grid-template-columns:repeat(2,1fr)}
+.grid.cols-3{grid-template-columns:repeat(3,1fr)}
+.grid.cols-4{grid-template-columns:repeat(4,1fr)}
+@media(max-width:900px){.grid.cols-3,.grid.cols-4{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.grid.cols-2,.grid.cols-3,.grid.cols-4{grid-template-columns:1fr}}
+
+/* ── KPI ── */
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  padding:16px 18px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.kpi::before{content:"";position:absolute;inset-inline-start:0;top:0;bottom:0;width:4px;background:var(--brand)}
+.kpi.ok::before{background:var(--ok)}.kpi.warn::before{background:var(--warn)}.kpi.danger::before{background:var(--danger)}
+.kpi .label{font-size:.78rem;color:var(--ink-2);font-weight:600;margin-bottom:6px}
+.kpi .value{font-family:var(--mono);font-weight:600;font-size:1.7rem;color:var(--ink);line-height:1.1}
+.kpi .unit{font-size:.82rem;color:var(--ink-3);font-weight:500;margin-inline-start:4px}
+.kpi .foot{font-size:.74rem;color:var(--ink-3);margin-top:6px}
+
+/* ── الجداول ── */
+.tbl-wrap{overflow-x:auto;border-radius:var(--radius-s)}
+table{width:100%;border-collapse:collapse;font-size:.88rem}
+th,td{padding:10px 12px;text-align:right;border-bottom:1px solid var(--line)}
+th{background:var(--surface-2);font-weight:700;color:var(--ink-2);font-size:.8rem;white-space:nowrap;position:sticky;top:0}
+td.num,th.num{font-family:var(--mono);text-align:center}
+tbody tr{transition:.12s}
+tbody tr:hover{background:var(--surface-2)}
+tbody tr:last-child td{border-bottom:none}
+
+/* ── أزرار ── */
+.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 15px;border-radius:var(--radius-s);
+  font-weight:700;font-size:.88rem;transition:.15s;border:1px solid transparent}
+.btn svg{width:16px;height:16px}
+.btn-primary{background:var(--brand);color:#fff}
+.btn-primary:hover{background:var(--brand-dark)}
+.btn-ghost{background:var(--surface);border-color:var(--line);color:var(--ink-2)}
+.btn-ghost:hover{border-color:var(--brand);color:var(--brand)}
+.btn-sm{padding:6px 11px;font-size:.8rem}
+.btn-danger{background:var(--danger-bg);color:var(--danger)}
+.btn-danger:hover{background:var(--danger);color:#fff}
+
+/* ── شارات ── */
+.badge{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;font-size:.74rem;font-weight:700}
+.badge.ok{background:var(--ok-bg);color:var(--ok)}
+.badge.warn{background:var(--warn-bg);color:var(--warn)}
+.badge.danger{background:var(--danger-bg);color:var(--danger)}
+.badge.brand{background:var(--brand-bg);color:var(--brand)}
+
+/* ── حقول ── */
+.field{display:flex;flex-direction:column;gap:5px;margin-bottom:13px}
+.field label{font-size:.82rem;font-weight:600;color:var(--ink-2)}
+.field input,.field select,.field textarea{
+  padding:9px 12px;border:1px solid var(--line);border-radius:var(--radius-s);
+  background:var(--surface);color:var(--ink);transition:.15s;width:100%}
+.field input:focus,.field select:focus,.field textarea:focus{
+  outline:none;border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-bg)}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:560px){.field-row{grid-template-columns:1fr}}
+
+/* ── حالة فارغة ── */
+.empty{text-align:center;padding:48px 20px;color:var(--ink-3)}
+.empty svg{width:54px;height:54px;opacity:.4;margin-bottom:14px}
+.empty .t{font-family:'Cairo';font-weight:700;color:var(--ink-2);font-size:1.05rem;margin-bottom:6px}
+.empty .d{font-size:.88rem;max-width:340px;margin:0 auto 18px}
+
+/* ── Modal ── */
+.modal-bg{position:fixed;inset:0;background:rgba(15,34,51,.5);backdrop-filter:blur(3px);
+  z-index:100;display:none;align-items:flex-start;justify-content:center;padding:24px;overflow-y:auto}
+.modal-bg.open{display:flex}
+.modal{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-l);
+  width:100%;max-width:560px;margin:auto 0;animation:pop .2s ease}
+@keyframes pop{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
+.modal-head{padding:17px 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between}
+.modal-head h3{font-size:1.08rem}
+.modal-body{padding:20px;max-height:64vh;overflow-y:auto}
+.modal-foot{padding:15px 20px;border-top:1px solid var(--line);display:flex;gap:10px;justify-content:flex-start}
+
+/* ── Toast ── */
+.toast-host{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:200;display:flex;flex-direction:column;gap:8px;align-items:center}
+.toast{background:var(--ink);color:#fff;padding:11px 18px;border-radius:10px;font-weight:600;font-size:.88rem;
+  box-shadow:var(--shadow-l);animation:slideup .25s ease;display:flex;align-items:center;gap:9px}
+.toast.ok{background:var(--ok)}.toast.danger{background:var(--danger)}.toast.warn{background:var(--warn)}
+@keyframes slideup{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+
+/* ── شريط الأحباس ── */
+.reach-bar{display:flex;gap:0;border-radius:var(--radius-s);overflow:hidden;border:1px solid var(--line);margin-bottom:4px}
+.reach-seg{flex:1;padding:10px 8px;text-align:center;font-size:.78rem;font-weight:700;color:#fff;position:relative}
+.reach-seg .km{font-family:var(--mono);font-size:.68rem;opacity:.85;font-weight:400;display:block}
+
+.row-actions{display:flex;gap:5px}
+.mini-btn{width:30px;height:30px;border-radius:7px;display:grid;place-items:center;background:var(--surface-2);transition:.12s}
+.mini-btn:hover{background:var(--brand-bg);color:var(--brand)}
+.mini-btn svg{width:15px;height:15px}
+.mini-btn.del:hover{background:var(--danger-bg);color:var(--danger)}
+
+.section-title{font-family:'Cairo';font-weight:700;font-size:1.15rem;margin:6px 0 14px;display:flex;align-items:center;gap:9px}
+.section-title svg{width:22px;height:22px;color:var(--brand);flex-shrink:0}
+.card-title svg{width:18px;height:18px;flex-shrink:0}
+.empty svg{width:54px!important;height:54px!important}
+.card-body svg:not([width]){width:18px;height:18px}
+.kpi svg{width:18px;height:18px}
+.toolbar{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+.toolbar .grow{flex:1}
+.hint{font-size:.8rem;color:var(--ink-3);background:var(--surface-2);border:1px dashed var(--line);
+  border-radius:var(--radius-s);padding:10px 14px;margin-bottom:14px}
+.setup-note{background:var(--brand-bg);border:1px solid #bcd8ec;border-radius:var(--radius-s);padding:12px 15px;
+  font-size:.85rem;color:var(--brand-dark);margin-bottom:16px;display:flex;gap:10px;align-items:flex-start}
+.setup-note svg{width:18px;height:18px;flex-shrink:0;margin-top:2px}
+
+
+/* ── التراكب الكمى ── */
+.overlay-strip{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:14px}
+@media(max-width:900px){.overlay-strip{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.overlay-strip{grid-template-columns:1fr}}
+.overlay-kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-s);padding:12px 14px;box-shadow:var(--shadow)}
+.overlay-kpi .t{font-size:.76rem;color:var(--ink-2);font-weight:700;margin-bottom:4px}
+.overlay-kpi .v{font-family:var(--mono);font-size:1.25rem;font-weight:700}
+.qbar{height:9px;background:var(--surface-2);border-radius:99px;overflow:hidden;border:1px solid var(--line)}
+.qbar>span{display:block;height:100%;border-radius:99px;background:var(--brand);transition:.25s}
+.qbar>span.ok{background:var(--ok)}.qbar>span.warn{background:var(--warn)}.qbar>span.danger{background:var(--danger)}
+.overlay-map{display:flex;gap:0;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;min-height:82px;background:var(--surface)}
+.overlay-cell{flex:1;min-width:110px;padding:10px 8px;color:#fff;display:flex;flex-direction:column;justify-content:space-between;gap:5px;position:relative}
+.overlay-cell .name{font-weight:800;font-size:.82rem;line-height:1.25}.overlay-cell .num{font-size:.72rem;opacity:.95}.overlay-cell .state{font-size:.7rem;font-weight:800;background:rgba(255,255,255,.18);border-radius:12px;padding:2px 7px;align-self:flex-start}
+.qhint{font-size:.8rem;color:var(--ink-2);background:linear-gradient(90deg,var(--brand-bg),var(--surface));border:1px solid var(--line);border-radius:var(--radius-s);padding:11px 14px;margin-bottom:14px}
+
+</style>
+</head>
+<body>
+<!-- يُبنى المحتوى ديناميكياً -->
+<div id="app"></div>
+<div class="toast-host" id="toastHost"></div>
+
+<script>
+"use strict";
+/* ════════════════════════════════════════════════════════════════════
+   التوأم الرقمى لشبكات الرى — قالب عام (V1)
+   مستوحى من معمارية توأم الإسماعيلية، مُصمَّم معلَمياً لأى شبكة.
+   ملف واحد · Vanilla JS · Light theme · Arabic RTL · PWA
+   ════════════════════════════════════════════════════════════════════ */
+
+/* ────────────────────────────────────────────────
+   1) إعداد الشبكة الافتراضى (يُحرَّر من تبويب الإعداد)
+   ──────────────────────────────────────────────── */
+const DEFAULT_CONFIG = {
+  name: "شبكة رى جديدة",
+  shortName: "Irrigation DT",
+  totalLengthKm: 0,
+  moqannan: { summer: 30, winter: 18 },   /* م³/فدان/يوم */
+  annualQuotaBCM: 0,
+  summerMonths: [5, 6, 7, 8, 9],
+  reaches: [],   /* {idx,name,from,to} */
+  admins: [],    /* {code,name,color} */
+  sheetSyncUrl: "",    /* رابط Apps Script Web App لمزامنة القراءات */
+  sheetAutoSync: false /* مزامنة تلقائية عند الفتح */
+};
+
+/* مفاتيح التخزين المحلى */
+const LS = {
+  config:   "irrdt.config.v1",
+  branches: "irrdt.branches.v1",
+  readings: "irrdt.readings.v1"
+};
+
+/* الحالة العامة */
+const State = {
+  config: null,
+  branches: [],     /* الترع/الفروع */
+  readings: {},     /* { "YYYY-MM-DD": { branchId: {front,back,flow} } } */
+  tab: "overview",
+  readDate: todayKey()
+};
+
+function todayKey(d){ d=d||new Date(); return d.toISOString().slice(0,10); }
+
+/* ────────────────────────────────────────────────
+   2) المحرّك الهيدروليكى (Manning) — قطاع شبه منحرف
+   ──────────────────────────────────────────────── */
+const Hydraulics = {
+  g: 9.81,
+  /* مساحة القطاع شبه المنحرف: عرض القاع b، ميل الجانب z، العمق y */
+  area: (b, z, y) => (b + z * y) * y,
+  /* المحيط المبلل */
+  perimeter: (b, z, y) => b + 2 * y * Math.sqrt(1 + z * z),
+  /* نصف القطر الهيدروليكى */
+  hydraulicRadius(b, z, y){
+    const A = this.area(b, z, y), P = this.perimeter(b, z, y);
+    return P > 0 ? A / P : 0;
+  },
+  /* التصرف بمعادلة مانينج: Q = (1/n)·A·R^(2/3)·S^(1/2) */
+  discharge(b, z, y, n, S){
+    if(!(n > 0) || !(S > 0) || !(y > 0)) return 0;
+    const A = this.area(b, z, y), R = this.hydraulicRadius(b, z, y);
+    return (1 / n) * A * Math.pow(R, 2/3) * Math.sqrt(S);
+  },
+  /* السرعة */
+  velocity(b, z, y, n, S){
+    const A = this.area(b, z, y);
+    return A > 0 ? this.discharge(b, z, y, n, S) / A : 0;
+  },
+  /* العمق الطبيعى عكسياً من تصرف معلوم (تنصيف) */
+  normalDepth(b, z, n, S, Q, yMax){
+    if(!(Q > 0)) return 0;
+    let lo = 1e-4, hi = yMax || 20, mid = 0;
+    for(let i = 0; i < 60; i++){
+      mid = (lo + hi) / 2;
+      const q = this.discharge(b, z, mid, n, S);
+      if(q < Q) lo = mid; else hi = mid;
+    }
+    return mid;
+  }
+};
+
+/* تحديد الموسم الحالى */
+function isSummer(d){
+  d = d || new Date();
+  return (State.config.summerMonths || []).includes(d.getMonth() + 1);
+}
+function currentMoqannan(){
+  const m = State.config.moqannan || {summer:0,winter:0};
+  return isSummer() ? m.summer : m.winter;
+}
+</script>
+
+<script>
+"use strict";
+/* ────────────────────────────────────────────────
+   3) طبقة التخزين المحلى
+   ──────────────────────────────────────────────── */
+const Store = {
+  load(){
+    try{
+      State.config = JSON.parse(localStorage.getItem(LS.config)) || structuredClone(DEFAULT_CONFIG);
+    }catch(e){ State.config = structuredClone(DEFAULT_CONFIG); }
+    /* دمج أى مفاتيح ناقصة من الافتراضى */
+    State.config = Object.assign(structuredClone(DEFAULT_CONFIG), State.config);
+    try{ State.branches = JSON.parse(localStorage.getItem(LS.branches)) || []; }catch(e){ State.branches = []; }
+    try{ State.readings = JSON.parse(localStorage.getItem(LS.readings)) || {}; }catch(e){ State.readings = {}; }
+  },
+  saveConfig(){ localStorage.setItem(LS.config, JSON.stringify(State.config)); },
+  saveBranches(){ localStorage.setItem(LS.branches, JSON.stringify(State.branches)); },
+  saveReadings(){ localStorage.setItem(LS.readings, JSON.stringify(State.readings)); }
+};
+
+/* ────────────────────────────────────────────────
+   4) أدوات مساعدة
+   ──────────────────────────────────────────────── */
+const $  = (s, r) => (r||document).querySelector(s);
+const $$ = (s, r) => Array.from((r||document).querySelectorAll(s));
+function el(tag, attrs, html){
+  const e = document.createElement(tag);
+  if(attrs) for(const k in attrs){
+    if(k === "class") e.className = attrs[k];
+    else if(k === "html") e.innerHTML = attrs[k];
+    else if(k.startsWith("on") && typeof attrs[k] === "function") e.addEventListener(k.slice(2), attrs[k]);
+    else e.setAttribute(k, attrs[k]);
+  }
+  if(html != null) e.innerHTML = html;
+  return e;
+}
+function uid(p){ return (p||"b") + "_" + Math.random().toString(36).slice(2,9); }
+function fmt(n, d){
+  if(n == null || isNaN(n)) return "—";
+  d = d == null ? 0 : d;
+  return (+n).toLocaleString("en-US", {minimumFractionDigits:d, maximumFractionDigits:d});
+}
+function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+function adminName(code){
+  const a = (State.config.admins||[]).find(x => x.code === code);
+  return a ? a.name : (code || "—");
+}
+function adminColor(code){
+  const a = (State.config.admins||[]).find(x => x.code === code);
+  return a ? a.color : "#90a4b6";
+}
+function toast(msg, kind){
+  const t = el("div", {class:"toast " + (kind||"")}, msg);
+  $("#toastHost").appendChild(t);
+  setTimeout(() => { t.style.opacity = "0"; t.style.transition=".3s"; setTimeout(()=>t.remove(),300); }, 2600);
+}
+
+/* أيقونات SVG */
+const ICON = {
+  wave:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 6c2 0 2 2 4 2s2-2 4-2 2 2 4 2 2-2 4-2 2 2 4 2"/><path d="M2 12c2 0 2 2 4 2s2-2 4-2 2 2 4 2 2-2 4-2 2 2 4 2"/><path d="M2 18c2 0 2 2 4 2s2-2 4-2 2 2 4 2 2-2 4-2 2 2 4 2"/></svg>',
+  overview:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>',
+  branches:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg>',
+  readings:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg>',
+  balance:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18"/><path d="M3 7l9-4 9 4"/><path d="M3 7l3 7a3 3 0 0 0 6 0"/><path d="M21 7l-3 7a3 3 0 0 1-6 0"/></svg>',
+  overlay:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V5"/><path d="M4 19h16"/><rect x="7" y="11" width="3" height="5" rx="1"/><rect x="12" y="8" width="3" height="8" rx="1"/><rect x="17" y="6" width="3" height="10" rx="1"/></svg>',
+  setup:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>',
+  plus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>',
+  edit:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4z"/></svg>',
+  trash:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>',
+  download:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
+  refresh:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>',
+  upload:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>',
+  x:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
+  info:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>',
+  empty:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>'
+};
+</script>
+
+<script>
+"use strict";
+/* ────────────────────────────────────────────────
+   5) تعريف التبويبات
+   ──────────────────────────────────────────────── */
+const TABS = [
+  { id:"overview", label:"نظرة عامة", icon:ICON.overview },
+  { id:"branches", label:"الترع والفروع", icon:ICON.branches },
+  { id:"readings", label:"القراءات اليومية", icon:ICON.readings },
+  { id:"balance",  label:"الميزان المائى", icon:ICON.balance },
+  { id:"overlay",  label:"التراكب الكمى", icon:ICON.overlay },
+  { id:"setup",    label:"إعداد الشبكة", icon:ICON.setup }
+];
+
+/* ────────────────────────────────────────────────
+   6) الهيكل العام (Shell)
+   ──────────────────────────────────────────────── */
+function renderShell(){
+  const c = State.config;
+  $("#app").innerHTML = `
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div class="logo">${ICON.wave}</div>
+        <div class="brand-txt">
+          <span class="net" id="hdrName">${esc(c.name)}</span>
+          <span class="sub">توأم رقمى هيدروليكى · ${esc(c.shortName||"")}</span>
+        </div>
+        <div class="topbar-spacer"></div>
+        <button class="icon-btn" title="تحديث القراءات من جوجل شيت" onclick="syncFromSheet(false)">${ICON.refresh||ICON.download}</button>
+        <button class="icon-btn" title="تصدير البيانات" onclick="exportAll()">${ICON.download}</button>
+        <button class="icon-btn" title="استيراد البيانات" onclick="importPrompt()">${ICON.upload}</button>
+      </div>
+    </header>
+    <nav class="tabs"><div class="tabs-inner" id="tabsInner"></div></nav>
+    <main class="wrap" id="viewHost"></main>
+  `;
+  const ti = $("#tabsInner");
+  TABS.forEach(t => {
+    ti.appendChild(el("button", {
+      class:"tab" + (t.id===State.tab?" active":""),
+      onclick:()=>switchTab(t.id)
+    }, t.icon + "<span>"+t.label+"</span>"));
+  });
+  renderView();
+}
+function switchTab(id){
+  State.tab = id;
+  $$(".tab").forEach((b,i)=>b.classList.toggle("active", TABS[i].id===id));
+  renderView();
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+function renderView(){
+  const host = $("#viewHost");
+  host.innerHTML = "";
+  const v = el("div", {class:"view active"});
+  v.innerHTML = VIEWS[State.tab] ? VIEWS[State.tab]() : "";
+  host.appendChild(v);
+  if(AFTER[State.tab]) AFTER[State.tab]();
+}
+
+/* هل الشبكة مُعدّة؟ */
+function isConfigured(){
+  return State.config.name && State.config.name !== DEFAULT_CONFIG.name
+      || State.config.reaches.length || State.config.admins.length || State.branches.length;
+}
+function setupBanner(){
+  if(isConfigured()) return "";
+  return `<div class="setup-note">${ICON.info}<div>ابدأ من تبويب <strong>إعداد الشبكة</strong>: اكتب اسم الشبكة وطولها، ثم عرّف الأحباس والإدارات. بعدها أضِف الترع وأدخِل القراءات.</div></div>`;
+}
+
+/* ────────────────────────────────────────────────
+   7) اللوحات (VIEWS)
+   ──────────────────────────────────────────────── */
+const VIEWS = {};
+const AFTER = {};
+
+/* ===== نظرة عامة ===== */
+VIEWS.overview = () => {
+  const b = State.branches;
+  const totalZimaam = b.reduce((s,x)=>s+(+x.zimaam||0),0);
+  const totalLen = b.reduce((s,x)=>s+(+x.len||0),0);
+  const moq = currentMoqannan();
+  const demand = totalZimaam * moq; /* م³/يوم */
+  const adminsCount = State.config.admins.length;
+  const reachCount = State.config.reaches.length;
+  return `
+    ${setupBanner()}
+    <div class="section-title">${ICON.overview} ${esc(State.config.name)}</div>
+    <div class="grid cols-4" style="margin-bottom:18px">
+      <div class="kpi"><div class="label">عدد الترع والفروع</div><div class="value">${fmt(b.length)}</div><div class="foot">مسجّلة فى الشبكة</div></div>
+      <div class="kpi ok"><div class="label">إجمالى الزمام</div><div class="value">${fmt(totalZimaam)}<span class="unit">فدان</span></div><div class="foot">مساحة مخدومة</div></div>
+      <div class="kpi"><div class="label">إجمالى الأطوال</div><div class="value">${fmt(totalLen,1)}<span class="unit">كم</span></div><div class="foot">طول الترع المسجّلة</div></div>
+      <div class="kpi warn"><div class="label">الطلب المائى التقديرى</div><div class="value">${fmt(demand/1e6,2)}<span class="unit">م.م³/يوم</span></div><div class="foot">مقنن ${isSummer()?"صيفى":"شتوى"} ${moq} م³/فدان</div></div>
+    </div>
+
+    <div class="grid cols-2">
+      <div class="card">
+        <div class="card-head"><div class="card-title"><span class="dot"></span>توزيع الزمام على الإدارات</div></div>
+        <div class="card-body" id="adminBreakdown"></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><div class="card-title"><span class="dot"></span>أكبر الترع بالزمام</div></div>
+        <div class="card-body" id="topBranches"></div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:14px">
+      <div class="card-head"><div class="card-title"><span class="dot"></span>أحباس الشبكة</div><span class="card-sub">${reachCount} حبس · ${adminsCount} إدارة</span></div>
+      <div class="card-body" id="reachOverview"></div>
+    </div>
+  `;
+};
+AFTER.overview = () => {
+  /* توزيع الإدارات */
+  const host = $("#adminBreakdown");
+  const admins = State.config.admins;
+  if(!admins.length){ host.innerHTML = emptyMini("لا توجد إدارات بعد","عرّفها من تبويب الإعداد"); }
+  else {
+    const byAdmin = {};
+    State.branches.forEach(b => byAdmin[b.admin] = (byAdmin[b.admin]||0) + (+b.zimaam||0));
+    const total = Object.values(byAdmin).reduce((s,x)=>s+x,0) || 1;
+    host.innerHTML = admins.map(a => {
+      const z = byAdmin[a.code]||0, pct = Math.round(z/total*100);
+      return `<div style="margin-bottom:13px">
+        <div style="display:flex;justify-content:space-between;font-size:.85rem;margin-bottom:5px">
+          <span style="font-weight:600">${esc(a.name)}</span>
+          <span class="mono" style="color:var(--ink-2)">${fmt(z)} فدان · ${pct}%</span>
+        </div>
+        <div style="height:8px;background:var(--surface-2);border-radius:5px;overflow:hidden">
+          <div style="height:100%;width:${pct}%;background:${a.color||'var(--brand)'};border-radius:5px;transition:.4s"></div>
+        </div>
+      </div>`;
+    }).join("");
+  }
+  /* أكبر الترع */
+  const tb = $("#topBranches");
+  const top = [...State.branches].filter(b=>+b.zimaam).sort((a,b)=>b.zimaam-a.zimaam).slice(0,6);
+  if(!top.length){ tb.innerHTML = emptyMini("لا توجد ترع بعد","أضِفها من تبويب الترع والفروع"); }
+  else tb.innerHTML = `<div class="tbl-wrap"><table><tbody>${top.map((b,i)=>`
+    <tr><td style="width:28px;color:var(--ink-3)" class="num">${i+1}</td>
+    <td style="font-weight:600">${esc(b.name)}</td>
+    <td class="num">${fmt(b.zimaam)} <span style="color:var(--ink-3);font-size:.8rem">فدان</span></td></tr>`).join("")}</tbody></table></div>`;
+  /* الأحباس */
+  renderReachBar($("#reachOverview"));
+};
+
+function emptyMini(t,d){
+  return `<div style="text-align:center;padding:24px;color:var(--ink-3)">
+    <div style="font-weight:700;color:var(--ink-2);margin-bottom:4px">${t}</div>
+    <div style="font-size:.84rem">${d}</div></div>`;
+}
+function renderReachBar(host){
+  const r = State.config.reaches;
+  if(!r.length){ host.innerHTML = emptyMini("لا توجد أحباس بعد","عرّفها من تبويب الإعداد"); return; }
+  const palette = ["#0e5a8a","#13a3b5","#3a8f5a","#b9760a","#7c5cbf","#c2392b"];
+  host.innerHTML = `<div class="reach-bar">${r.map((x,i)=>`
+    <div class="reach-seg" style="background:${palette[i%palette.length]}">
+      ${esc(x.name)}<span class="km">ك ${fmt(x.from,1)} — ك ${fmt(x.to,1)}</span>
+    </div>`).join("")}</div>`;
+}
+</script>
+
+<script>
+"use strict";
+/* ===== الترع والفروع ===== */
+VIEWS.branches = () => `
+  ${setupBanner()}
+  <div class="section-title">${ICON.branches} الترع والفروع</div>
+  <div class="toolbar">
+    <button class="btn btn-primary" onclick="openBranchModal()">${ICON.plus}<span>إضافة ترعة</span></button>
+    <div class="grow"></div>
+    <span class="card-sub">${State.branches.length} مسجّلة</span>
+  </div>
+  <div class="card"><div id="branchList"></div></div>
+`;
+AFTER.branches = () => {
+  const host = $("#branchList");
+  if(!State.branches.length){
+    host.innerHTML = `<div class="empty">${ICON.empty}
+      <div class="t">لا توجد ترع مسجّلة</div>
+      <div class="d">أضِف أول ترعة بالضغط على «إضافة ترعة». ستحتاج اسمها، موقعها بالكيلومتر، طولها، زمامها، وبيانات قطاعها الهيدروليكى.</div>
+      <button class="btn btn-primary" style="margin:0 auto" onclick="openBranchModal()">${ICON.plus}<span>إضافة ترعة</span></button></div>`;
+    return;
+  }
+  const rows = [...State.branches].sort((a,b)=>(+a.km||0)-(+b.km||0)).map(b => {
+    const Q = branchQ(b);
+    return `<tr>
+      <td style="font-weight:600">${esc(b.name)}</td>
+      <td class="num">${fmt(b.km,2)}</td>
+      <td class="num">${fmt(b.len,2)}</td>
+      <td class="num">${fmt(b.zimaam)}</td>
+      <td><span class="badge brand" style="background:${adminColor(b.admin)}22;color:${adminColor(b.admin)}">${esc(adminName(b.admin))}</span></td>
+      <td class="num">${Q?fmt(Q,2):"—"}</td>
+      <td><div class="row-actions">
+        <button class="mini-btn" title="تعديل" onclick="openBranchModal('${b.id}')">${ICON.edit}</button>
+        <button class="mini-btn del" title="حذف" onclick="deleteBranch('${b.id}')">${ICON.trash}</button>
+      </div></td>
+    </tr>`;
+  }).join("");
+  host.innerHTML = `<div class="tbl-wrap"><table>
+    <thead><tr><th>اسم الترعة</th><th class="num">الكيلومتر</th><th class="num">الطول (كم)</th>
+    <th class="num">الزمام (فدان)</th><th>الإدارة</th><th class="num">التصرف التصميمى (م³/ث)</th><th></th></tr></thead>
+    <tbody>${rows}</tbody></table></div>`;
+};
+
+/* التصرف التصميمى للترعة من قطاعها (لو البيانات متوفرة) */
+function branchQ(b){
+  const bw=+b.bedWidth, z=+b.sideSlope, n=+b.manningN, S=+b.longSlope, y=+b.designDepth;
+  if(bw>0 && n>0 && S>0 && y>0) return Hydraulics.discharge(bw, z||0, y, n, S);
+  return 0;
+}
+
+/* ===== القراءات اليومية ===== */
+VIEWS.readings = () => `
+  ${setupBanner()}
+  <div class="section-title">${ICON.readings} القراءات اليومية</div>
+  <div class="toolbar">
+    <div class="field" style="margin:0">
+      <input type="date" id="readDate" value="${State.readDate}" onchange="changeReadDate(this.value)" style="width:auto">
+    </div>
+    <div class="grow"></div>
+    <button class="btn btn-ghost btn-sm" onclick="clearReadings()">مسح قراءات اليوم</button>
+  </div>
+  <div class="hint">أدخِل المنسوب الأمامى والخلفى والتصرف المقاس لكل نقطة. تُحفظ تلقائياً بمفتاح التاريخ المختار.</div>
+  <div class="card"><div id="readList"></div></div>
+`;
+AFTER.readings = () => {
+  const host = $("#readList");
+  if(!State.branches.length){
+    host.innerHTML = `<div class="empty">${ICON.empty}<div class="t">لا توجد نقاط للقراءة</div>
+      <div class="d">أضِف الترع أولاً من تبويب «الترع والفروع» لتظهر هنا لإدخال قراءاتها.</div></div>`;
+    return;
+  }
+  const day = State.readings[State.readDate] || {};
+  const rows = [...State.branches].sort((a,b)=>(+a.km||0)-(+b.km||0)).map(b => {
+    const r = day[b.id] || {};
+    return `<tr>
+      <td style="font-weight:600">${esc(b.name)}</td>
+      <td class="num"><input type="number" step="0.01" value="${r.front??""}" placeholder="—"
+        oninput="setReading('${b.id}','front',this.value)" style="width:90px;text-align:center"></td>
+      <td class="num"><input type="number" step="0.01" value="${r.back??""}" placeholder="—"
+        oninput="setReading('${b.id}','back',this.value)" style="width:90px;text-align:center"></td>
+      <td class="num"><input type="number" step="0.01" value="${r.flow??""}" placeholder="—"
+        oninput="setReading('${b.id}','flow',this.value)" style="width:90px;text-align:center"></td>
+    </tr>`;
+  }).join("");
+  host.innerHTML = `<div class="tbl-wrap"><table>
+    <thead><tr><th>النقطة</th><th class="num">المنسوب الأمامى</th><th class="num">المنسوب الخلفى</th><th class="num">التصرف (م³/ث)</th></tr></thead>
+    <tbody>${rows}</tbody></table></div>`;
+  /* تنسيق حقول الإدخال */
+  $$("#readList input").forEach(i=>{
+    i.style.padding="6px 8px";i.style.border="1px solid var(--line)";i.style.borderRadius="7px";i.style.fontFamily="var(--mono)";
+  });
+};
+
+/* ===== الميزان المائى ===== */
+VIEWS.balance = () => `
+  ${setupBanner()}
+  <div class="section-title">${ICON.balance} الميزان المائى للأحباس</div>
+  <div class="hint">يُحسب لكل حبس: مجموع زمام الترع الواقعة ضمن حدوده، والطلب المائى التقديرى = الزمام × المقنن اليومى (${currentMoqannan()} م³/فدان، موسم ${isSummer()?"صيفى":"شتوى"}).</div>
+  <div id="balanceList"></div>
+`;
+AFTER.balance = () => {
+  const host = $("#balanceList");
+  const reaches = State.config.reaches;
+  if(!reaches.length){
+    host.innerHTML = `<div class="card"><div class="empty">${ICON.empty}<div class="t">لا توجد أحباس مُعرّفة</div>
+      <div class="d">عرّف أحباس الشبكة من تبويب «إعداد الشبكة» ليُحسب الميزان المائى لكل حبس.</div></div></div>`;
+    return;
+  }
+  const moq = currentMoqannan();
+  host.innerHTML = `<div class="grid cols-2">` + reaches.map((rch,i) => {
+    const inReach = State.branches.filter(b => (+b.km>=rch.from) && (+b.km<rch.to+0.0001));
+    const z = inReach.reduce((s,x)=>s+(+x.zimaam||0),0);
+    const demand = z*moq/1e6;
+    const palette = ["#0e5a8a","#13a3b5","#3a8f5a","#b9760a","#7c5cbf","#c2392b"];
+    const col = palette[i%palette.length];
+    return `<div class="card">
+      <div class="card-head" style="border-bottom:3px solid ${col}">
+        <div class="card-title" style="font-size:.95rem">${esc(rch.name)}</div>
+        <span class="card-sub mono">ك ${fmt(rch.from,1)}—${fmt(rch.to,1)}</span>
+      </div>
+      <div class="card-body">
+        <div class="grid cols-2" style="gap:10px">
+          <div><div style="font-size:.78rem;color:var(--ink-2);font-weight:600">عدد الترع</div>
+            <div class="mono" style="font-size:1.4rem;font-weight:600">${inReach.length}</div></div>
+          <div><div style="font-size:.78rem;color:var(--ink-2);font-weight:600">الزمام</div>
+            <div class="mono" style="font-size:1.4rem;font-weight:600">${fmt(z)}<span style="font-size:.7rem;color:var(--ink-3)"> فدان</span></div></div>
+          <div style="grid-column:1/-1;padding-top:10px;border-top:1px solid var(--line)">
+            <div style="font-size:.78rem;color:var(--ink-2);font-weight:600">الطلب المائى التقديرى</div>
+            <div class="mono" style="font-size:1.4rem;font-weight:600;color:${col}">${fmt(demand,3)}<span style="font-size:.7rem;color:var(--ink-3)"> م.م³/يوم</span></div></div>
+        </div>
+      </div></div>`;
+  }).join("") + `</div>`;
+};
+</script>
+
+<script>
+"use strict";
+
+
+/* ===== التراكب الكمى ===== */
+function readingFlow(branchId){
+  const day = State.readings[State.readDate] || {};
+  const r = day[branchId] || {};
+  return +r.flow || 0;
+}
+function branchDemandFlow(b){
+  return ((+b.zimaam || 0) * currentMoqannan()) / 86400; /* م³/ث */
+}
+function qStatus(coverage){
+  if(!(coverage >= 0)) return {key:"brand", txt:"بدون بيانات", color:"var(--brand)"};
+  if(coverage >= 95) return {key:"ok", txt:"متزن", color:"var(--ok)"};
+  if(coverage >= 80) return {key:"warn", txt:"عجز محدود", color:"var(--warn)"};
+  return {key:"danger", txt:"عجز حرج", color:"var(--danger)"};
+}
+function overlayRows(){
+  return [...State.branches].sort((a,b)=>(+a.km||0)-(+b.km||0)).map(b=>{
+    const demandQ = branchDemandFlow(b);
+    const measuredQ = readingFlow(b.id);
+    const designQ = branchQ(b);
+    const usedQ = measuredQ || designQ || 0;
+    const coverage = demandQ>0 && usedQ>0 ? usedQ/demandQ*100 : NaN;
+    const deficitQ = demandQ - usedQ;
+    const s = qStatus(coverage);
+    return {b,demandQ,measuredQ,designQ,usedQ,coverage,deficitQ,status:s};
+  });
+}
+VIEWS.overlay = () => `
+  ${setupBanner()}
+  <div class="section-title">${ICON.overlay} التراكب الكمى للتصرفات والاحتياجات</div>
+  <div class="qhint">يعرض التراكب الكمى حالة كل ترعة أو حبس بمقارنة <strong>الطلب المائى اللحظى</strong> المحسوب من الزمام والمقنن مع <strong>التصرف المقاس</strong> من قراءات اليوم، أو التصرف التصميمى عند عدم وجود قراءة.</div>
+  <div class="toolbar">
+    <div class="field" style="margin:0"><input type="date" value="${State.readDate}" onchange="changeReadDate(this.value)" style="width:auto"></div>
+    <div class="grow"></div>
+    <span class="card-sub">تاريخ التحليل: <span class="mono">${State.readDate}</span></span>
+  </div>
+  <div id="overlayHost"></div>
+`;
+AFTER.overlay = () => {
+  const host = $("#overlayHost");
+  if(!State.branches.length){
+    host.innerHTML = `<div class="card"><div class="empty">${ICON.empty}<div class="t">لا توجد ترع للتراكب الكمى</div><div class="d">أضِف الترع والزمام والقطاع الهيدروليكى ثم أدخل القراءات اليومية.</div></div></div>`;
+    return;
+  }
+  const rows = overlayRows();
+  const totalDemand = rows.reduce((s,r)=>s+r.demandQ,0);
+  const totalUsed = rows.reduce((s,r)=>s+r.usedQ,0);
+  const totalMeasured = rows.reduce((s,r)=>s+r.measuredQ,0);
+  const totalDesign = rows.reduce((s,r)=>s+r.designQ,0);
+  const avgCov = totalDemand>0 ? totalUsed/totalDemand*100 : NaN;
+  const st = qStatus(avgCov);
+  const worst = [...rows].filter(r=>isFinite(r.coverage)).sort((a,b)=>a.coverage-b.coverage)[0];
+  const table = rows.map(r=>{
+    const pct = isFinite(r.coverage) ? Math.max(0,Math.min(140,r.coverage)) : 0;
+    return `<tr>
+      <td style="font-weight:700">${esc(r.b.name)}</td>
+      <td>${esc(adminName(r.b.admin))}</td>
+      <td class="num">${fmt(r.b.zimaam)}</td>
+      <td class="num">${fmt(r.demandQ,3)}</td>
+      <td class="num">${r.measuredQ?fmt(r.measuredQ,3):"—"}</td>
+      <td class="num">${r.designQ?fmt(r.designQ,3):"—"}</td>
+      <td class="num">${r.usedQ?fmt(r.usedQ,3):"—"}</td>
+      <td style="min-width:140px"><div class="qbar"><span class="${r.status.key}" style="width:${Math.min(100,pct)}%"></span></div><div class="mono" style="font-size:.72rem;color:var(--ink-2);margin-top:3px">${isFinite(r.coverage)?fmt(r.coverage,1)+'%':'—'}</div></td>
+      <td class="num" style="color:${r.deficitQ>0?'var(--danger)':'var(--ok)'}">${r.usedQ?fmt(r.deficitQ,3):"—"}</td>
+      <td><span class="badge ${r.status.key}">${r.status.txt}</span></td>
+    </tr>`;
+  }).join("");
+  const reachMap = (State.config.reaches||[]).length ? `<div class="card" style="margin-bottom:14px"><div class="card-head"><div class="card-title"><span class="dot"></span>خريطة التراكب على الأحباس</div></div><div class="card-body"><div class="overlay-map">${State.config.reaches.map(rch=>{
+    const inR = rows.filter(r=>(+r.b.km>=rch.from)&&(+r.b.km<=rch.to));
+    const d = inR.reduce((s,r)=>s+r.demandQ,0), u = inR.reduce((s,r)=>s+r.usedQ,0);
+    const cov = d>0 ? u/d*100 : NaN, rs = qStatus(cov);
+    return `<div class="overlay-cell" style="background:${rs.color}"><div class="name">${esc(rch.name)}</div><div class="num">تغطية ${isFinite(cov)?fmt(cov,1)+'%':'—'} · ${inR.length} ترع</div><div class="state">${rs.txt}</div></div>`;
+  }).join("")}</div></div></div>` : "";
+  host.innerHTML = `
+    <div class="overlay-strip">
+      <div class="overlay-kpi"><div class="t">إجمالى الطلب</div><div class="v">${fmt(totalDemand,2)} <span class="unit">م³/ث</span></div></div>
+      <div class="overlay-kpi"><div class="t">المتاح/المستخدم</div><div class="v">${fmt(totalUsed,2)} <span class="unit">م³/ث</span></div></div>
+      <div class="overlay-kpi"><div class="t">المقاس اليومى</div><div class="v">${fmt(totalMeasured,2)} <span class="unit">م³/ث</span></div></div>
+      <div class="overlay-kpi"><div class="t">التصميمى</div><div class="v">${fmt(totalDesign,2)} <span class="unit">م³/ث</span></div></div>
+      <div class="overlay-kpi"><div class="t">نسبة التغطية</div><div class="v" style="color:${st.color}">${isFinite(avgCov)?fmt(avgCov,1):'—'}%</div></div>
+    </div>
+    ${worst?`<div class="hint">أكثر نقطة حرجة حاليًا: <strong>${esc(worst.b.name)}</strong> بنسبة تغطية <span class="mono">${fmt(worst.coverage,1)}%</span>.</div>`:""}
+    ${reachMap}
+    <div class="card"><div class="card-head"><div class="card-title"><span class="dot"></span>جدول التراكب الكمى للترع</div><span class="card-sub">العجز = الطلب - المستخدم</span></div>
+    <div class="tbl-wrap"><table><thead><tr><th>الترعة</th><th>الإدارة</th><th class="num">الزمام</th><th class="num">الطلب م³/ث</th><th class="num">المقاس</th><th class="num">التصميمى</th><th class="num">المستخدم</th><th>التغطية</th><th class="num">العجز/الفائض</th><th>الحالة</th></tr></thead><tbody>${table}</tbody></table></div></div>`;
+};
+
+/* ===== إعداد الشبكة ===== */
+VIEWS.setup = () => {
+  const c = State.config;
+  return `
+  <div class="section-title">${ICON.setup} إعداد الشبكة</div>
+
+  <div class="card" style="margin-bottom:14px">
+    <div class="card-head"><div class="card-title"><span class="dot"></span>هوية الشبكة</div></div>
+    <div class="card-body">
+      <div class="field-row">
+        <div class="field"><label>اسم الشبكة</label><input id="cfgName" value="${esc(c.name)}" placeholder="مثال: ترعة الإبراهيمية"></div>
+        <div class="field"><label>الاسم المختصر (لاتينى)</label><input id="cfgShort" value="${esc(c.shortName||"")}" placeholder="Ibrahimia DT"></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>الطول الكلى (كم)</label><input id="cfgLen" type="number" step="0.1" value="${c.totalLengthKm||""}"></div>
+        <div class="field"><label>الحصة السنوية (مليار م³) — اختيارى</label><input id="cfgQuota" type="number" step="0.1" value="${c.annualQuotaBCM||""}"></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>المقنن الصيفى (م³/فدان/يوم)</label><input id="cfgSummer" type="number" value="${c.moqannan.summer||""}"></div>
+        <div class="field"><label>المقنن الشتوى (م³/فدان/يوم)</label><input id="cfgWinter" type="number" value="${c.moqannan.winter||""}"></div>
+      </div>
+      <button class="btn btn-primary" onclick="saveIdentity()">حفظ الهوية</button>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:14px">
+    <div class="card-head"><div class="card-title"><span class="dot"></span>الإدارات</div>
+      <button class="btn btn-ghost btn-sm" onclick="addAdmin()">${ICON.plus}<span>إضافة إدارة</span></button></div>
+    <div class="card-body" id="adminEditor"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><div class="card-title"><span class="dot"></span>الأحباس</div>
+      <button class="btn btn-ghost btn-sm" onclick="addReach()">${ICON.plus}<span>إضافة حبس</span></button></div>
+    <div class="card-body" id="reachEditor"></div>
+  </div>
+
+  <div class="card" style="margin-top:14px">
+    <div class="card-head"><div class="card-title"><span class="dot"></span>المزامنة من جوجل شيت</div></div>
+    <div class="card-body">
+      <div class="field"><label>رابط تطبيق الويب (Apps Script Web App)</label>
+        <input id="cfgSyncUrl" value="${esc(c.sheetSyncUrl||"")}" placeholder="https://script.google.com/macros/s/.../exec" style="font-family:var(--mono);direction:ltr;text-align:left"></div>
+      <label style="display:flex;align-items:center;gap:10px;margin:8px 0 14px;cursor:pointer">
+        <input id="cfgAutoSync" type="checkbox" ${c.sheetAutoSync?"checked":""} style="width:18px;height:18px;cursor:pointer">
+        <span>تحديث تلقائى من الشيت عند فتح التطبيق</span></label>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn btn-primary" onclick="saveSync()">حفظ إعدادات المزامنة</button>
+        <button class="btn btn-ghost" onclick="syncFromSheet(false)">تحديث الآن</button>
+      </div>
+      <p style="font-size:.78rem;color:var(--ink-2);margin-top:10px;line-height:1.7">القراءات (الأمامى/الخلفى) تُجلب من ردود الفورم وتُدمج حسب التاريخ ومعرّف الترعة. لا تمسح القراءات المُدخلة يدوياً.</p>
+    </div>
+  </div>
+  `;
+};
+AFTER.setup = () => { renderAdminEditor(); renderReachEditor(); };
+
+function renderAdminEditor(){
+  const host = $("#adminEditor");
+  const a = State.config.admins;
+  if(!a.length){ host.innerHTML = emptyMini("لا توجد إدارات","أضِف الإدارات المسؤولة عن الشبكة"); return; }
+  host.innerHTML = a.map((x,i)=>`
+    <div style="display:flex;gap:10px;align-items:center;margin-bottom:10px">
+      <input type="color" value="${x.color||'#0e5a8a'}" onchange="updAdmin(${i},'color',this.value)" style="width:42px;height:42px;border:1px solid var(--line);border-radius:8px;padding:2px;cursor:pointer">
+      <input value="${esc(x.code)}" onchange="updAdmin(${i},'code',this.value)" placeholder="الكود" style="width:90px;padding:9px 11px;border:1px solid var(--line);border-radius:8px;font-family:var(--mono)">
+      <input value="${esc(x.name)}" onchange="updAdmin(${i},'name',this.value)" placeholder="اسم الإدارة" style="flex:1;padding:9px 11px;border:1px solid var(--line);border-radius:8px">
+      <button class="mini-btn del" onclick="delAdmin(${i})">${ICON.trash}</button>
+    </div>`).join("");
+}
+function renderReachEditor(){
+  const host = $("#reachEditor");
+  const r = State.config.reaches;
+  if(!r.length){ host.innerHTML = emptyMini("لا توجد أحباس","قسّم الشبكة إلى أحباس بين الحجوز/المنشآت"); return; }
+  host.innerHTML = r.map((x,i)=>`
+    <div style="display:flex;gap:10px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
+      <input value="${esc(x.name)}" onchange="updReach(${i},'name',this.value)" placeholder="اسم الحبس" style="flex:1;min-width:160px;padding:9px 11px;border:1px solid var(--line);border-radius:8px">
+      <input type="number" step="0.1" value="${x.from??""}" onchange="updReach(${i},'from',this.value)" placeholder="من (كم)" style="width:100px;padding:9px 11px;border:1px solid var(--line);border-radius:8px;font-family:var(--mono)">
+      <input type="number" step="0.1" value="${x.to??""}" onchange="updReach(${i},'to',this.value)" placeholder="إلى (كم)" style="width:100px;padding:9px 11px;border:1px solid var(--line);border-radius:8px;font-family:var(--mono)">
+      <button class="mini-btn del" onclick="delReach(${i})">${ICON.trash}</button>
+    </div>`).join("");
+}
+
+/* ── منطق الإعداد ── */
+function saveIdentity(){
+  const c = State.config;
+  c.name = $("#cfgName").value.trim() || DEFAULT_CONFIG.name;
+  c.shortName = $("#cfgShort").value.trim();
+  c.totalLengthKm = +$("#cfgLen").value || 0;
+  c.annualQuotaBCM = +$("#cfgQuota").value || 0;
+  c.moqannan.summer = +$("#cfgSummer").value || 0;
+  c.moqannan.winter = +$("#cfgWinter").value || 0;
+  Store.saveConfig();
+  $("#hdrName").textContent = c.name;
+  toast("حُفظت هوية الشبكة","ok");
+}
+
+function saveSync(){
+  const c = State.config;
+  c.sheetSyncUrl = ($("#cfgSyncUrl").value||"").trim();
+  c.sheetAutoSync = !!$("#cfgAutoSync").checked;
+  Store.saveConfig();
+  toast("حُفظت إعدادات المزامنة","ok");
+}
+function addAdmin(){ State.config.admins.push({code:"adm"+(State.config.admins.length+1),name:"",color:"#0e5a8a"}); Store.saveConfig(); renderAdminEditor(); }
+function updAdmin(i,k,v){ State.config.admins[i][k]=v; Store.saveConfig(); }
+function delAdmin(i){ State.config.admins.splice(i,1); Store.saveConfig(); renderAdminEditor(); }
+function addReach(){ State.config.reaches.push({idx:State.config.reaches.length+1,name:"",from:0,to:0}); Store.saveConfig(); renderReachEditor(); }
+function updReach(i,k,v){ State.config.reaches[i][k] = (k==="name")?v:(+v||0); Store.saveConfig(); }
+function delReach(i){ State.config.reaches.splice(i,1); Store.saveConfig(); renderReachEditor(); }
+
+/* ────────────────────────────────────────────────
+   8) Modal الترعة
+   ──────────────────────────────────────────────── */
+function openBranchModal(id){
+  const b = id ? State.branches.find(x=>x.id===id) : {};
+  const isEdit = !!id;
+  const adminOpts = State.config.admins.map(a=>`<option value="${esc(a.code)}" ${b.admin===a.code?"selected":""}>${esc(a.name)}</option>`).join("");
+  const m = el("div",{class:"modal-bg open",id:"branchModal"});
+  m.innerHTML = `<div class="modal"><div class="modal-head">
+    <h3>${isEdit?"تعديل ترعة":"إضافة ترعة"}</h3>
+    <button class="icon-btn" style="background:var(--surface-2);color:var(--ink-2)" onclick="closeModal()">${ICON.x}</button></div>
+    <div class="modal-body">
+      <div class="field"><label>اسم الترعة *</label><input id="bName" value="${esc(b.name||"")}" placeholder="مثال: ترعة الملاك الرئيسية"></div>
+      <div class="field-row">
+        <div class="field"><label>الموقع (كم على الترعة الأم)</label><input id="bKm" type="number" step="0.01" value="${b.km??""}"></div>
+        <div class="field"><label>الطول (كم)</label><input id="bLen" type="number" step="0.01" value="${b.len??""}"></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>الزمام (فدان)</label><input id="bZimaam" type="number" value="${b.zimaam??""}"></div>
+        <div class="field"><label>الإدارة</label><select id="bAdmin">${adminOpts||'<option value="">— عرّف الإدارات أولاً —</option>'}</select></div>
+      </div>
+      <div style="font-size:.82rem;font-weight:700;color:var(--ink-2);margin:6px 0 10px;padding-top:10px;border-top:1px dashed var(--line)">القطاع الهيدروليكى (اختيارى — لحساب التصرف التصميمى)</div>
+      <div class="field-row">
+        <div class="field"><label>عرض القاع (م)</label><input id="bBed" type="number" step="0.1" value="${b.bedWidth??""}"></div>
+        <div class="field"><label>ميل الجانب (z أفقى:1 رأسى)</label><input id="bSlope" type="number" step="0.1" value="${b.sideSlope??""}"></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>معامل مانينج (n)</label><input id="bN" type="number" step="0.001" value="${b.manningN??""}"></div>
+        <div class="field"><label>الميل الطولى (S)</label><input id="bLong" type="number" step="0.00001" value="${b.longSlope??""}"></div>
+      </div>
+      <div class="field"><label>العمق التصميمى (م)</label><input id="bDepth" type="number" step="0.1" value="${b.designDepth??""}"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-primary" onclick="saveBranch('${id||""}')">${isEdit?"حفظ التعديل":"إضافة الترعة"}</button>
+      <button class="btn btn-ghost" onclick="closeModal()">إلغاء</button>
+    </div></div>`;
+  document.body.appendChild(m);
+  m.addEventListener("click", e=>{ if(e.target===m) closeModal(); });
+}
+function closeModal(){ const m=$("#branchModal"); if(m) m.remove(); }
+function saveBranch(id){
+  const name = $("#bName").value.trim();
+  if(!name){ toast("اكتب اسم الترعة","danger"); return; }
+  const data = {
+    name, km:+$("#bKm").value||0, len:+$("#bLen").value||0, zimaam:+$("#bZimaam").value||0,
+    admin:$("#bAdmin").value, bedWidth:+$("#bBed").value||0, sideSlope:+$("#bSlope").value||0,
+    manningN:+$("#bN").value||0, longSlope:+$("#bLong").value||0, designDepth:+$("#bDepth").value||0
+  };
+  if(id){ const b=State.branches.find(x=>x.id===id); Object.assign(b,data); toast("حُفظ التعديل","ok"); }
+  else { data.id=uid(); State.branches.push(data); toast("أُضيفت الترعة","ok"); }
+  Store.saveBranches(); closeModal(); renderView();
+}
+function deleteBranch(id){
+  const b = State.branches.find(x=>x.id===id);
+  if(!confirm("حذف «"+(b?b.name:"")+"»؟ لا يمكن التراجع.")) return;
+  State.branches = State.branches.filter(x=>x.id!==id);
+  Store.saveBranches(); renderView(); toast("حُذفت الترعة","warn");
+}
+
+/* ────────────────────────────────────────────────
+   9) القراءات
+   ──────────────────────────────────────────────── */
+function changeReadDate(v){ State.readDate=v; renderView(); }
+function setReading(bid,field,val){
+  if(!State.readings[State.readDate]) State.readings[State.readDate]={};
+  if(!State.readings[State.readDate][bid]) State.readings[State.readDate][bid]={};
+  if(val==="") delete State.readings[State.readDate][bid][field];
+  else State.readings[State.readDate][bid][field]=+val;
+  Store.saveReadings();
+}
+function clearReadings(){
+  if(!confirm("مسح كل قراءات يوم "+State.readDate+"؟")) return;
+  delete State.readings[State.readDate];
+  Store.saveReadings(); renderView(); toast("مُسحت قراءات اليوم","warn");
+}
+
+/* ────────────────────────────────────────────────
+   10) تصدير / استيراد
+   ──────────────────────────────────────────────── */
+function exportAll(){
+  const payload = { __app:"IrrigationDT", __version:"V1", exportedAt:new Date().toISOString(),
+    config:State.config, branches:State.branches, readings:State.readings };
+  const blob = new Blob([JSON.stringify(payload,null,2)], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = el("a",{href:url, download:(State.config.shortName||"network")+"_"+todayKey()+".json"});
+  document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+  toast("صُدِّرت البيانات","ok");
+}
+function importPrompt(){
+  const inp = el("input",{type:"file",accept:".json,application/json"});
+  inp.addEventListener("change", () => {
+    const f = inp.files[0]; if(!f) return;
+    const rd = new FileReader();
+    rd.onload = () => {
+      try{
+        const d = JSON.parse(rd.result);
+        if(!d.config && !d.branches) throw new Error("ملف غير صالح");
+        if(!confirm("استيراد سيستبدل البيانات الحالية. متابعة؟")) return;
+        if(d.config)   State.config   = Object.assign(structuredClone(DEFAULT_CONFIG), d.config);
+        if(d.branches) State.branches = d.branches;
+        if(d.readings) State.readings = d.readings;
+        Store.saveConfig(); Store.saveBranches(); Store.saveReadings();
+        renderShell(); toast("اكتمل الاستيراد","ok");
+      }catch(e){ toast("تعذّر قراءة الملف: "+e.message,"danger"); }
+    };
+    rd.readAsText(f);
+  });
+  inp.click();
+}
+
+/* ────────────────────────────────────────────────
+   10ب) المزامنة من جوجل شيت (عبر Apps Script Web App)
+   ──────────────────────────────────────────────── */
+function syncFromSheet(silent){
+  var url = (State.config.sheetSyncUrl || "").trim();
+  if(!url){
+    if(!silent) toast("حدّد رابط المزامنة من تبويب الإعدادات أولاً","danger");
+    return Promise.resolve(false);
+  }
+  if(!silent) toast("جارى التحديث من جوجل شيت…","brand");
+  var sep = url.indexOf("?") >= 0 ? "&" : "?";
+  return fetch(url + sep + "t=" + Date.now())
+    .then(function(r){ if(!r.ok) throw new Error("HTTP "+r.status); return r.json(); })
+    .then(function(d){
+      if(!d || !d.ok || !d.readings) throw new Error(d && d.error ? d.error : "استجابة غير صالحة");
+      var merged = mergeSheetReadings(d.readings);
+      Store.saveReadings();
+      renderView();
+      if(!silent) toast("تم تحديث "+merged+" قراءة من الشيت","ok");
+      return true;
+    })
+    .catch(function(e){
+      if(!silent) toast("تعذّر التحديث: "+e.message,"danger");
+      return false;
+    });
+}
+
+/* دمج قراءات الشيت داخل State.readings دون مسح المُدخل يدوياً
+   front/back القادمة من الشيت تكتب فوق القيم القديمة لنفس اليوم/الترعة */
+function mergeSheetReadings(remote){
+  var count = 0;
+  var validIds = {};
+  State.branches.forEach(function(b){ validIds[b.id] = true; });
+  for(var date in remote){
+    if(!State.readings[date]) State.readings[date] = {};
+    for(var bid in remote[date]){
+      if(!validIds[bid]) continue;            /* تجاهل معرّفات غير موجودة بالتطبيق */
+      var src = remote[date][bid] || {};
+      var dst = State.readings[date][bid] || {};
+      if(src.front != null && !isNaN(src.front)) dst.front = +src.front;
+      if(src.back  != null && !isNaN(src.back))  dst.back  = +src.back;
+      if(src.flow  != null && !isNaN(src.flow))  dst.flow  = +src.flow;
+      State.readings[date][bid] = dst;
+      count++;
+    }
+  }
+  return count;
+}
+
+/* ────────────────────────────────────────────────
+   11) الإقلاع
+   ──────────────────────────────────────────────── */
+/* ===== بيانات أولية: نقاط الإسماعيلية بالترتيب الكيلومترى + الزمام + رابط المزامنة ===== */
+(function(){
+  try{
+    if(!localStorage.getItem("irrdt.branches.v1")){
+      var SEED = {"config":{"name":"التوأم الرقمى — شبكة الإسماعيلية","shortName":"Ismailia DT","totalLengthKm":128.4,"moqannan":{"summer":30,"winter":18},"annualQuotaBCM":0,"summerMonths":[5,6,7,8,9],"reaches":[],"admins":[{"code":"fom","name":"الفم الرئيسى","color":"#38e8ff"},{"code":"branch","name":"الترع","color":"#4ade80"},{"code":"hajz","name":"الحجوز","color":"#ffb020"},{"code":"dalil","name":"الأدلة","color":"#a78bfa"}],"sheetSyncUrl":"https://script.google.com/macros/s/AKfycbxZKhI_7Vu3RAY0BWQJgm9hZZXCF8buO92IaxqTDSYv8xkIe0rCNzomp8uAHn4fVR4iRA/exec","sheetAutoSync":true},"branches":[{"id":"fom_ism","name":"فم الإسماعيلية","km":0,"len":0,"zimaam":0,"admin":"fom","bedWidth":0,"sideSlope":0,"manningN":0,"longSlope":0,"designDepth":0},{"id":"kash_l","name":"ترعة كشمير اليسرى","km":10.5,"len":0,"zimaam":6550,"admin":"branch","bedWidth":0,"sideSlope":0,"manningN":0,"longSlope":0,"designDepth":0},{"id":"kash_y","name":"ترعة كشمير اليمنى","km":12.85,"len":0,"zimaam":10045,"admin":"branch","bedWidth":0,"sideSlope":0,"manningN":0,"longSlope":0,"designDepth":0},{"id":"hgz_mnr","name":"حجز المنير","km":28,"len":0,"zimaam":0,"admin":"hajz","bedWidth":0,"sideSlope":0,"manningN":0,"longSlope":0,"designDepth":0},{"id":"ryah_mnr","name":"رياح المنير","km":28.55,"len":0,"zimaam":475,"admin":"branch","bedWidth":0,"sideSlope":0,"manningN":0,"longSlope":0,"designDepth":0},{"id":"jbl_jd","name":"ترعة الجبل الجديدة","km":43,"len":0,"zimaam":1000,"admin":"branch","bedWidth":0,"sideSlope":0,"manningN":0,"longSlope":0,"designDepth":0},{"id":"qasm","name":"ترعة العدلية","km":46.9,"len":0,"zimaam":14000,"admin":"branch","bedWidth":0,"sideSlope":0,"manningN":0,"longSlope":0,"designDepth":0},{"id":"bhr_rml","name":"بحر الرمل الجديدة","km":51.7,"len":0,"zimaam":11530,"admin":"branch","bedWidth":0,"sideSlope":0,"manningN":0,"longSlope":0,"designDepth":0},{"id":"saadt","name":"ترعة السعادات","km":57.5,"len":0,"zimaam":1600,"admin":"branch","bedWidth":0,"sideSlope":0,"manningN":0,"longSlope":0,"designDepth":0},{"id":"kfr_ayd","name":"ترعة كفر عياد","km":58.5,"len":0,"zimaam":1740,"admin":"branch","bedWidth":0,"sideSlope":0,"manningN":0,"longSlope":0,"designDepth":0},{"id":"shabab","name":"ترعة الشباب الرئيسية","km":62,"len":0,"zimaam":54000,"admin":"branch","bedWidth":0,"sideSlope":0,"manningN":0,"longSlope":0,"designDepth":0},{"id":"jbl_q","name":"ترعة الجبل القديمة","km":67,"len":0,"zimaam":3000,"admin":"branch","bedWidth":0,"sideSlope":0,"manningN":0,"longSlope":0,"designDepth":0},{"id":"ghwrn","name":"ترعة الغوارنة","km":67.1,"len":0,"zimaam":3500,"admin":"branch","bedWidth":0,"sideSlope":0,"manningN":0,"longSlope":0,"designDepth":0},{"id":"mlk_y","name":"ج الملاك اليمنى","km":67.5,"len":0,"zimaam":3500,"admin":"branch","bedWidth":0,"sideSlope":0,"manningN":0,"longSlope":0,"designDepth":0},{"id":"mlk_r","name":"ترعة الملاك الرئيسية","km":67.5,"len":0,"zimaam":33222,"admin":"branch","bedWidth":0,"sideSlope":0,"manningN":0,"longSlope":0,"designDepth":0},{"id":"mlk_l","name":"ج الملاك اليسرى","km":67.5,"len":0,"zimaam":1500,"admin":"branch","bedWidth":0,"sideSlope":0,"manningN":0,"longSlope":0,"designDepth":0},{"id":"wadi_sh","name":"ترعة الوادى الشرقى","km":70.6,"len":0,"zimaam":28335,"admin":"branch","bedWidth":0,"sideSlope":0,"manningN":0,"longSlope":0,"designDepth":0},{"id":"j1","name":"ج1","km":71.25,"len":0,"zimaam":4500,"admin":"branch","bedWidth":0,"sideSlope":0,"manningN":0,"longSlope":0,"designDepth":0},{"id":"grb_aly","name":"فرع الغرب العالى","km":74.5,"len":0,"zimaam":1000,"admin":"branch","bedWidth":0,"sideSlope":0,"manningN":0,"longSlope":0,"designDepth":0},{"id":"saidya","name":"ترعة السعيدية","km":74.7,"len":0,"zimaam":122507,"admin":"branch","bedWidth":0,"sideSlope":0,"manningN":0,"longSlope":0,"designDepth":0},{"id":"salhiya","name":"ترعة الصالحية","km":74.7,"len":0,"zimaam":190000,"admin":"branch","bedWidth":0,"sideSlope":0,"manningN":0,"longSlope":0,"designDepth":0},{"id":"hgz_slh","name":"حجز الصالحية","km":74.7,"len":0,"zimaam":0,"admin":"hajz","bedWidth":0,"sideSlope":0,"manningN":0,"longSlope":0,"designDepth":0},{"id":"j2","name":"ج2","km":77.9,"len":0,"zimaam":1800,"admin":"branch","bedWidth":0,"sideSlope":0,"manningN":0,"longSlope":0,"designDepth":0},{"id":"j3","name":"ج3","km":82.1,"len":0,"zimaam":3873,"admin":"branch","bedWidth":0,"sideSlope":0,"manningN":0,"longSlope":0,"designDepth":0},{"id":"j4","name":"ج4","km":89,"len":0,"zimaam":1900,"admin":"branch","bedWidth":0,"sideSlope":0,"manningN":0,"longSlope":0,"designDepth":0},{"id":"slh_pmp","name":"خط طلمبات الصالحية","km":92,"len":0,"zimaam":23500,"admin":"dalil","bedWidth":0,"sideSlope":0,"manningN":0,"longSlope":0,"designDepth":0},{"id":"dl_slh","name":"دليل مشروع الصالحية","km":93,"len":0,"zimaam":33000,"admin":"dalil","bedWidth":0,"sideSlope":0,"manningN":0,"longSlope":0,"designDepth":0},{"id":"dl_shb","name":"دليل مشروع الشباب","km":93,"len":0,"zimaam":23000,"admin":"dalil","bedWidth":0,"sideSlope":0,"manningN":0,"longSlope":0,"designDepth":0},{"id":"snduq","name":"ترعة الصندوق","km":93.7,"len":0,"zimaam":9000,"admin":"branch","bedWidth":0,"sideSlope":0,"manningN":0,"longSlope":0,"designDepth":0},{"id":"shb_prj","name":"مشروع الشباب","km":96,"len":0,"zimaam":33500,"admin":"dalil","bedWidth":0,"sideSlope":0,"manningN":0,"longSlope":0,"designDepth":0},{"id":"myri","name":"ترعة الميرى","km":98.85,"len":0,"zimaam":1358,"admin":"branch","bedWidth":0,"sideSlope":0,"manningN":0,"longSlope":0,"designDepth":0},{"id":"ryah_mhs","name":"رياح المحسمة","km":101.74,"len":0,"zimaam":4605,"admin":"branch","bedWidth":0,"sideSlope":0,"manningN":0,"longSlope":0,"designDepth":0},{"id":"abu_s104","name":"ترعة أبو سلطان","km":104,"len":0,"zimaam":1500,"admin":"branch","bedWidth":0,"sideSlope":0,"manningN":0,"longSlope":0,"designDepth":0},{"id":"mnayf","name":"ترعة المنايف الرئيسية","km":111,"len":0,"zimaam":30993,"admin":"branch","bedWidth":0,"sideSlope":0,"manningN":0,"longSlope":0,"designDepth":0},{"id":"abu_swr","name":"ترعة أبو صوير","km":115.37,"len":0,"zimaam":2040,"admin":"branch","bedWidth":0,"sideSlope":0,"manningN":0,"longSlope":0,"designDepth":0},{"id":"suez","name":"ترعة السويس","km":123.175,"len":0,"zimaam":150549,"admin":"branch","bedWidth":0,"sideSlope":0,"manningN":0,"longSlope":0,"designDepth":0},{"id":"suez16","name":"ك 16 على ترعة السويس","km":123.19,"len":0,"zimaam":0,"admin":"hajz","bedWidth":0,"sideSlope":0,"manningN":0,"longSlope":0,"designDepth":0},{"id":"suez50","name":"ك 49.5 على ترعة السويس","km":123.22,"len":0,"zimaam":0,"admin":"hajz","bedWidth":0,"sideSlope":0,"manningN":0,"longSlope":0,"designDepth":0},{"id":"borsaid","name":"ترعة بورسعيد","km":126,"len":0,"zimaam":37982,"admin":"branch","bedWidth":0,"sideSlope":0,"manningN":0,"longSlope":0,"designDepth":0},{"id":"bsd_k9","name":"ك 9 على ترعة بورسعيد","km":126.01,"len":0,"zimaam":0,"admin":"hajz","bedWidth":0,"sideSlope":0,"manningN":0,"longSlope":0,"designDepth":0},{"id":"bsd_k13","name":"ك 13 على ترعة بورسعيد","km":126.02,"len":0,"zimaam":0,"admin":"hajz","bedWidth":0,"sideSlope":0,"manningN":0,"longSlope":0,"designDepth":0},{"id":"bsd_k31","name":"ك 31 على ترعة بورسعيد","km":126.04,"len":0,"zimaam":0,"admin":"hajz","bedWidth":0,"sideSlope":0,"manningN":0,"longSlope":0,"designDepth":0}]};
+      localStorage.setItem("irrdt.config.v1", JSON.stringify(SEED.config));
+      localStorage.setItem("irrdt.branches.v1", JSON.stringify(SEED.branches));
+    }
+  }catch(e){}
+})();
+Store.load();
+renderShell();
+
+/* مزامنة تلقائية من جوجل شيت عند الفتح (لو مفعّلة وفيه رابط) */
+if(State.config.sheetAutoSync && (State.config.sheetSyncUrl||"").trim()){
+  setTimeout(function(){ syncFromSheet(true); }, 800);
+}
+
+/* PWA: service worker مدمج عبر Blob */
+if("serviceWorker" in navigator){
+  const swCode = `
+    const CACHE="irrdt-v2";
+    self.addEventListener("install",e=>self.skipWaiting());
+    self.addEventListener("activate",e=>self.clients.claim());
+    self.addEventListener("fetch",e=>{
+      e.respondWith(fetch(e.request).catch(()=>caches.match(e.request)));
+    });
+  `;
+  try{
+    const blob = new Blob([swCode],{type:"text/javascript"});
+    navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(()=>{});
+  }catch(e){}
+}
+</script>
+</body>
+</html>
