@@ -800,7 +800,7 @@ VIEWS.overview = () => {
   /* توزيع الزمام على الأحباس */
   const reachDist = (State.config.reaches||[]).map((rch,i)=>{
     const isLast = i===State.config.reaches.length-1;
-    const inR = State.branches.filter(x=>!x.isDalil && (+x.km>=rch.from) && (isLast?true:(+x.km<rch.to+0.0001)));
+    const inR = State.branches.filter(x=>!x.isDalil && (+x.km>=rch.from) && (isLast?true:(+x.km<rch.to)));
     const z = inR.reduce((s,x)=>s+(+x.zimaam||0),0);
     return {name:rch.name, z, pct: totalZimaam? Math.round(z/totalZimaam*100):0, n:inR.length};
   });
@@ -1028,7 +1028,7 @@ function _stEffectiveKm(s){
 }
 /* سحب محطات الشرب والصناعة ضمن نطاق حبس (م³/يوم) */
 function reachStationsDemand(rch, isLast){
-  const inRange = s=>{ const k=_stEffectiveKm(s); return k!=null && k>=rch.from && (isLast ? true : k<rch.to+0.0001); };
+  const inRange = s=>{ const k=_stEffectiveKm(s); return k!=null && k>=rch.from && (isLast ? true : k<rch.to); };
   let drinkQ=0, drinkN=0, indQ=0, indN=0;
   (STATIONS_DATA.drinking||[]).forEach(s=>{ if(inRange(s)){ drinkQ+=(+s.q||0); drinkN++; } });
   (STATIONS_DATA.industrial||[]).forEach(s=>{ if(inRange(s)){ indQ+=(+s.q||0); indN++; } });
@@ -1081,7 +1081,7 @@ AFTER.balance = () => {
   };
   host.innerHTML = `<div class="grid cols-2">` + reaches.map((rch,i) => {
     const isLast = (i === reaches.length-1);
-    const inReach = State.branches.filter(b => !b.isDalil && (+b.km>=rch.from) && (isLast ? true : (+b.km<rch.to+0.0001)));
+    const inReach = State.branches.filter(b => !b.isDalil && (+b.km>=rch.from) && (isLast ? true : (+b.km<rch.to)));
     const totalZ = inReach.reduce((s,x)=>s+(+x.zimaam||0),0);              /* كل زمام الحبس */
     const dailyZ = inReach.reduce((s,x)=>s+dailyZimaam(x),0);              /* الزمام الذى يشرب اليوم فعلياً */
     const activeCount = inReach.filter(b=>dailyZimaam(b)>0).length;
