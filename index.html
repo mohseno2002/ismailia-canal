@@ -431,6 +431,47 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--brand)!i
 #app{overflow:visible;height:auto;min-height:100%}
 html,body{overscroll-behavior-y:auto;position:static!important}
 .wrap{overflow:visible!important}
+/* ═══ لوحة قيادة نظرة عامة ═══ */
+.kpi-strip{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:18px}
+@media(max-width:900px){.kpi-strip{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:520px){.kpi-strip{grid-template-columns:repeat(2,1fr)}}
+.kpi-her{
+  background:linear-gradient(160deg,#f6ecd6,#ece0c2);
+  border:2px solid var(--brand);border-radius:5px;padding:12px 8px;text-align:center;
+  position:relative;box-shadow:var(--shadow),inset 0 0 0 1px rgba(168,132,60,.4);
+}
+.kpi-her::before{content:"";position:absolute;top:3px;left:3px;right:3px;height:3px;background:var(--ac);border-radius:3px;opacity:.8}
+.kpi-her-ico{font-size:1.3rem;margin-bottom:3px;color:var(--ac);display:flex;justify-content:center}
+.kpi-her-ico svg{width:22px;height:22px}
+.kpi-her-label{font-family:var(--hand);font-size:.92rem;color:var(--brand);font-weight:700;line-height:1.2}
+.kpi-her-value{font-family:var(--mono);font-size:1.5rem;font-weight:700;color:var(--ink);margin:2px 0}
+.kpi-her-unit{font-size:.72rem;color:var(--ink-2)}
+/* شبكة الداشبورد */
+.dash-grid{display:grid;grid-template-columns:1.4fr 1fr;gap:14px}
+@media(max-width:780px){.dash-grid{grid-template-columns:1fr}}
+/* رسم دائرى */
+.donut-wrap{display:flex;align-items:center;gap:18px;flex-wrap:wrap;justify-content:center}
+.donut{width:130px;height:130px;border-radius:50%;position:relative;flex-shrink:0;box-shadow:var(--shadow),inset 0 0 0 2px rgba(168,132,60,.3)}
+.donut-hole{position:absolute;inset:26px;background:var(--paper);border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:inset 0 0 8px rgba(120,90,50,.2)}
+.donut-legend{display:flex;flex-direction:column;gap:8px;min-width:110px}
+.dl-row{display:flex;align-items:center;gap:8px}
+.dl-dot{width:14px;height:14px;border-radius:3px;flex-shrink:0;border:1px solid rgba(61,44,26,.3)}
+.dl-label{font-family:var(--hand);font-size:1rem;color:var(--ink);flex:1}
+.dl-pct{font-weight:700;color:var(--brand)}
+/* أشرطة التوزيع */
+.bar-track{height:14px;background:rgba(168,132,60,.18);border-radius:7px;overflow:hidden;border:1px solid rgba(168,132,60,.35)}
+.bar-fill{height:100%;border-radius:7px;transition:width .5s ease;box-shadow:inset 0 1px 2px rgba(255,255,255,.2)}
+/* إجراءات سريعة */
+.quick-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media(max-width:560px){.quick-grid{grid-template-columns:repeat(2,1fr)}}
+.quick-btn{
+  display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 8px;
+  background:linear-gradient(180deg,#ecdcb8,#dcc594);border:2px solid var(--brand);border-radius:5px;
+  font-family:var(--hand);font-size:.95rem;font-weight:700;color:var(--brand-dark);cursor:pointer;
+  box-shadow:var(--shadow);transition:transform .1s;
+}
+.quick-btn:active{transform:translateY(1px)}
+.quick-btn svg{width:24px;height:24px}
 </style>
 
 </head>
@@ -732,95 +773,149 @@ function heritageBanner(){
 }
 
 VIEWS.overview = () => {
-  const b = State.branches;
+  const b = State.branches.filter(x=>!x.isDalil);
   const totalZimaam = b.reduce((s,x)=>s+(+x.zimaam||0),0);
-  const totalLen = b.reduce((s,x)=>s+(+x.len||0),0);
-  const moq = currentMoqannan();
-  const demand = totalZimaam * moq; /* م³/يوم */
+  const totalLen = State.config.totalLengthKm || b.reduce((s,x)=>s+(+x.len||0),0);
   const adminsCount = State.config.admins.length;
   const reachCount = State.config.reaches.length;
+  const branchCount = State.branches.length;
+  /* المناسيب اللحظية: آخر قراءات */
+  const day = State.readings[State.readDate] || {};
+  const readKeys = Object.keys(day);
+  const levelRows = State.branches
+    .filter(x=>day[x.id] && (day[x.id].front!=null || day[x.id].back!=null))
+    .slice(0,7);
+  const avgLevel = levelRows.length
+    ? levelRows.reduce((s,x)=>{const r=day[x.id];return s+((+r.front||0)+(+r.back||0))/2;},0)/levelRows.length
+    : null;
+  /* توزيع الاستخدامات */
+  const moq = currentMoqannan();
+  const agQ = (totalZimaam*moq)/3;  /* بالمناوبات */
+  const drinkQ = (STATIONS_DATA.drinking||[]).reduce((s,x)=>s+(+x.q||0),0);
+  const indQ = (STATIONS_DATA.industrial||[]).reduce((s,x)=>s+(+x.q||0),0);
+  const useTotal = agQ+drinkQ+indQ || 1;
+  const agPct = Math.round(agQ/useTotal*100);
+  const drinkPct = Math.round(drinkQ/useTotal*100);
+  const indPct = Math.round(indQ/useTotal*100);
+  /* توزيع الزمام على الأحباس */
+  const reachDist = (State.config.reaches||[]).map((rch,i)=>{
+    const isLast = i===State.config.reaches.length-1;
+    const inR = State.branches.filter(x=>!x.isDalil && (+x.km>=rch.from) && (isLast?true:(+x.km<rch.to+0.0001)));
+    const z = inR.reduce((s,x)=>s+(+x.zimaam||0),0);
+    return {name:rch.name, z, pct: totalZimaam? Math.round(z/totalZimaam*100):0, n:inR.length};
+  });
+
   return `
     ${setupBanner()}
     ${heritageBanner()}
-    <div class="section-title">${ICON.overview} ${esc(State.config.name)}</div>
-    <div class="net-info-row" style="margin-bottom:18px">
-      <div class="net-info-card" style="--accent:#7c5cbf">
-        <div class="ni-label">طول الترعة</div>
-        <div class="ni-value">${fmt(State.config.totalLengthKm||0,1)}<span class="ni-unit">كم</span></div>
-        <div class="ni-foot">من الدلتا حتى بورسعيد</div>
+
+    <!-- مؤشرات الأداء الرئيسية -->
+    <div class="kpi-strip">
+      ${kpiCard(ICON.branches,"إجمالى الفروع",fmt(branchCount),"نقطة رصد",'--brand')}
+      ${kpiCard('📏',"إجمالى الأطوال",fmt(totalLen,1),"كم",'--accent')}
+      ${kpiCard(ICON.balance,"الزمام المقرر",fmt(totalZimaam/1000,1),"ألف فدان",'--pen-green')}
+      ${kpiCard('🌊',"الطلب اليومى",fmt((agQ+drinkQ+indQ)/1e6,1),"م.م³/يوم",'--brand')}
+      ${kpiCard('🏛️',"الأحباس",fmt(reachCount),"حبس مائى",'--pen-purple')}
+      ${kpiCard('🎯',"المحطات",fmt((STATIONS_DATA.drinking||[]).length+(STATIONS_DATA.industrial||[]).length),"شرب وصناعة",'--gold')}
+    </div>
+
+    <div class="dash-grid">
+      <!-- المناسيب اللحظية -->
+      <div class="card dash-levels">
+        <div class="card-head"><div class="card-title">${ICON.readings} المناسيب اللحظية</div>
+          <span class="card-sub">${State.readDate}</span></div>
+        <div class="card-body" style="padding:0">
+          ${levelRows.length ? `<div class="tbl-wrap" style="border:none">
+          <table><thead><tr><th>الموقع</th><th class="num">المستوى الأمامى</th><th class="num">الخلفى</th><th class="num">الفرق</th></tr></thead>
+          <tbody>${levelRows.map(x=>{
+            const r=day[x.id]; const f=+r.front||0, bk=+r.back||0; const diff=f-bk;
+            const dcol = diff>0?'var(--ok)':diff<0?'var(--danger)':'var(--ink-3)';
+            return `<tr><td style="font-weight:600">${esc(x.name)}</td>
+              <td class="num">${r.front!=null?fmt(f,2):'—'}</td>
+              <td class="num">${r.back!=null?fmt(bk,2):'—'}</td>
+              <td class="num" style="color:${dcol};font-weight:700">${(diff>0?'+':'')+fmt(diff,2)}</td></tr>`;
+          }).join("")}</tbody></table></div>
+          <div style="padding:10px 14px;text-align:center"><a onclick="switchTab('readings')" style="cursor:pointer;color:var(--brand);font-family:var(--hand);font-size:1rem">عرض جميع المناسيب ←</a></div>`
+          : `<div class="empty" style="padding:30px">${ICON.empty}<div class="t">لا قراءات لليوم</div>
+            <div class="d">سجّل المناسيب من تبويب القراءات اليومية أو زامِن من جوجل شيت.</div></div>`}
+        </div>
       </div>
-      <div class="net-info-card" style="--accent:#16a34a">
-        <div class="ni-label">الزمام المقرر</div>
-        <div class="ni-value">${fmt(State.config.officialZimaamK||0,1)}<span class="ni-unit">ألف فدان</span></div>
-        <div class="ni-foot">${fmt(State.config.govCount||0)} محافظات</div>
+
+      <!-- توزيع الاستخدامات -->
+      <div class="card dash-usage">
+        <div class="card-head"><div class="card-title">💧 توزيع الاستخدامات</div></div>
+        <div class="card-body">
+          ${donutChart([
+            {label:'زراعة',pct:agPct,color:'#5a6b3a'},
+            {label:'شرب',pct:drinkPct,color:'#5a3e22'},
+            {label:'صناعة',pct:indPct,color:'#a86a2a'}
+          ])}
+        </div>
       </div>
     </div>
 
-    <div class="grid cols-2">
-      <div class="card">
-        <div class="card-head"><div class="card-title"><span class="dot"></span>توزيع الزمام على الإدارات</div></div>
-        <div class="card-body" id="adminBreakdown"></div>
-      </div>
-      <div class="card">
-        <div class="card-head"><div class="card-title"><span class="dot"></span>أكبر الترع بالزمام</div></div>
-        <div class="card-body" id="topBranches"></div>
-      </div>
-    </div>
-
+    <!-- توزيع الزمام على الأحباس -->
     <div class="card" style="margin-top:14px">
-      <div class="card-head"><div class="card-title"><span class="dot"></span>أحباس الشبكة</div><span class="card-sub">${reachCount} حبس · ${adminsCount} إدارة</span></div>
-      <div class="card-body" id="reachOverview"></div>
+      <div class="card-head"><div class="card-title">${ICON.balance} توزيع الزمام على الأحباس</div>
+        <span class="card-sub">${reachCount} حبس · ${adminsCount} إدارة</span></div>
+      <div class="card-body">
+        ${reachDist.map((r,i)=>{
+          const cols=['#5a3e22','#8a4b2a','#5a6b3a'];
+          return `<div style="margin-bottom:14px">
+            <div style="display:flex;justify-content:space-between;margin-bottom:5px">
+              <span style="font-family:var(--hand);font-size:1.05rem;color:var(--brand)">${esc(r.name)}</span>
+              <span class="mono" style="font-weight:700">${fmt(r.z)} فدان · ${r.pct}%</span></div>
+            <div class="bar-track"><div class="bar-fill" style="width:${r.pct}%;background:${cols[i%3]}"></div></div>
+          </div>`;
+        }).join("")}
+      </div>
+    </div>
+
+    <!-- إجراءات سريعة -->
+    <div class="card" style="margin-top:14px">
+      <div class="card-head"><div class="card-title">⚡ إجراءات سريعة</div></div>
+      <div class="card-body">
+        <div class="quick-grid">
+          <button class="quick-btn" onclick="switchTab('branches')">${ICON.branches}<span>الترع والفروع</span></button>
+          <button class="quick-btn" onclick="switchTab('readings')">${ICON.readings}<span>إدخال القراءات</span></button>
+          <button class="quick-btn" onclick="switchTab('balance')">${ICON.balance}<span>الميزان المائى</span></button>
+          <button class="quick-btn" onclick="switchTab('stations')">${ICON.stations}<span>محطات الشرب</span></button>
+          <button class="quick-btn" onclick="syncFromSheet(false)">${ICON.refresh}<span>مزامنة القراءات</span></button>
+          <button class="quick-btn" onclick="switchTab('setup')">${ICON.setup}<span>إعداد الشبكة</span></button>
+        </div>
+      </div>
     </div>
   `;
 };
-AFTER.overview = () => {
-  /* توزيع الإدارات */
-  const host = $("#adminBreakdown");
-  const admins = State.config.admins;
-  if(!admins.length){ host.innerHTML = emptyMini("لا توجد إدارات بعد","عرّفها من تبويب الإعداد"); }
-  else {
-    const byAdmin = {};
-    State.branches.forEach(b => byAdmin[b.admin] = (byAdmin[b.admin]||0) + (+b.zimaam||0));
-    const total = Object.values(byAdmin).reduce((s,x)=>s+x,0) || 1;
-    host.innerHTML = admins.map(a => {
-      const z = byAdmin[a.code]||0, pct = Math.round(z/total*100);
-      return `<div style="margin-bottom:13px">
-        <div style="display:flex;justify-content:space-between;font-size:.85rem;margin-bottom:5px">
-          <span style="font-weight:600">${esc(a.name)}</span>
-          <span class="mono" style="color:var(--ink-2)">${fmt(z)} فدان · ${pct}%</span>
-        </div>
-        <div style="height:8px;background:var(--surface-2);border-radius:5px;overflow:hidden">
-          <div style="height:100%;width:${pct}%;background:${a.color||'var(--brand)'};border-radius:5px;transition:.4s"></div>
-        </div>
-      </div>`;
-    }).join("");
-  }
-  /* أكبر الترع */
-  const tb = $("#topBranches");
-  const top = [...State.branches].filter(b=>+b.zimaam).sort((a,b)=>b.zimaam-a.zimaam).slice(0,6);
-  if(!top.length){ tb.innerHTML = emptyMini("لا توجد ترع بعد","أضِفها من تبويب الترع والفروع"); }
-  else tb.innerHTML = `<div class="tbl-wrap"><table><tbody>${top.map((b,i)=>`
-    <tr><td style="width:28px;color:var(--ink-3)" class="num">${i+1}</td>
-    <td style="font-weight:600">${esc(b.name)}</td>
-    <td class="num">${fmt(b.zimaam)} <span style="color:var(--ink-3);font-size:.8rem">فدان</span></td></tr>`).join("")}</tbody></table></div>`;
-  /* الأحباس */
-  renderReachBar($("#reachOverview"));
-};
 
-function emptyMini(t,d){
-  return `<div style="text-align:center;padding:24px;color:var(--ink-3)">
-    <div style="font-weight:700;color:var(--ink-2);margin-bottom:4px">${t}</div>
-    <div style="font-size:.84rem">${d}</div></div>`;
+/* كارت KPI تراثى */
+function kpiCard(icon, label, value, unit, accent){
+  return `<div class="kpi-her" style="--ac:var(${accent})">
+    <div class="kpi-her-ico">${icon}</div>
+    <div class="kpi-her-label">${label}</div>
+    <div class="kpi-her-value">${value}</div>
+    <div class="kpi-her-unit">${unit}</div>
+  </div>`;
 }
-function renderReachBar(host){
-  const r = State.config.reaches;
-  if(!r.length){ host.innerHTML = emptyMini("لا توجد أحباس بعد","عرّفها من تبويب الإعداد"); return; }
-  const palette = ["#0e5a8a","#13a3b5","#3a8f5a","#b9760a","#7c5cbf","#c2392b"];
-  host.innerHTML = `<div class="reach-bar">${r.map((x,i)=>`
-    <div class="reach-seg" style="background:${palette[i%palette.length]}">
-      ${esc(x.name)}<span class="km">ك ${fmt(x.from,1)} — ك ${fmt(x.to,1)}</span>
-    </div>`).join("")}</div>`;
+
+/* رسم دائرى (donut) بسيط بـ conic-gradient */
+function donutChart(items){
+  let acc=0; const stops=[];
+  items.forEach(it=>{ const start=acc; acc+=it.pct; stops.push(`${it.color} ${start}% ${acc}%`); });
+  if(acc<100) stops.push(`#d3bd8e ${acc}% 100%`);
+  return `<div class="donut-wrap">
+    <div class="donut" style="background:conic-gradient(${stops.join(',')})">
+      <div class="donut-hole"></div>
+    </div>
+    <div class="donut-legend">
+      ${items.map(it=>`<div class="dl-row"><span class="dl-dot" style="background:${it.color}"></span>
+        <span class="dl-label">${it.label}</span><span class="dl-pct mono">${it.pct}%</span></div>`).join("")}
+    </div>
+  </div>`;
 }
+
+AFTER.overview = () => {};
+
 </script>
 
 <script>
