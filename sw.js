@@ -1,5 +1,5 @@
 /* التوأم الرقمى — شبكة الإسماعيلية | Service Worker */
-const VERSION = 'irrdt-v5';
+const VERSION = 'irrdt-v7';
 const CACHE = VERSION;
 const CORE = ['./', './index.html'];
 

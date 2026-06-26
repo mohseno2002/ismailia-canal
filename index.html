@@ -48,8 +48,8 @@
   --hand-deco:'Aref Ruqaa','Amiri',serif;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-html{height:100%}
-html,body{min-height:100%}
+html{height:auto;overflow-y:auto;-webkit-overflow-scrolling:touch}
+body{height:auto;min-height:100%;overflow-y:visible;-webkit-overflow-scrolling:touch}
 body{
   font-family:'Tajawal',system-ui,sans-serif;
   background:var(--bg);color:var(--ink);
@@ -139,7 +139,7 @@ input,select,textarea{font-family:inherit;font-size:inherit}
 .net-info-card .ni-foot{font-size:.86rem;color:var(--ink-3);margin-top:10px;font-weight:500}
 
 /* ── الجداول ── */
-.tbl-wrap{overflow-x:auto;border-radius:var(--radius-s)}
+.tbl-wrap{overflow-x:auto;overflow-y:hidden;border-radius:var(--radius-s)}
 table{width:100%;border-collapse:collapse;font-size:.88rem}
 th,td{padding:10px 12px;text-align:right;border-bottom:1px solid var(--line)}
 th{background:var(--surface-2);font-weight:700;color:var(--ink-2);font-size:.8rem;white-space:nowrap;position:sticky;top:0}
@@ -243,7 +243,7 @@ body{
 /* ورق بردى بملمس */
 .wrap{
   background:var(--paper);
-  min-height:calc(100vh - 110px);
+  min-height:auto;
   background-image:
     radial-gradient(ellipse at 12% 8%, rgba(160,130,80,.14) 0, transparent 35%),
     radial-gradient(ellipse at 88% 4%, rgba(140,100,60,.12) 0, transparent 30%),
@@ -345,7 +345,26 @@ th{
 td{border-bottom:1px solid rgba(191,168,120,.5)!important;color:var(--ink)!important}
 tbody tr:nth-child(even){background:rgba(168,132,60,.06)!important}
 tbody tr:hover{background:rgba(168,132,60,.14)!important}
-.tbl-wrap{border:2px solid var(--brand);border-radius:5px;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(168,132,60,.3)}
+.tbl-wrap{border:2px solid var(--brand);border-radius:5px;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y;scroll-behavior:smooth;box-shadow:inset 0 0 0 1px rgba(168,132,60,.3);position:relative}
+/* تلميح التمرير الأفقى */
+.scroll-hint{display:flex;align-items:center;gap:6px;justify-content:flex-start;
+  font-family:var(--hand);font-size:.9rem;color:var(--accent);margin:0 0 6px;
+  animation:hintpulse 2s ease-in-out infinite}
+@keyframes hintpulse{0%,100%{opacity:.5;transform:translateX(0)}50%{opacity:1;transform:translateX(-4px)}}
+@media(min-width:760px){.scroll-hint{display:none}}
+/* جداول متجاوبة: على الشاشات الصغيرة صغّر الخط والحشو ليدخل كل المحتوى */
+@media(max-width:560px){
+  .tbl-wrap table{font-size:.74rem}
+  .tbl-wrap th,.tbl-wrap td{padding:6px 5px!important}
+  .tbl-wrap th{font-size:.82rem!important}
+}
+@media(max-width:400px){
+  .tbl-wrap table{font-size:.68rem}
+  .tbl-wrap th,.tbl-wrap td{padding:5px 3px!important}
+}
+/* السماح بالتمرير الأفقى للجداول داخل الكروت */
+.card:has(.tbl-wrap){overflow:visible!important}
+.card{overflow:visible!important}
 tfoot tr{background:linear-gradient(180deg,#ddca9f,#d3bd8e)!important;border-top:2px solid var(--brand);font-family:var(--hand)}
 /* الحقول */
 input,select,textarea{
@@ -407,6 +426,11 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--brand)!i
   .hb-deco{display:none}
   .hb-title{font-size:1.6rem}.hb-sub{font-size:1.15rem}
 }
+
+/* ضمان التمرير على كل الأجهزة */
+#app{overflow:visible;height:auto;min-height:100%}
+html,body{overscroll-behavior-y:auto;position:static!important}
+.wrap{overflow:visible!important}
 </style>
 
 </head>
@@ -836,7 +860,7 @@ AFTER.branches = () => {
       </div></td>
     </tr>`;
   }).join("");
-  host.innerHTML = `<div class="tbl-wrap"><table>
+  host.innerHTML = `<div class="scroll-hint">↔ اسحب الجدول يميناً ويساراً لرؤية باقى الأعمدة</div><div class="tbl-wrap"><table>
     <thead><tr><th>اسم الترعة</th><th class="num">الكيلومتر</th><th class="num">الطول (كم)</th>
     <th class="num">الزمام (فدان)</th><th>الإدارة</th><th class="num">التصرف التصميمى (م³/ث)</th><th></th></tr></thead>
     <tbody>${rows}</tbody></table></div>`;
