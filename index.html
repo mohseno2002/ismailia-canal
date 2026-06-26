@@ -967,7 +967,7 @@ VIEWS.overview = () => {
   const totalLen = State.config.totalLengthKm || b.reduce((s,x)=>s+(+x.len||0),0);
   const adminsCount = State.config.admins.length;
   const reachCount = State.config.reaches.length;
-  const branchCount = State.branches.length;
+  const branchCount = State.branches.filter(x=>x.admin==='branch').length;
   /* المناسيب اللحظية: آخر قراءات */
   const day = State.readings[State.readDate] || {};
   const readKeys = Object.keys(day);
@@ -1000,7 +1000,7 @@ VIEWS.overview = () => {
 
     <!-- مؤشرات الأداء الرئيسية -->
     <div class="kpi-strip">
-      ${kpiCard(ICON.branches,"إجمالى الفروع",fmt(branchCount),"نقطة رصد",'--brand')}
+      ${kpiCard(ICON.branches,"إجمالى الفروع",fmt(branchCount),"فرع رئيسى",'--brand')}
       ${kpiCard('📏',"إجمالى الأطوال",fmt(totalLen,1),"كم",'--accent')}
       ${kpiCard(ICON.balance,"الزمام المقرر",fmt(State.config.officialZimaamK||(totalZimaam/1000),1),"ألف فدان",'--pen-green')}
       ${kpiCard('🌊',"الطلب اليومى",fmt((agQ+drinkQ+indQ)/1e6,1),"م.م³/يوم",'--brand')}
