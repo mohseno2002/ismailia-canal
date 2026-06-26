@@ -16,37 +16,40 @@
 <title>التوأم الرقمى — منصة شبكات الرى</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Tajawal:wght@400;500;700&family=Blaka&family=Lateef:wght@400;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Aref+Ruqaa:wght@400;700&family=Cairo:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
 :root{
-  /* ── ثيم الرسم اليدوى (Sketch / Notebook) ── */
-  --bg:#eceadf;            /* خلفية كأنها مكتب */
-  --paper:#fdfcf6;         /* ورق كريمى */
-  --surface:#fdfcf6;       /* البطاقات = ورق */
-  --surface-2:#f5f3e8;     /* سطح ثانوى */
-  --ink:#1f3a52;           /* حبر أزرق داكن */
-  --ink-2:#4a6075;         /* نص ثانوى */
-  --ink-3:#8a99a6;         /* نص باهت */
-  --line:#c9c2ad;          /* خطوط بلون قلم رصاص */
-  --brand:#1c5a8a;         /* قلم أزرق */
-  --brand-dark:#0f3e63;
-  --accent:#d24a3d;        /* قلم أحمر */
-  --pen-green:#2f8a4e;     /* قلم أخضر */
-  --pen-purple:#7c5cbf;    /* قلم بنفسجى */
-  --pen-orange:#d98818;    /* قلم برتقالى */
-  --ok:#2f8a4e;
-  --warn:#d98818;
-  --danger:#d24a3d;
-  --ok-bg:#e8f3ea;--warn-bg:#fbf2df;--danger-bg:#fbe9e6;--brand-bg:#e6eef5;
-  --radius:14px;--radius-s:10px;
-  --shadow:1px 2px 0 rgba(31,58,82,.12);
-  --shadow-l:2px 4px 0 rgba(31,58,82,.16);
-  --mono:'Cairo',sans-serif;          /* الأرقام واضحة للتشغيل */
-  --hand:'Lateef','Blaka','Cairo',cursive;  /* خط يدوى للعناوين */
-  --hand-deco:'Blaka','Lateef',cursive;     /* خط زخرفى للمسات */
+  /* ── الثيم التراثى (الخديوية 1863-1869) ── */
+  --bg:#cdbf9e;            /* خلفية مكتب قديم */
+  --paper:#f4ead2;         /* ورق بردى */
+  --paper-2:#ece0c2;
+  --surface:#f4ead2;
+  --surface-2:#e8dabb;     /* سطح ثانوى */
+  --ink:#3d2c1a;           /* حبر بنى داكن */
+  --ink-2:#6b5638;         /* نص ثانوى */
+  --ink-3:#9c8763;         /* نص باهت */
+  --line:#bfa878;          /* خطوط بنية */
+  --brand:#5a3e22;         /* بنى كحلى */
+  --brand-dark:#3d2814;
+  --accent:#8a4b2a;        /* صدئ */
+  --pen-green:#5a6b3a;     /* أخضر زيتونى */
+  --pen-purple:#6b4a6b;
+  --pen-orange:#a86a2a;
+  --gold:#a8843c;          /* ذهبى تراثى */
+  --ok:#5a6b3a;
+  --warn:#a86a2a;
+  --danger:#9c3a28;
+  --ok-bg:#e6e3c8;--warn-bg:#efe0c0;--danger-bg:#eed5c8;--brand-bg:#e6dabf;
+  --radius:6px;--radius-s:5px;
+  --shadow:1px 2px 4px rgba(61,44,26,.18);
+  --shadow-l:2px 5px 14px rgba(61,44,26,.25);
+  --mono:'Amiri','Cairo',serif;
+  --hand:'Aref Ruqaa','Amiri',serif;
+  --hand-deco:'Aref Ruqaa','Amiri',serif;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%}
+html{height:100%}
+html,body{min-height:100%}
 body{
   font-family:'Tajawal',system-ui,sans-serif;
   background:var(--bg);color:var(--ink);
@@ -226,135 +229,184 @@ tbody tr:last-child td{border-bottom:none}
 .setup-note svg{width:18px;height:18px;flex-shrink:0;margin-top:2px}
 
 
-/* ── التراكب الكمى ── */
-.qbar{height:9px;background:var(--surface-2);border-radius:99px;overflow:hidden;border:1px solid var(--line)}
-.qbar>span{display:block;height:100%;border-radius:99px;background:var(--brand);transition:.25s}
-.qbar>span.ok{background:var(--ok)}.qbar>span.warn{background:var(--warn)}.qbar>span.danger{background:var(--danger)}
-.qhint{font-size:.8rem;color:var(--ink-2);background:linear-gradient(90deg,var(--brand-bg),var(--surface));border:1px solid var(--line);border-radius:var(--radius-s);padding:11px 14px;margin-bottom:14px}
-
 /* ═══════════════════════════════════════════
-   🎨 ثيم الرسم اليدوى (Hand-drawn / Notebook)
+   🏛️ الثيم التراثى — الخديوية (1863-1869)
    ═══════════════════════════════════════════ */
+@keyframes none0{}
 body{
   background:var(--bg);
   background-image:
-    radial-gradient(circle at 20% 30%, rgba(0,0,0,.015) 0, transparent 40%),
-    radial-gradient(circle at 80% 70%, rgba(0,0,0,.015) 0, transparent 40%);
+    radial-gradient(ellipse at 30% 20%, rgba(120,90,50,.10) 0, transparent 55%),
+    radial-gradient(ellipse at 70% 80%, rgba(90,60,30,.12) 0, transparent 55%),
+    repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(90,60,30,.012) 3px, rgba(90,60,30,.012) 4px);
 }
+/* ورق بردى بملمس */
 .wrap{
   background:var(--paper);
   min-height:calc(100vh - 110px);
   background-image:
-    repeating-linear-gradient(transparent, transparent 31px, rgba(28,90,138,.07) 31px, rgba(28,90,138,.07) 32px);
-  border-left:2px solid rgba(210,74,61,.25);
-  border-right:2px solid rgba(210,74,61,.25);
-  box-shadow:var(--shadow-l);
+    radial-gradient(ellipse at 12% 8%, rgba(160,130,80,.14) 0, transparent 35%),
+    radial-gradient(ellipse at 88% 4%, rgba(140,100,60,.12) 0, transparent 30%),
+    radial-gradient(ellipse at 50% 96%, rgba(120,90,50,.13) 0, transparent 40%),
+    radial-gradient(ellipse at 95% 92%, rgba(140,100,60,.10) 0, transparent 30%);
+  border-left:3px double var(--gold);
+  border-right:3px double var(--gold);
+  box-shadow:var(--shadow-l), inset 0 0 60px rgba(120,90,50,.10);
   position:relative;
 }
-/* الكروت = قصاصات ورق مرسومة */
+/* الكروت = لوحات بردى بإطار مزدوج وزوايا مزخرفة */
 .card,.kpi,.net-info-card{
-  background:var(--paper)!important;
-  border:2px solid var(--ink)!important;
-  border-radius:14px 12px 15px 11px!important;   /* حواف غير منتظمة */
-  box-shadow:2px 3px 0 rgba(31,58,82,.13)!important;
+  background:linear-gradient(155deg,#f6ecd6 0%, #efe2c4 100%)!important;
+  border:2px solid var(--brand)!important;
+  border-radius:5px!important;
+  box-shadow:var(--shadow), inset 0 0 0 1px rgba(168,132,60,.35), inset 0 0 22px rgba(160,130,80,.10)!important;
   position:relative;
 }
-.kpi:nth-child(odd){transform:rotate(-.5deg)}
-.kpi:nth-child(even){transform:rotate(.4deg)}
-.card{transform:rotate(-.15deg)}
-/* الكروت الملونة تأخذ حداً بلونها */
-.kpi.ok{border-color:var(--ok)!important}
-.kpi.warn{border-color:var(--warn)!important}
-.kpi.danger{border-color:var(--danger)!important}
-/* الشريط اللونى الجانبى يبقى ظاهراً فوق الحد */
-.kpi::before{z-index:2}
-.kpi::after,.card::after{
-  content:"";position:absolute;inset:3px;border-radius:11px 13px 10px 12px;
-  border:1px solid rgba(31,58,82,.18);pointer-events:none;
+/* زوايا مزخرفة على الكروت */
+.card::before,.kpi::before{
+  content:"";position:absolute;top:4px;right:4px;width:16px;height:16px;
+  border-top:2px solid var(--gold);border-right:2px solid var(--gold);
+  border-radius:0 4px 0 0;opacity:.7;pointer-events:none;z-index:3;
 }
-/* العناوين بخط يدوى مع تسطير مرسوم */
+.card::after,.kpi::after{
+  content:"";position:absolute;bottom:4px;left:4px;width:16px;height:16px;
+  border-bottom:2px solid var(--gold);border-left:2px solid var(--gold);
+  border-radius:0 0 0 4px;opacity:.7;pointer-events:none;
+}
+/* العناوين بخط النسخ الفخم */
 .section-title{
   font-family:var(--hand)!important;
-  font-size:1.95rem!important;font-weight:700!important;
+  font-size:2rem!important;font-weight:700!important;
   color:var(--brand)!important;justify-content:center;
-  position:relative;padding-bottom:8px;
+  position:relative;padding-bottom:14px;letter-spacing:.5px;
+  text-shadow:1px 1px 0 rgba(168,132,60,.25);
 }
+/* زخرفة تحت العنوان (خط مزدوج بنقطة) */
 .section-title::after{
-  content:"";position:absolute;bottom:0;right:50%;transform:translateX(50%);
-  width:140px;height:6px;
-  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='6'%3E%3Cpath d='M2 3 Q35 0 70 3 T138 3' stroke='%23d24a3d' stroke-width='2' fill='none'/%3E%3C/svg%3E") no-repeat center;
+  content:"❧";position:absolute;bottom:-6px;right:50%;transform:translateX(50%);
+  color:var(--gold);font-size:1.4rem;
+  width:auto;height:auto;background:none;
 }
-/* الكروت العلوية (KPI labels) */
-.kpi .label,.net-info-card .ni-label{font-family:var(--hand)!important;font-size:1.05rem!important;font-weight:400!important}
-.kpi .value{font-weight:700}
-/* الأزرار = مرسومة */
+.section-title::before{
+  content:"";position:absolute;bottom:6px;right:50%;transform:translateX(50%);
+  width:200px;height:2px;
+  background:linear-gradient(90deg,transparent,var(--gold) 20%,var(--gold) 80%,transparent);
+}
+/* تسميات KPI */
+.kpi .label,.net-info-card .ni-label{font-family:var(--hand)!important;font-size:1.15rem!important;font-weight:700!important;color:var(--brand)!important}
+.kpi .value,.net-info-card .ni-value{font-family:var(--mono)!important;font-weight:700!important;color:var(--ink)!important}
+.kpi .foot,.net-info-card .ni-foot{color:var(--ink-2)!important}
+/* الأزرار = أزرار نحاسية تراثية */
 .btn{
-  border:2px solid var(--ink)!important;
-  border-radius:10px 8px 11px 9px!important;
-  box-shadow:1.5px 2px 0 rgba(31,58,82,.18)!important;
-  font-family:var(--hand)!important;font-size:1rem!important;font-weight:400!important;
-  background:var(--paper);color:var(--ink);
-  transition:transform .1s,box-shadow .1s;
+  border:2px solid var(--brand)!important;
+  border-radius:5px!important;
+  box-shadow:var(--shadow), inset 0 1px 0 rgba(255,255,255,.3)!important;
+  font-family:var(--hand)!important;font-size:1.05rem!important;font-weight:700!important;
+  background:linear-gradient(180deg,#ecdcb8,#dcc594)!important;color:var(--brand-dark)!important;
+  transition:transform .1s,box-shadow .1s;letter-spacing:.3px;
 }
-.btn:active{transform:translate(1.5px,2px);box-shadow:0 0 0 rgba(31,58,82,0)!important}
-.btn-primary{background:var(--brand-bg)!important;color:var(--brand-dark)!important;border-color:var(--brand)!important}
-.btn-ghost{background:var(--paper)!important}
-.btn-sm{font-size:.92rem!important;padding:6px 12px!important}
-/* شريط التبويبات = علامات تبويب دفتر */
+.btn:active{transform:translateY(1px)}
+.btn-primary{background:linear-gradient(180deg,#7a5630,#5a3e22)!important;color:#f4ead2!important;border-color:var(--brand-dark)!important}
+.btn-ghost{background:linear-gradient(180deg,#ecdcb8,#dcc594)!important}
+.btn-sm{font-size:.95rem!important;padding:6px 13px!important}
+/* شريط التبويبات */
 .tabs{
-  background:var(--surface-2)!important;
-  border-bottom:2px solid var(--ink)!important;
+  background:linear-gradient(180deg,#e8dabb,#ddca9f)!important;
+  border-bottom:3px double var(--brand)!important;
 }
-.tab{font-family:var(--hand)!important;font-size:1.05rem!important;font-weight:400!important}
-.tab.active{
-  color:var(--brand)!important;position:relative;
-}
+.tab{font-family:var(--hand)!important;font-size:1.15rem!important;font-weight:700!important;color:var(--ink-2)!important}
+.tab.active{color:var(--brand)!important;position:relative}
 .tab.active::after{
-  content:"";position:absolute;bottom:0;right:8%;width:84%;height:5px;
-  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='5'%3E%3Cpath d='M2 2.5 Q25 0 50 2.5 T98 2.5' stroke='%231c5a8a' stroke-width='2.5' fill='none'/%3E%3C/svg%3E") no-repeat center;background-size:100% 100%;
+  content:"";position:absolute;bottom:0;right:10%;width:80%;height:3px;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);
 }
-/* الهيدر العلوى = لوحة مرسومة */
+/* الهيدر العلوى = ترويسة تاريخية */
 .topbar{
-  background:linear-gradient(180deg,#1c5a8a 0%,#0f3e63 100%)!important;
-  border-bottom:3px solid var(--ink)!important;
+  background:linear-gradient(180deg,#5a3e22 0%,#3d2814 100%)!important;
+  border-bottom:3px double var(--gold)!important;
+  box-shadow:0 3px 14px rgba(61,40,20,.4)!important;
 }
-.topbar .title{font-family:var(--hand)!important;font-weight:400!important;letter-spacing:.5px}
-.brand-txt .net{font-family:var(--hand)!important;font-weight:400!important;font-size:1.25rem!important;letter-spacing:.5px}
-.logo{border:2px solid rgba(255,255,255,.5)!important;border-radius:11px 9px 12px 10px!important}
-/* الجداول = خطوط مرسومة */
+.brand-txt .net{font-family:var(--hand)!important;font-weight:700!important;font-size:1.3rem!important;color:#f4ead2!important;letter-spacing:.5px}
+.brand-txt .sub{color:#d8c49c!important}
+.logo{
+  border:2px solid var(--gold)!important;border-radius:5px!important;
+  background:rgba(244,234,210,.12)!important;
+}
+.logo svg{color:#f4ead2}
+.icon-btn{border:1.5px solid rgba(168,132,60,.5)!important;border-radius:5px!important;color:#f4ead2!important}
+/* الجداول = سجلّات تراثية */
 table{font-family:var(--mono)}
 th{
-  background:var(--surface-2)!important;
-  font-family:var(--hand)!important;font-size:1rem!important;font-weight:400!important;
-  color:var(--brand)!important;border-bottom:2px solid var(--ink)!important;
+  background:linear-gradient(180deg,#ddca9f,#d3bd8e)!important;
+  font-family:var(--hand)!important;font-size:1.1rem!important;font-weight:700!important;
+  color:var(--brand-dark)!important;border-bottom:2px solid var(--brand)!important;
+  text-shadow:0 1px 0 rgba(255,255,255,.2);
 }
-td{border-bottom:1px dashed var(--line)!important}
-tbody tr:hover{background:var(--brand-bg)!important}
-.tbl-wrap{border:2px solid var(--ink);border-radius:12px 10px 13px 11px;overflow:hidden}
-tfoot tr{background:var(--surface-2)!important;border-top:2px solid var(--ink)}
-/* الحقول المدخلة */
+td{border-bottom:1px solid rgba(191,168,120,.5)!important;color:var(--ink)!important}
+tbody tr:nth-child(even){background:rgba(168,132,60,.06)!important}
+tbody tr:hover{background:rgba(168,132,60,.14)!important}
+.tbl-wrap{border:2px solid var(--brand);border-radius:5px;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(168,132,60,.3)}
+tfoot tr{background:linear-gradient(180deg,#ddca9f,#d3bd8e)!important;border-top:2px solid var(--brand);font-family:var(--hand)}
+/* الحقول */
 input,select,textarea{
   font-family:var(--mono)!important;
-  border:2px solid var(--ink)!important;
-  border-radius:9px 7px 10px 8px!important;
-  background:var(--paper)!important;
+  border:2px solid var(--line)!important;
+  border-radius:5px!important;
+  background:#faf3e0!important;color:var(--ink)!important;
 }
-input:focus,select:focus,textarea:focus{outline:none;border-color:var(--brand)!important;box-shadow:1.5px 2px 0 rgba(28,90,138,.2)!important}
-/* الحقول والعناوين الفرعية */
-.card-title{font-family:var(--hand)!important;font-size:1.15rem!important;font-weight:400!important;color:var(--brand)!important}
-.hint{font-family:var(--hand)!important;font-size:1rem!important;color:var(--ink-2)!important;
-  background:var(--warn-bg);border:1.5px dashed var(--pen-orange);border-radius:9px;padding:8px 12px}
-/* الشارات والحالات */
-.badge,.chip,.pill{font-family:var(--hand)!important;border:1.5px solid currentColor!important;border-radius:8px 6px 9px 7px!important}
-/* الأزرار العائمة = دوائر مرسومة */
-.fab,[class*="fab"]{border:2.5px solid var(--ink)!important;box-shadow:2px 3px 0 rgba(31,58,82,.2)!important}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--brand)!important;box-shadow:0 0 0 2px rgba(168,132,60,.25)!important}
+/* العناوين الفرعية */
+.card-title{font-family:var(--hand)!important;font-size:1.3rem!important;font-weight:700!important;color:var(--brand)!important}
+.card-sub{color:var(--ink-2)!important}
+.hint{font-family:var(--hand)!important;font-size:1.08rem!important;color:var(--ink-2)!important;
+  background:var(--warn-bg);border:1.5px solid var(--gold);border-radius:5px;padding:9px 13px}
+/* الشارات */
+.badge,.chip,.pill{font-family:var(--hand)!important;border:1.5px solid currentColor!important;border-radius:4px!important;font-weight:700}
+/* الأزرار العائمة */
+.fab,[class*="fab"]{border:2px solid var(--gold)!important;box-shadow:var(--shadow-l)!important}
+/* النوافذ المنبثقة */
+.modal,.sheet,.dialog,.modal-card{border:3px double var(--brand)!important;border-radius:6px!important;box-shadow:var(--shadow-l)!important;background:var(--paper)!important}
+.modal-head,.modal-foot{background:linear-gradient(180deg,#e8dabb,#ddca9f)!important;border-color:var(--line)!important}
+.modal-head h3{font-family:var(--hand)!important;font-size:1.3rem!important;color:var(--brand)!important}
+/* الفراغات */
+.empty .t{font-family:var(--hand)!important;font-size:1.45rem!important;color:var(--brand)!important}
+.empty .d{font-family:var(--hand)!important;font-size:1.1rem!important;color:var(--ink-2)!important}
+/* شريط الأحباس بألوان تراثية */
+.reach-bar,.reach-cell{font-family:var(--hand)}
 /* النقاط الملونة */
-.dot{filter:drop-shadow(.5px 1px 0 rgba(31,58,82,.3))}
-/* شريط المناوبة والأدوار */
-.modal,.sheet,.dialog{border:2.5px solid var(--ink)!important;border-radius:16px 14px 17px 13px!important;box-shadow:3px 5px 0 rgba(31,58,82,.18)!important;background:var(--paper)!important}
-/* تذييل/أقسام بخط يدوى */
-.empty .t{font-family:var(--hand)!important;font-size:1.3rem!important;color:var(--brand)!important}
-.empty .d{font-family:var(--hand)!important;font-size:1.05rem!important}
+.dot{filter:saturate(.7)}
+
+/* ═══ بانر الخديوية ═══ */
+.heritage-banner{
+  display:grid;grid-template-columns:90px 1fr 150px;gap:14px;align-items:center;
+  background:linear-gradient(155deg,#f0e4c8 0%,#e6d6b2 100%);
+  border:3px double var(--brand);border-radius:8px;
+  padding:18px 16px;margin-bottom:20px;position:relative;
+  box-shadow:var(--shadow), inset 0 0 0 1px rgba(168,132,60,.4), inset 0 0 40px rgba(160,130,80,.12);
+}
+.heritage-banner::before{
+  content:"";position:absolute;inset:7px;border:1px solid rgba(168,132,60,.45);border-radius:5px;pointer-events:none;
+}
+.hb-center{text-align:center;z-index:2}
+.hb-compass{width:54px;margin:0 auto 4px}
+.hb-title{font-family:var(--hand);font-size:1.9rem;font-weight:700;color:var(--brand-dark);line-height:1.2;text-shadow:1px 1px 0 rgba(168,132,60,.3)}
+.hb-sub{font-family:var(--hand);font-size:1.35rem;font-weight:700;color:var(--accent);margin-top:2px}
+.hb-era{font-family:var(--hand);font-size:.95rem;color:var(--ink-2);margin-top:6px;letter-spacing:.5px}
+.hb-tag{font-size:.82rem;color:var(--ink-2);margin-top:4px}
+.hb-deco{display:flex;flex-direction:column;align-items:center;justify-content:center}
+.hb-deco svg{width:100%;height:auto}
+.hb-frame{
+  border:2px solid var(--brand);border-radius:4px;padding:6px 8px;text-align:center;
+  background:rgba(244,234,210,.6);box-shadow:inset 0 0 0 1px rgba(168,132,60,.4);
+}
+.hb-frame-t{font-family:var(--hand);font-weight:700;font-size:.95rem;color:var(--brand-dark)}
+.hb-frame-d{font-size:.68rem;color:var(--ink-2);margin-top:2px}
+.hb-frame-y{font-family:var(--mono);font-size:.72rem;color:var(--accent);margin-top:3px}
+@media(max-width:640px){
+  .heritage-banner{grid-template-columns:1fr;text-align:center}
+  .hb-deco{display:none}
+  .hb-title{font-size:1.6rem}.hb-sub{font-size:1.15rem}
+}
 </style>
 
 </head>
@@ -609,6 +661,52 @@ const VIEWS = {};
 const AFTER = {};
 
 /* ===== نظرة عامة ===== */
+/* ═══ بانر تراثى (الخديوية) مع رسومات SVG خطية ═══ */
+function heritageBanner(){
+  return `
+  <div class="heritage-banner">
+    <div class="hb-deco hb-left">
+      <svg viewBox="0 0 90 120" fill="none" stroke="#5a3e22" stroke-width="1.4">
+        <!-- نخلة -->
+        <path d="M45 118 L45 60"/>
+        <path d="M45 60 Q25 50 14 56 M45 60 Q22 58 12 70 M45 60 Q26 66 16 82 M45 60 Q65 50 76 56 M45 60 Q68 58 78 70 M45 60 Q64 66 74 82 M45 60 Q45 44 40 34 M45 60 Q45 46 52 36"/>
+        <circle cx="45" cy="58" r="3" fill="#a8843c" stroke="none"/>
+        <path d="M38 118 Q45 112 52 118" stroke-width="1.2"/>
+      </svg>
+    </div>
+    <div class="hb-center">
+      <div class="hb-compass">
+        <svg viewBox="0 0 60 60" fill="none" stroke="#a8843c" stroke-width="1.3">
+          <circle cx="30" cy="30" r="26"/><circle cx="30" cy="30" r="21" stroke-width=".8"/>
+          <path d="M30 6 L34 30 L30 54 L26 30 Z" fill="#8a4b2a" stroke="none" opacity=".75"/>
+          <path d="M6 30 L30 26 L54 30 L30 34 Z" fill="#5a3e22" stroke="none" opacity=".55"/>
+          <text x="30" y="15" font-size="7" fill="#5a3e22" text-anchor="middle" stroke="none" font-family="serif">ش</text>
+        </svg>
+      </div>
+      <div class="hb-title">التوأم الرقمى الهيدروليكى</div>
+      <div class="hb-sub">شبكة ترعة الإسماعيلية</div>
+      <div class="hb-era">فترة الخديوية الإسماعيلية · 1863 — 1869</div>
+      <div class="hb-tag">توأم رقمى هندسى لإدارة وتشغيل شبكة الترعة</div>
+    </div>
+    <div class="hb-deco hb-right">
+      <div class="hb-frame">
+        <div class="hb-frame-t">الخديوى إسماعيل</div>
+        <div class="hb-frame-d">صانع نهضة مصر الحديثة</div>
+        <div class="hb-frame-y">1863 — 1879</div>
+      </div>
+      <svg viewBox="0 0 90 70" fill="none" stroke="#5a3e22" stroke-width="1.2" style="margin-top:6px">
+        <!-- عمارة الخديوية -->
+        <path d="M6 64 L84 64"/>
+        <path d="M14 64 L14 40 L26 40 L26 64 M34 64 L34 34 L46 34 L46 64 M54 64 L54 40 L66 40 L66 64"/>
+        <path d="M14 40 Q20 30 26 40 M34 34 Q40 22 46 34 M54 40 Q60 30 66 40"/>
+        <path d="M72 64 L72 46 L80 46 L80 64 M72 46 Q76 38 80 46"/>
+        <circle cx="40" cy="20" r="2.5" fill="#a8843c" stroke="none"/>
+        <path d="M40 14 L40 17" stroke-width="1"/>
+      </svg>
+    </div>
+  </div>`;
+}
+
 VIEWS.overview = () => {
   const b = State.branches;
   const totalZimaam = b.reduce((s,x)=>s+(+x.zimaam||0),0);
@@ -619,6 +717,7 @@ VIEWS.overview = () => {
   const reachCount = State.config.reaches.length;
   return `
     ${setupBanner()}
+    ${heritageBanner()}
     <div class="section-title">${ICON.overview} ${esc(State.config.name)}</div>
     <div class="net-info-row" style="margin-bottom:18px">
       <div class="net-info-card" style="--accent:#7c5cbf">
