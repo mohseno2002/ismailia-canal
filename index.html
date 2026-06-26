@@ -1744,7 +1744,7 @@ if("serviceWorker" in navigator){
   const DBNC_MS = 800;
   const RECONNECT_MS = 5000;
 
-  const LS = { config:"irrdt.config.v1", branches:"irrdt.branches.v1" };
+  const LS = { config:"irrdt.config.v1", branches:"irrdt.branches.v1", readings:"irrdt.readings.v1" };
 
   let fbDB=null, listenerRef=null, debouncer=null;
   let _firstSnap=true, _myLastPushTs=0, _applying=false;
@@ -1781,12 +1781,12 @@ if("serviceWorker" in navigator){
 
   /* snapshot من البيانات المحلية */
   function snapshot(){
-    let config={}, branches=[];
+    let config={}, branches=[], readings={};
     try{ config=JSON.parse(localStorage.getItem(LS.config)||'{}'); }catch(e){}
     try{ branches=JSON.parse(localStorage.getItem(LS.branches)||'[]'); }catch(e){}
-    // لا نزامن رابط/أعلام المزامنة الحساسة للجهاز؟ — نتركها، فهى مفيدة موحّدة
+    try{ readings=JSON.parse(localStorage.getItem(LS.readings)||'{}'); }catch(e){}
     return { _v:VERSION, _ts:Date.now(), _at:new Date().toISOString(), _dev:DEVICE_ID,
-             config:config, branches:branches };
+             config:config, branches:branches, readings:readings };
   }
 
   /* تطبيق بيانات السحابة محلياً */
@@ -1801,6 +1801,13 @@ if("serviceWorker" in navigator){
       if(Array.isArray(data.branches)){
         localStorage.setItem(LS.branches, JSON.stringify(data.branches)); n++;
       }
+      /* دمج المناسيب: ندمج الوارد مع المحلى (لا نمسح ما لم يُرفع بعد) */
+      if(data.readings && typeof data.readings==='object'){
+        let local={};
+        try{ local=JSON.parse(localStorage.getItem(LS.readings)||'{}'); }catch(e){}
+        const merged=mergeReadings(local, data.readings);
+        localStorage.setItem(LS.readings, JSON.stringify(merged)); n++;
+      }
       // أعد تحميل حالة التطبيق وأعد الرسم
       try{ if(typeof Store!=='undefined' && Store.load) Store.load(); }catch(e){}
       setTimeout(refreshUI, 150);
@@ -1808,6 +1815,17 @@ if("serviceWorker" in navigator){
     } finally {
       setTimeout(()=>{ _applying=false; }, 1000);
     }
+  }
+  /* دمج قراءتين: التاريخ ثم النقطة ثم الحقول — الوارد يكتب فوق الموجود */
+  function mergeReadings(local, remote){
+    const out=JSON.parse(JSON.stringify(local||{}));
+    for(const date in remote){
+      if(!out[date]) out[date]={};
+      for(const bid in remote[date]){
+        out[date][bid]=Object.assign({}, out[date][bid]||{}, remote[date][bid]||{});
+      }
+    }
+    return out;
   }
 
   function refreshUI(){
@@ -1889,7 +1907,7 @@ if("serviceWorker" in navigator){
   /* اعتراض دوال حفظ الترع/الإعدادات لرفع تلقائى عند أى تعديل */
   function hookSaveFns(){
     if(typeof Store==='undefined') return;
-    ['saveBranches','saveConfig'].forEach(fn=>{
+    ['saveBranches','saveConfig','saveReadings'].forEach(fn=>{
       if(typeof Store[fn]==='function' && !Store[fn]._fbHooked){
         const orig=Store[fn].bind(Store);
         Store[fn]=function(){ const r=orig.apply(this,arguments); try{ triggerPush(); }catch(e){} return r; };
