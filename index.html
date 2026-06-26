@@ -1603,8 +1603,13 @@ function changeReadDate(v){ State.readDate=v; renderView(); }
 function setReading(bid,field,val){
   if(!State.readings[State.readDate]) State.readings[State.readDate]={};
   if(!State.readings[State.readDate][bid]) State.readings[State.readDate][bid]={};
-  if(val==="") delete State.readings[State.readDate][bid][field];
-  else State.readings[State.readDate][bid][field]=+val;
+  if(val===""){
+    delete State.readings[State.readDate][bid][field];
+  } else {
+    State.readings[State.readDate][bid][field]=+val;
+  }
+  /* ختم الوقت: الأحدث يكسب عند الدمج */
+  State.readings[State.readDate][bid]._ts = Date.now();
   Store.saveReadings();
 }
 function clearReadings(){
@@ -1686,9 +1691,19 @@ function mergeSheetReadings(remote){
       if(!validIds[bid]) continue;            /* تجاهل معرّفات غير موجودة بالتطبيق */
       var src = remote[date][bid] || {};
       var dst = State.readings[date][bid] || {};
+      /* الأحدث يكسب: لو المحلية معدّلة بعد طابع الشيت، لا نكتب فوقها */
+      var srcTs = +src._ts || 0;
+      var dstTs = +dst._ts || 0;
+      if(dstTs > 0 && dstTs > srcTs){
+        /* المحلية أحدث — نتركها كما هى */
+        State.readings[date][bid] = dst;
+        continue;
+      }
+      /* الشيت أحدث (أو لا طابع محلى) — نطبّق قيمه */
       if(src.front != null && !isNaN(src.front)) dst.front = +src.front;
       if(src.back  != null && !isNaN(src.back))  dst.back  = +src.back;
       if(src.flow  != null && !isNaN(src.flow))  dst.flow  = +src.flow;
+      if(srcTs > 0) dst._ts = srcTs;            /* نحفظ طابع الشيت للمقارنات القادمة */
       State.readings[date][bid] = dst;
       count++;
     }
@@ -1816,13 +1831,22 @@ if("serviceWorker" in navigator){
       setTimeout(()=>{ _applying=false; }, 1000);
     }
   }
-  /* دمج قراءتين: التاريخ ثم النقطة ثم الحقول — الوارد يكتب فوق الموجود */
+  /* دمج قراءتين: الأحدث (حسب _ts) يكسب على مستوى كل نقطة */
   function mergeReadings(local, remote){
     const out=JSON.parse(JSON.stringify(local||{}));
     for(const date in remote){
       if(!out[date]) out[date]={};
       for(const bid in remote[date]){
-        out[date][bid]=Object.assign({}, out[date][bid]||{}, remote[date][bid]||{});
+        const rem=remote[date][bid]||{};
+        const loc=out[date][bid]||{};
+        const remTs=+rem._ts||0, locTs=+loc._ts||0;
+        if(locTs>0 && locTs>remTs){
+          /* المحلية أحدث — نبقيها */
+          out[date][bid]=loc;
+        } else {
+          /* الوارد أحدث (أو لا طابع محلى) — يكسب */
+          out[date][bid]=Object.assign({}, loc, rem);
+        }
       }
     }
     return out;
