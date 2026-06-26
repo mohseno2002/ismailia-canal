@@ -1187,8 +1187,11 @@ AFTER.readings = () => {
         oninput="setReading('${b.id}','front',this.value)" style="width:90px;text-align:center"></td>
       <td class="num"><input type="number" step="0.01" value="${r.back??""}" placeholder="—"
         oninput="setReading('${b.id}','back',this.value)" style="width:90px;text-align:center"></td>
-      <td class="num"><input type="number" step="0.01" value="${r.flow??""}" placeholder="—"
-        oninput="setReading('${b.id}','flow',this.value)" style="width:90px;text-align:center"></td>
+      <td class="num">${hasRatingCurve(b.id)
+        ? `<input type="number" value="${r.flow??""}" placeholder="—" readonly title="محسوب تلقائياً من المنسوب الخلفى (منحنى التصريف)"
+            style="width:90px;text-align:center;background:var(--ok-bg);border-color:var(--ok);font-weight:700;color:var(--brand);cursor:default">`
+        : `<input type="number" step="0.01" value="${r.flow??""}" placeholder="—"
+            oninput="setReading('${b.id}','flow',this.value)" style="width:90px;text-align:center">`}</td>
     </tr>`;
   }).join("");
   host.innerHTML = `<div class="tbl-wrap"><table>
@@ -1600,6 +1603,33 @@ function deleteBranch(id){
    9) القراءات
    ──────────────────────────────────────────────── */
 function changeReadDate(v){ State.readDate=v; renderView(); }
+/* ═══════════════════════════════════════════════
+   محرك حساب التصرف من منحنى التصريف (Rating Curve)
+   Q بالمليون م³/يوم · DS = المنسوب الخلفى (back)
+   ═══════════════════════════════════════════════ */
+const RATING_CURVES = {
+  /* فم الإسماعيلية: خطية */
+  fom_ism: { type:'linear', a:7.89, b:-107, label:'فم الإسماعيلية' },
+  /* خلف المنير: أسية */
+  hgz_mnr: { type:'power', a:0.000002, n:6.3881, label:'خلف المنير' },
+  /* خلف الصالحية بعد التكريك (من 24 يوليو 2025): أسية */
+  hgz_slh: { type:'power', a:0.00006, n:5.1938, label:'خلف الصالحية (بعد التكريك)' }
+};
+/* يحسب التصرف من المنسوب الخلفى لنقطة لها معادلة؛ يرجّع null لو لا معادلة أو دخل غير صالح */
+function calcDischarge(bid, back){
+  const eq = RATING_CURVES[bid];
+  if(!eq) return null;
+  const ds = +back;
+  if(!isFinite(ds)) return null;
+  let q;
+  if(eq.type==='linear'){ q = eq.a*ds + eq.b; }
+  else { q = eq.a * Math.pow(ds, eq.n); }
+  if(!isFinite(q) || q < 0) return null;   /* تصرف سالب غير منطقى */
+  return q;   /* بالمليون م³/يوم */
+}
+/* هل لهذه النقطة معادلة تصرف؟ */
+function hasRatingCurve(bid){ return !!RATING_CURVES[bid]; }
+
 function setReading(bid,field,val){
   if(!State.readings[State.readDate]) State.readings[State.readDate]={};
   if(!State.readings[State.readDate][bid]) State.readings[State.readDate][bid]={};
@@ -1607,6 +1637,25 @@ function setReading(bid,field,val){
     delete State.readings[State.readDate][bid][field];
   } else {
     State.readings[State.readDate][bid][field]=+val;
+  }
+  /* حساب التصرف تلقائياً من المنسوب الخلفى لو للنقطة معادلة تصريف */
+  if(field==='back' && hasRatingCurve(bid)){
+    const rec = State.readings[State.readDate][bid];
+    if(val===""){
+      delete rec.flow;
+    } else {
+      const q = calcDischarge(bid, +val);
+      if(q!=null) rec.flow = +q.toFixed(3);
+    }
+    /* حدّث خانة التصرف المعروضة فوراً دون إعادة رسم الجدول كله */
+    try{
+      const cell = document.querySelector(`input[oninput*="'${bid}','flow'"], tr input[readonly][title*="محسوب"]`);
+      const row = document.activeElement && document.activeElement.closest ? document.activeElement.closest('tr') : null;
+      if(row){
+        const flowInput = row.querySelector('td:last-child input');
+        if(flowInput) flowInput.value = (rec.flow!=null ? rec.flow : "");
+      }
+    }catch(e){}
   }
   /* ختم الوقت: الأحدث يكسب عند الدمج */
   State.readings[State.readDate][bid]._ts = Date.now();
