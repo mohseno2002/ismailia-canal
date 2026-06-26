@@ -1178,6 +1178,7 @@ AFTER.readings = () => {
       <div class="d">أضِف الترع أولاً من تبويب «الترع والفروع» لتظهر هنا لإدخال قراءاتها.</div></div>`;
     return;
   }
+  recalcAllDischarges();   /* احسب التصرف لأى قراءات قديمة لها معادلة */
   const day = State.readings[State.readDate] || {};
   const rows = [...State.branches].sort((a,b)=>(+a.km||0)-(+b.km||0)).map(b => {
     const r = day[b.id] || {};
@@ -1187,8 +1188,8 @@ AFTER.readings = () => {
         oninput="setReading('${b.id}','front',this.value)" style="width:90px;text-align:center"></td>
       <td class="num"><input type="number" step="0.01" value="${r.back??""}" placeholder="—"
         oninput="setReading('${b.id}','back',this.value)" style="width:90px;text-align:center"></td>
-      <td class="num">${hasRatingCurve(b.id)
-        ? `<input type="number" value="${r.flow??""}" placeholder="—" readonly title="محسوب تلقائياً من المنسوب الخلفى (منحنى التصريف)"
+      <td class="num">${isComputedFlow(b.id)
+        ? `<input type="number" value="${r.flow??""}" placeholder="—" readonly title="محسوب تلقائياً${b.id==='hgz_mnr'?' (ميزان مائى من الفم)':' (منحنى التصريف)'}"
             style="width:90px;text-align:center;background:var(--ok-bg);border-color:var(--ok);font-weight:700;color:var(--brand);cursor:default">`
         : `<input type="number" step="0.01" value="${r.flow??""}" placeholder="—"
             oninput="setReading('${b.id}','flow',this.value)" style="width:90px;text-align:center">`}</td>
@@ -1610,10 +1611,10 @@ function changeReadDate(v){ State.readDate=v; renderView(); }
 const RATING_CURVES = {
   /* فم الإسماعيلية: خطية */
   fom_ism: { type:'linear', a:7.89, b:-107, label:'فم الإسماعيلية' },
-  /* خلف المنير: أسية */
-  hgz_mnr: { type:'power', a:0.000002, n:6.3881, label:'خلف المنير' },
   /* خلف الصالحية بعد التكريك (من 24 يوليو 2025): أسية */
   hgz_slh: { type:'power', a:0.00006, n:5.1938, label:'خلف الصالحية (بعد التكريك)' }
+  /* حجز المنير: يُحسب بالميزان المائى (الفم − احتياجات الحبس الأول − الفواقد)
+     وليس بمعادلة مستقلة — انظر calcDischarge */
 };
 /* يحسب التصرف من المنسوب الخلفى لنقطة لها معادلة؛ يرجّع null لو لا معادلة أو دخل غير صالح */
 function calcDischarge(bid, back){
@@ -1627,8 +1628,85 @@ function calcDischarge(bid, back){
   if(!isFinite(q) || q < 0) return null;   /* تصرف سالب غير منطقى */
   return q;   /* بالمليون م³/يوم */
 }
+
+/* ── الميزان المائى لحجز المنير ──
+   تصرف المنير = تصرف الفم − احتياجات الحبس الأول (زراعى+شرب+صناعة) − الفواقد
+   كل القيم بالمليون م³/يوم. يرجّع null لو تصرف الفم غير متاح. */
+function lossFactor(){ return isSummer() ? 0.05 : 0.03; }   /* 5% صيف · 3% شتاء */
+
+/* احتياجات حبس برقمه (0=الأول): زراعى + شرب + صناعة بالمليون م³/يوم */
+function reachTotalDemand(reachIdx){
+  const reaches = State.config.reaches || [];
+  const rch = reaches[reachIdx];
+  if(!rch) return 0;
+  const isLast = reachIdx === reaches.length - 1;
+  const moq = currentMoqannan();
+  const active = State.activeDour || "أ";
+  const ROT = 3;
+  const inReach = State.branches.filter(b => !b.isDalil && (+b.km>=rch.from) && (isLast ? true : (+b.km<rch.to)));
+  /* الزمام الذى يشرب اليوم فعلياً (حسب المناوبة) */
+  const dailyZ = inReach.reduce((s,b)=>{
+    if(b.isDalil) return s;
+    const z = +b.zimaam||0;
+    const d = (b.dour||"").trim();
+    if(d===active) return s+z;
+    if(d==="مستمر"||d==="") return s+z/ROT;
+    return s;
+  },0);
+  const agDemand = dailyZ*moq/1e6;                 /* زراعى */
+  const st = reachStationsDemand(rch, isLast);
+  return agDemand + (st.drinkQ/1e6) + (st.indQ/1e6);   /* + شرب + صناعة */
+}
+
+/* تصرف المنير بالميزان المائى من تصرف الفم */
+function calcMunirDischarge(){
+  const d = State.readDate;
+  const day = State.readings[d] || {};
+  const fom = day['fom_ism'];
+  if(!fom || fom.flow==null) return null;            /* لا تصرف للفم بعد */
+  const fomQ = +fom.flow;
+  const demand1 = reachTotalDemand(0);               /* احتياجات الحبس الأول */
+  const losses = fomQ * lossFactor();                /* الفواقد */
+  const q = fomQ - demand1 - losses;
+  return q > 0 ? +q.toFixed(3) : 0;
+}
 /* هل لهذه النقطة معادلة تصرف؟ */
 function hasRatingCurve(bid){ return !!RATING_CURVES[bid]; }
+/* هل تصرف هذه النقطة محسوب تلقائياً (معادلة أو ميزان مائى)؟ */
+function isComputedFlow(bid){ return hasRatingCurve(bid) || bid==='hgz_mnr'; }
+
+/* يعيد حساب التصرف لكل القراءات الموجودة (للنقاط ذات المعادلات)
+   يفيد القراءات القديمة المُدخَلة قبل تفعيل المحرك. يرجّع عدد ما حُسب. */
+function recalcAllDischarges(){
+  let n=0, changed=false;
+  for(const date in State.readings){
+    const day = State.readings[date];
+    for(const bid in day){
+      if(!hasRatingCurve(bid)) continue;
+      const rec = day[bid];
+      if(rec && rec.back!=null){
+        const q = calcDischarge(bid, +rec.back);
+        if(q!=null){
+          const v = +q.toFixed(3);
+          if(rec.flow !== v){ rec.flow = v; changed=true; n++; }
+        }
+      }
+    }
+  }
+  /* حجز المنير: ميزان مائى من الفم (لليوم الحالى) */
+  const d = State.readDate;
+  if(State.readings[d] && State.readings[d]['fom_ism'] && State.readings[d]['fom_ism'].flow!=null){
+    const mq = calcMunirDischarge();
+    if(mq!=null){
+      if(!State.readings[d]['hgz_mnr']) State.readings[d]['hgz_mnr']={};
+      if(State.readings[d]['hgz_mnr'].flow !== mq){
+        State.readings[d]['hgz_mnr'].flow = mq; changed=true; n++;
+      }
+    }
+  }
+  if(changed) Store.saveReadings();
+  return n;
+}
 
 function setReading(bid,field,val){
   if(!State.readings[State.readDate]) State.readings[State.readDate]={};
@@ -1656,6 +1734,21 @@ function setReading(bid,field,val){
         if(flowInput) flowInput.value = (rec.flow!=null ? rec.flow : "");
       }
     }catch(e){}
+  }
+  /* لو تغيّر منسوب/تصرف الفم → أعد حساب المنير بالميزان المائى */
+  if(bid==='fom_ism'){
+    const mq = calcMunirDischarge();
+    const dd = State.readDate;
+    if(mq!=null){
+      if(!State.readings[dd]['hgz_mnr']) State.readings[dd]['hgz_mnr']={};
+      State.readings[dd]['hgz_mnr'].flow = mq;
+      State.readings[dd]['hgz_mnr']._ts = Date.now();
+      try{
+        const inp = document.querySelector(`input[oninput*="'hgz_mnr','back'"]`);
+        const r = inp ? inp.closest('tr') : null;
+        if(r){ const fi=r.querySelector('td:last-child input'); if(fi) fi.value=mq; }
+      }catch(e){}
+    }
   }
   /* ختم الوقت: الأحدث يكسب عند الدمج */
   State.readings[State.readDate][bid]._ts = Date.now();
@@ -1717,6 +1810,7 @@ function syncFromSheet(silent){
     .then(function(d){
       if(!d || !d.ok || !d.readings) throw new Error(d && d.error ? d.error : "استجابة غير صالحة");
       var merged = mergeSheetReadings(d.readings);
+      recalcAllDischarges();
       Store.saveReadings();
       renderView();
       if(!silent) toast("تم تحديث "+merged+" قراءة من الشيت","ok");
@@ -1774,6 +1868,7 @@ function mergeSheetReadings(remote){
   }catch(e){}
 })();
 Store.load();
+recalcAllDischarges();
 renderShell();
 
 /* مزامنة تلقائية من جوجل شيت عند الفتح (لو مفعّلة وفيه رابط) */
