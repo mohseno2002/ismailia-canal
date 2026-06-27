@@ -1614,7 +1614,12 @@ function deleteBranch(id){
 /* ────────────────────────────────────────────────
    9) القراءات
    ──────────────────────────────────────────────── */
-function changeReadDate(v){ State.readDate=v; renderView(); }
+function changeReadDate(v){
+  State.readDate=v;
+  /* أعد ربط مستمع التطبيق القديم على التاريخ الجديد (توفير استهلاك) */
+  try{ if(typeof window.__irrRebindOldApp==='function') window.__irrRebindOldApp(); }catch(e){}
+  renderView();
+}
 /* ═══════════════════════════════════════════════
    محرك حساب التصرف من منحنى التصريف (Rating Curve)
    Q بالمليون م³/يوم · DS = المنسوب الخلفى (back)
@@ -2073,17 +2078,25 @@ if("serviceWorker" in navigator){
       setBadge('error');
       setTimeout(()=>{ if(isCfg()) subscribe().catch(e=>console.error(e)); }, RECONNECT_MS);
     });
-    /* ── مستمع إضافى على مسار التطبيق القديم لمشاركة المناسيب ── */
+    /* ── مستمع موجّه على قراءات اليوم فقط من التطبيق القديم (توفير استهلاك) ── */
+    bindOldAppListener();
+    setBadge('ok');
+    return db;
+  }
+  /* يربط مستمع قراءات اليوم من التطبيق القديم (drBag/[تاريخ اليوم] فقط) */
+  async function bindOldAppListener(){
+    if(!isCfg()) return;
+    let db;
+    try{ db = await getDB(); }catch(e){ return; }
     try{
       if(oldAppRef){ try{ oldAppRef.off(); }catch(e){} oldAppRef=null; }
-      oldAppRef = db.ref(OLD_APP_PATH);
+      const today = (typeof State!=='undefined' && State.readDate) ? State.readDate : new Date().toISOString().slice(0,10);
+      oldAppRef = db.ref(OLD_APP_PATH + '/drBag/' + today);
       oldAppRef.on('value', (snap)=>{
         try{
-          const remote = snap.val();
-          if(!remote || typeof remote!=='object') return;
-          /* drBag: { تاريخ: { نقطة: {f,b,flow} } } من التطبيق القديم */
-          const drBag = remote.drBag || {};
-          if(!drBag || typeof drBag!=='object') return;
+          const dayData = snap.val();          /* { نقطة: {f,b,flow} } لليوم فقط */
+          if(!dayData || typeof dayData!=='object') return;
+          const drBag = {}; drBag[today] = dayData;
           const converted = convertOldReadings(drBag);
           if(Object.keys(converted).length===0) return;
           let local={};
@@ -2093,13 +2106,13 @@ if("serviceWorker" in navigator){
           try{ if(typeof Store!=='undefined' && Store.load) Store.load(); }catch(e){}
           try{ if(typeof recalcAllDischarges==='function') recalcAllDischarges(); }catch(e){}
           setTimeout(refreshUI, 150);
-          if(typeof toast==='function') toast('🔄 مزامنة المناسيب مع التطبيق القديم','ok');
+          if(typeof toast==='function') toast('🔄 مزامنة مناسيب اليوم مع التطبيق القديم','ok');
         }catch(e){ console.error('[old-app readings]',e); }
       }, (err)=>{ console.warn('[old-app listener error]',err); });
     }catch(e){ console.warn('[old-app subscribe]',e); }
-    setBadge('ok');
-    return db;
   }
+  /* نعرّضها لإعادة الربط عند تغيير تاريخ القراءة */
+  if(typeof window!=='undefined') window.__irrRebindOldApp = bindOldAppListener;
   /* يحوّل قراءات التطبيق القديم {تاريخ:{نقطة:{f,b,flow}}} لشكل الجديد {front,back,flow} */
   function convertOldReadings(drBag){
     const out={};
