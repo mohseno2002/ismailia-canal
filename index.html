@@ -1026,14 +1026,14 @@ VIEWS.overview = () => {
           <span class="card-sub">${State.readDate}</span></div>
         <div class="card-body" style="padding:0">
           ${levelRows.length ? `<div class="tbl-wrap" style="border:none">
-          <table><thead><tr><th>الموقع</th><th class="num">المستوى الأمامى</th><th class="num">الخلفى</th><th class="num">الفرق</th></tr></thead>
+          <table><thead><tr><th>الموقع</th><th class="num">المستوى الأمامى</th><th class="num">الخلفى</th><th class="num">التصرف</th></tr></thead>
           <tbody>${levelRows.map(x=>{
-            const r=day[x.id]; const f=+r.front||0, bk=+r.back||0; const diff=f-bk;
-            const dcol = diff>0?'var(--ok)':diff<0?'var(--danger)':'var(--ink-3)';
+            const r=day[x.id]; const f=+r.front||0, bk=+r.back||0;
+            const hasFlow = r.flow!=null && !isNaN(r.flow);
             return `<tr><td style="font-weight:600">${esc(x.name)}</td>
               <td class="num">${r.front!=null?fmt(f,2):'—'}</td>
               <td class="num">${r.back!=null?fmt(bk,2):'—'}</td>
-              <td class="num" style="color:${dcol};font-weight:700">${(diff>0?'+':'')+fmt(diff,2)}</td></tr>`;
+              <td class="num" style="color:${hasFlow?'var(--brand)':'var(--ink-3)'};font-weight:700">${hasFlow?fmt(+r.flow,2):'—'}</td></tr>`;
           }).join("")}</tbody></table></div>
           <div style="padding:10px 14px;text-align:center"><a onclick="switchTab('readings')" style="cursor:pointer;color:var(--brand);font-family:var(--hand);font-size:1rem">عرض جميع المناسيب ←</a></div>`
           : `<div class="empty" style="padding:30px">${ICON.empty}<div class="t">لا قراءات لليوم</div>
