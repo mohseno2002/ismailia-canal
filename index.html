@@ -1911,12 +1911,13 @@ if("serviceWorker" in navigator){
   const CFG_KEY = 'irrdt_fb_cfg_v1';      // {projectId, apiKey, databaseURL?}
   const DEV_KEY = 'irrdt_fb_device_v1';
   const DB_PATH = 'irrigation-dt/branches';
+  const OLD_APP_PATH = 'ismailia-dt/data';   /* مسار التطبيق القديم لمشاركة المناسيب */
   const DBNC_MS = 800;
   const RECONNECT_MS = 5000;
 
   const LS = { config:"irrdt.config.v1", branches:"irrdt.branches.v1", readings:"irrdt.readings.v1" };
 
-  let fbDB=null, listenerRef=null, debouncer=null;
+  let fbDB=null, listenerRef=null, oldAppRef=null, debouncer=null;
   let _firstSnap=true, _myLastPushTs=0, _applying=false;
 
   function getDeviceId(){
@@ -2072,8 +2073,51 @@ if("serviceWorker" in navigator){
       setBadge('error');
       setTimeout(()=>{ if(isCfg()) subscribe().catch(e=>console.error(e)); }, RECONNECT_MS);
     });
+    /* ── مستمع إضافى على مسار التطبيق القديم لمشاركة المناسيب ── */
+    try{
+      if(oldAppRef){ try{ oldAppRef.off(); }catch(e){} oldAppRef=null; }
+      oldAppRef = db.ref(OLD_APP_PATH);
+      oldAppRef.on('value', (snap)=>{
+        try{
+          const remote = snap.val();
+          if(!remote || typeof remote!=='object') return;
+          /* drBag: { تاريخ: { نقطة: {f,b,flow} } } من التطبيق القديم */
+          const drBag = remote.drBag || {};
+          if(!drBag || typeof drBag!=='object') return;
+          const converted = convertOldReadings(drBag);
+          if(Object.keys(converted).length===0) return;
+          let local={};
+          try{ local=JSON.parse(localStorage.getItem(LS.readings)||'{}'); }catch(e){}
+          const merged = mergeReadings(local, converted);
+          localStorage.setItem(LS.readings, JSON.stringify(merged));
+          try{ if(typeof Store!=='undefined' && Store.load) Store.load(); }catch(e){}
+          try{ if(typeof recalcAllDischarges==='function') recalcAllDischarges(); }catch(e){}
+          setTimeout(refreshUI, 150);
+          if(typeof toast==='function') toast('🔄 مزامنة المناسيب مع التطبيق القديم','ok');
+        }catch(e){ console.error('[old-app readings]',e); }
+      }, (err)=>{ console.warn('[old-app listener error]',err); });
+    }catch(e){ console.warn('[old-app subscribe]',e); }
     setBadge('ok');
     return db;
+  }
+  /* يحوّل قراءات التطبيق القديم {تاريخ:{نقطة:{f,b,flow}}} لشكل الجديد {front,back,flow} */
+  function convertOldReadings(drBag){
+    const out={};
+    for(const date in drBag){
+      const day=drBag[date]; if(!day||typeof day!=='object') continue;
+      out[date]={};
+      for(const pt in day){
+        const r=day[pt]||{};
+        const rec={};
+        if(r.f!=null && r.f!=='' && !isNaN(r.f)) rec.front=+r.f;
+        if(r.b!=null && r.b!=='' && !isNaN(r.b)) rec.back=+r.b;
+        if(r.flow!=null && r.flow!=='' && !isNaN(r.flow)) rec.flow=+r.flow;
+        if(r._ts) rec._ts=+r._ts;
+        if(Object.keys(rec).length) out[date][pt]=rec;
+      }
+      if(Object.keys(out[date]).length===0) delete out[date];
+    }
+    return out;
   }
 
   function triggerPush(){
