@@ -1126,6 +1126,8 @@ VIEWS.branches = () => `
   <div class="section-title">${ICON.branches} الترع والفروع</div>
   <div class="toolbar">
     <button class="btn btn-primary" onclick="openBranchModal()">${ICON.plus}<span>إضافة ترعة</span></button>
+    <button class="btn" onclick="importPrompt()" title="استيراد بيانات من ملف JSON">⬆️<span>استيراد</span></button>
+    <button class="btn" onclick="exportAll()" title="تصدير نسخة احتياطية JSON">⬇️<span>تصدير</span></button>
     <div class="grow"></div>
     <span class="card-sub">${State.branches.length} مسجّلة</span>
   </div>
@@ -1797,12 +1799,23 @@ function importPrompt(){
       try{
         const d = JSON.parse(rd.result);
         if(!d.config && !d.branches) throw new Error("ملف غير صالح");
-        if(!confirm("استيراد سيستبدل البيانات الحالية. متابعة؟")) return;
+        // خيار الدمج الآمن: القيمة الحقيقية لا تُمحى بصفر/فراغ. إلغاء = استبدال كامل.
+        const doMerge = confirm(
+          "دمج البيانات المستوردة مع الحالية؟\n\n"+
+          "«موافق» = دمج آمن (القيم الحقيقية لا تُمحى — يُنصح به).\n"+
+          "«إلغاء» = استبدال كامل بالملف المستورد."
+        );
         if(d.config)   State.config   = Object.assign(structuredClone(DEFAULT_CONFIG), d.config);
-        if(d.branches) State.branches = d.branches;
+        if(d.branches){
+          if(doMerge && typeof window.__mergeBranches === "function"){
+            State.branches = window.__mergeBranches(State.branches, d.branches, true);
+          } else {
+            State.branches = d.branches;
+          }
+        }
         if(d.readings) State.readings = d.readings;
         Store.saveConfig(); Store.saveBranches(); Store.saveReadings();
-        renderShell(); toast("اكتمل الاستيراد","ok");
+        renderShell(); toast(doMerge?"اكتمل الاستيراد (دمج)":"اكتمل الاستيراد (استبدال)","ok");
       }catch(e){ toast("تعذّر قراءة الملف: "+e.message,"danger"); }
     };
     rd.readAsText(f);
@@ -1971,11 +1984,19 @@ if("serviceWorker" in navigator){
     _applying=true;
     try{
       let n=0;
+      /* ترجيح زمنى: هل الوارد أحدث من آخر رفع محلى؟ */
+      const remoteTs = +(data._ts||0);
+      const localPushTs = +(localStorage.getItem('irrdt_fb_lastpush_ts')||0);
+      const remoteNewer = remoteTs >= localPushTs;
       if(data.config && typeof data.config==='object'){
         localStorage.setItem(LS.config, JSON.stringify(data.config)); n++;
       }
       if(Array.isArray(data.branches)){
-        localStorage.setItem(LS.branches, JSON.stringify(data.branches)); n++;
+        /* دمج بدل استبدال: قيمة حقيقية لا تُمحى بصفر وارد (يحمى مانينج وغيره) */
+        let localBr=[];
+        try{ localBr=JSON.parse(localStorage.getItem(LS.branches)||'[]'); }catch(e){}
+        const mergedBr = mergeBranches(localBr, data.branches, remoteNewer);
+        localStorage.setItem(LS.branches, JSON.stringify(mergedBr)); n++;
       }
       /* دمج المناسيب: ندمج الوارد مع المحلى (لا نمسح ما لم يُرفع بعد) */
       if(data.readings && typeof data.readings==='object'){
@@ -1992,6 +2013,48 @@ if("serviceWorker" in navigator){
       setTimeout(()=>{ _applying=false; }, 1000);
     }
   }
+  /* ── دمج الترع على مستوى كل ترعة وكل حقل ──
+     القاعدة: القيمة "الحقيقية" (غير صفر/فارغة/null) تكسب دائماً على الصفر أو الفراغ.
+     لو الطرفين لهما قيمة حقيقية مختلفة → الأحدث زمنياً (remoteNewer) يكسب.
+     الهدف: ألا تُمحى قيمة أدخلها المستخدم (مثل معامل مانينج) بنسخة قديمة فيها صفر. */
+  function _isEmptyVal(v){
+    return v===null || v===undefined || v==='' ||
+           (typeof v==='number' && v===0) ||
+           (typeof v==='string' && v.trim()==='');
+  }
+  function mergeBranchFields(loc, rem, remoteNewer){
+    const out = Object.assign({}, loc);
+    const keys = new Set([...Object.keys(loc||{}), ...Object.keys(rem||{})]);
+    for(const k of keys){
+      const lv = loc ? loc[k] : undefined;
+      const rv = rem ? rem[k] : undefined;
+      const lEmpty = _isEmptyVal(lv), rEmpty = _isEmptyVal(rv);
+      if(lEmpty && !rEmpty)       out[k] = rv;   // المحلية فاضية والوارد فيه قيمة → خُذ الوارد
+      else if(!lEmpty && rEmpty)  out[k] = lv;   // الوارد فاضى والمحلية فيها قيمة → أبقِ المحلية
+      else if(lEmpty && rEmpty)   out[k] = (rv!==undefined ? rv : lv); // كلاهما فاضٍ
+      else                        out[k] = remoteNewer ? rv : lv;      // كلاهما قيمة → الأحدث يكسب
+    }
+    return out;
+  }
+  function mergeBranches(local, remote, remoteNewer){
+    const locArr = Array.isArray(local) ? local : [];
+    const remArr = Array.isArray(remote) ? remote : [];
+    const byId = new Map();
+    const order = [];
+    for(const b of locArr){ if(b && b.id!=null){ byId.set(b.id, b); order.push(b.id); } }
+    for(const b of remArr){
+      if(!b || b.id==null) continue;
+      if(byId.has(b.id)){
+        byId.set(b.id, mergeBranchFields(byId.get(b.id), b, remoteNewer));
+      } else {
+        byId.set(b.id, b); order.push(b.id);   // ترعة جديدة من السحابة → أضِفها
+      }
+    }
+    return order.map(id => byId.get(id));
+  }
+  /* نعرّضها للاستيراد اليدوى كى يدمج بدل الاستبدال (يحمى مانينج وغيره) */
+  if(typeof window!=='undefined'){ window.__mergeBranches = mergeBranches; }
+
   /* دمج قراءتين: الأحدث (حسب _ts) يكسب على مستوى كل نقطة */
   function mergeReadings(local, remote){
     const out=JSON.parse(JSON.stringify(local||{}));
@@ -2034,6 +2097,19 @@ if("serviceWorker" in navigator){
     if(_applying) return;
     try{
       const db=await getDB(); const data=snapshot();
+      /* حماية ضد الرفع الفارغ: لا ترفع snapshot خالٍ من الترع فوق سحابة تحتوى بيانات */
+      const brCount = Array.isArray(data.branches) ? data.branches.length : 0;
+      if(brCount===0){
+        try{
+          const snap = await db.ref(DB_PATH+'/branches').once('value');
+          const remoteBr = snap.exists() ? snap.val() : null;
+          if(Array.isArray(remoteBr) && remoteBr.length>0){
+            console.warn('[FB-BR] أُلغى رفع فارغ لحماية بيانات السحابة');
+            setBadge('ok');
+            return;
+          }
+        }catch(e){ /* تعذّر الفحص → تابع بحذر */ }
+      }
       _myLastPushTs=data._ts;
       await db.ref(DB_PATH).set(data);
       localStorage.setItem('irrdt_fb_lastpush_ts', String(data._ts));
