@@ -1126,8 +1126,6 @@ VIEWS.branches = () => `
   <div class="section-title">${ICON.branches} الترع والفروع</div>
   <div class="toolbar">
     <button class="btn btn-primary" onclick="openBranchModal()">${ICON.plus}<span>إضافة ترعة</span></button>
-    <button class="btn" onclick="importPrompt()" title="استيراد بيانات من ملف JSON">⬆️<span>استيراد</span></button>
-    <button class="btn" onclick="exportAll()" title="تصدير نسخة احتياطية JSON">⬇️<span>تصدير</span></button>
     <div class="grow"></div>
     <span class="card-sub">${State.branches.length} مسجّلة</span>
   </div>
@@ -1202,7 +1200,7 @@ AFTER.readings = () => {
       <td class="num"><input type="number" step="0.01" value="${r.back??""}" placeholder="—"
         oninput="setReading('${b.id}','back',this.value)" style="width:90px;text-align:center"></td>
       <td class="num">${isComputedFlow(b.id)
-        ? `<input type="number" value="${r.flow??""}" placeholder="—" readonly title="محسوب تلقائياً${b.id==='hgz_mnr'?' (ميزان مائى من الفم)':' (منحنى التصريف)'}"
+        ? `<input type="number" value="${r.flow??""}" placeholder="—" readonly title="محسوب تلقائياً${b.id==='hgz_mnr'?' (ميزان مائى من الفم)':(hasRatingCurve(b.id)?' (منحنى التصريف)':' (معادلة مانينج من المنسوب الخلفى)')}"
             style="width:90px;text-align:center;background:var(--ok-bg);border-color:var(--ok);font-weight:700;color:var(--brand);cursor:default">`
         : `<input type="number" step="0.01" value="${r.flow??""}" placeholder="—"
             oninput="setReading('${b.id}','flow',this.value)" style="width:90px;text-align:center">`}</td>
@@ -1647,6 +1645,24 @@ function calcDischarge(bid, back){
   return q;   /* بالمليون م³/يوم */
 }
 
+/* يحسب التصرف بمعادلة مانينج من المنسوب الخلفى + بيانات قطاع الترعة.
+   الشرط: manningN>0 وبيانات القطاع كاملة والعمق (back − bedLevel) موجب.
+   يرجّع null لو الشروط غير مكتملة (فتظل الخانة "—"). */
+function manningReady(b){
+  return b && +b.manningN>0 && +b.longSlope>0 && +b.bedWidth>=0
+      && b.sideSlope!=null && b.bedLevel!=null && isFinite(+b.bedLevel);
+}
+function calcManningDischarge(bid, back){
+  const b = State.branches.find(x=>x.id===bid);
+  if(!manningReady(b)) return null;
+  const ds = +back;
+  if(!isFinite(ds)) return null;
+  const y = ds - (+b.bedLevel);           /* العمق = المنسوب الخلفى − منسوب القاع */
+  if(!(y>0)) return null;                  /* عمق غير موجب → لا حساب */
+  const q = Hydraulics.discharge(+b.bedWidth, +b.sideSlope||0, y, +b.manningN, +b.longSlope);
+  return (q>0) ? q : null;                 /* بالم³/ث */
+}
+
 /* ── الميزان المائى لحجز المنير ──
    تصرف المنير = تصرف الفم − احتياجات الحبس الأول (زراعى+شرب+صناعة) − الفواقد
    كل القيم بالمليون م³/يوم. يرجّع null لو تصرف الفم غير متاح. */
@@ -1690,8 +1706,10 @@ function calcMunirDischarge(){
 }
 /* هل لهذه النقطة معادلة تصرف؟ */
 function hasRatingCurve(bid){ return !!RATING_CURVES[bid]; }
-/* هل تصرف هذه النقطة محسوب تلقائياً (معادلة أو ميزان مائى)؟ */
-function isComputedFlow(bid){ return hasRatingCurve(bid) || bid==='hgz_mnr'; }
+/* هل هذه النقطة جاهزة لحساب مانينج (n>0 + قطاع كامل)؟ */
+function hasManning(bid){ return manningReady(State.branches.find(x=>x.id===bid)); }
+/* هل تصرف هذه النقطة محسوب تلقائياً (معادلة أو مانينج أو ميزان مائى)؟ */
+function isComputedFlow(bid){ return hasRatingCurve(bid) || hasManning(bid) || bid==='hgz_mnr'; }
 
 /* يعيد حساب التصرف لكل القراءات الموجودة (للنقاط ذات المعادلات)
    يفيد القراءات القديمة المُدخَلة قبل تفعيل المحرك. يرجّع عدد ما حُسب. */
@@ -1700,14 +1718,15 @@ function recalcAllDischarges(){
   for(const date in State.readings){
     const day = State.readings[date];
     for(const bid in day){
-      if(!hasRatingCurve(bid)) continue;
       const rec = day[bid];
-      if(rec && rec.back!=null){
-        const q = calcDischarge(bid, +rec.back);
-        if(q!=null){
-          const v = +q.toFixed(3);
-          if(rec.flow !== v){ rec.flow = v; changed=true; n++; }
-        }
+      if(!rec || rec.back==null) continue;
+      let q = null;
+      if(hasRatingCurve(bid))      q = calcDischarge(bid, +rec.back);   /* معادلة تصريف */
+      else if(hasManning(bid))     q = calcManningDischarge(bid, +rec.back); /* مانينج */
+      else continue;
+      if(q!=null){
+        const v = +q.toFixed(3);
+        if(rec.flow !== v){ rec.flow = v; changed=true; n++; }
       }
     }
   }
@@ -1734,14 +1753,15 @@ function setReading(bid,field,val){
   } else {
     State.readings[State.readDate][bid][field]=+val;
   }
-  /* حساب التصرف تلقائياً من المنسوب الخلفى لو للنقطة معادلة تصريف */
-  if(field==='back' && hasRatingCurve(bid)){
+  /* حساب التصرف تلقائياً من المنسوب الخلفى (معادلة تصريف أو مانينج) */
+  if(field==='back' && (hasRatingCurve(bid) || hasManning(bid))){
     const rec = State.readings[State.readDate][bid];
     if(val===""){
       delete rec.flow;
     } else {
-      const q = calcDischarge(bid, +val);
+      const q = hasRatingCurve(bid) ? calcDischarge(bid, +val) : calcManningDischarge(bid, +val);
       if(q!=null) rec.flow = +q.toFixed(3);
+      else delete rec.flow;   /* عمق غير موجب مثلاً → لا تصرف */
     }
     /* حدّث خانة التصرف المعروضة فوراً دون إعادة رسم الجدول كله */
     try{
@@ -1799,23 +1819,12 @@ function importPrompt(){
       try{
         const d = JSON.parse(rd.result);
         if(!d.config && !d.branches) throw new Error("ملف غير صالح");
-        // خيار الدمج الآمن: القيمة الحقيقية لا تُمحى بصفر/فراغ. إلغاء = استبدال كامل.
-        const doMerge = confirm(
-          "دمج البيانات المستوردة مع الحالية؟\n\n"+
-          "«موافق» = دمج آمن (القيم الحقيقية لا تُمحى — يُنصح به).\n"+
-          "«إلغاء» = استبدال كامل بالملف المستورد."
-        );
+        if(!confirm("استيراد سيستبدل البيانات الحالية. متابعة؟")) return;
         if(d.config)   State.config   = Object.assign(structuredClone(DEFAULT_CONFIG), d.config);
-        if(d.branches){
-          if(doMerge && typeof window.__mergeBranches === "function"){
-            State.branches = window.__mergeBranches(State.branches, d.branches, true);
-          } else {
-            State.branches = d.branches;
-          }
-        }
+        if(d.branches) State.branches = d.branches;
         if(d.readings) State.readings = d.readings;
         Store.saveConfig(); Store.saveBranches(); Store.saveReadings();
-        renderShell(); toast(doMerge?"اكتمل الاستيراد (دمج)":"اكتمل الاستيراد (استبدال)","ok");
+        renderShell(); toast("اكتمل الاستيراد","ok");
       }catch(e){ toast("تعذّر قراءة الملف: "+e.message,"danger"); }
     };
     rd.readAsText(f);
@@ -1984,19 +1993,11 @@ if("serviceWorker" in navigator){
     _applying=true;
     try{
       let n=0;
-      /* ترجيح زمنى: هل الوارد أحدث من آخر رفع محلى؟ */
-      const remoteTs = +(data._ts||0);
-      const localPushTs = +(localStorage.getItem('irrdt_fb_lastpush_ts')||0);
-      const remoteNewer = remoteTs >= localPushTs;
       if(data.config && typeof data.config==='object'){
         localStorage.setItem(LS.config, JSON.stringify(data.config)); n++;
       }
       if(Array.isArray(data.branches)){
-        /* دمج بدل استبدال: قيمة حقيقية لا تُمحى بصفر وارد (يحمى مانينج وغيره) */
-        let localBr=[];
-        try{ localBr=JSON.parse(localStorage.getItem(LS.branches)||'[]'); }catch(e){}
-        const mergedBr = mergeBranches(localBr, data.branches, remoteNewer);
-        localStorage.setItem(LS.branches, JSON.stringify(mergedBr)); n++;
+        localStorage.setItem(LS.branches, JSON.stringify(data.branches)); n++;
       }
       /* دمج المناسيب: ندمج الوارد مع المحلى (لا نمسح ما لم يُرفع بعد) */
       if(data.readings && typeof data.readings==='object'){
@@ -2013,48 +2014,6 @@ if("serviceWorker" in navigator){
       setTimeout(()=>{ _applying=false; }, 1000);
     }
   }
-  /* ── دمج الترع على مستوى كل ترعة وكل حقل ──
-     القاعدة: القيمة "الحقيقية" (غير صفر/فارغة/null) تكسب دائماً على الصفر أو الفراغ.
-     لو الطرفين لهما قيمة حقيقية مختلفة → الأحدث زمنياً (remoteNewer) يكسب.
-     الهدف: ألا تُمحى قيمة أدخلها المستخدم (مثل معامل مانينج) بنسخة قديمة فيها صفر. */
-  function _isEmptyVal(v){
-    return v===null || v===undefined || v==='' ||
-           (typeof v==='number' && v===0) ||
-           (typeof v==='string' && v.trim()==='');
-  }
-  function mergeBranchFields(loc, rem, remoteNewer){
-    const out = Object.assign({}, loc);
-    const keys = new Set([...Object.keys(loc||{}), ...Object.keys(rem||{})]);
-    for(const k of keys){
-      const lv = loc ? loc[k] : undefined;
-      const rv = rem ? rem[k] : undefined;
-      const lEmpty = _isEmptyVal(lv), rEmpty = _isEmptyVal(rv);
-      if(lEmpty && !rEmpty)       out[k] = rv;   // المحلية فاضية والوارد فيه قيمة → خُذ الوارد
-      else if(!lEmpty && rEmpty)  out[k] = lv;   // الوارد فاضى والمحلية فيها قيمة → أبقِ المحلية
-      else if(lEmpty && rEmpty)   out[k] = (rv!==undefined ? rv : lv); // كلاهما فاضٍ
-      else                        out[k] = remoteNewer ? rv : lv;      // كلاهما قيمة → الأحدث يكسب
-    }
-    return out;
-  }
-  function mergeBranches(local, remote, remoteNewer){
-    const locArr = Array.isArray(local) ? local : [];
-    const remArr = Array.isArray(remote) ? remote : [];
-    const byId = new Map();
-    const order = [];
-    for(const b of locArr){ if(b && b.id!=null){ byId.set(b.id, b); order.push(b.id); } }
-    for(const b of remArr){
-      if(!b || b.id==null) continue;
-      if(byId.has(b.id)){
-        byId.set(b.id, mergeBranchFields(byId.get(b.id), b, remoteNewer));
-      } else {
-        byId.set(b.id, b); order.push(b.id);   // ترعة جديدة من السحابة → أضِفها
-      }
-    }
-    return order.map(id => byId.get(id));
-  }
-  /* نعرّضها للاستيراد اليدوى كى يدمج بدل الاستبدال (يحمى مانينج وغيره) */
-  if(typeof window!=='undefined'){ window.__mergeBranches = mergeBranches; }
-
   /* دمج قراءتين: الأحدث (حسب _ts) يكسب على مستوى كل نقطة */
   function mergeReadings(local, remote){
     const out=JSON.parse(JSON.stringify(local||{}));
@@ -2097,19 +2056,6 @@ if("serviceWorker" in navigator){
     if(_applying) return;
     try{
       const db=await getDB(); const data=snapshot();
-      /* حماية ضد الرفع الفارغ: لا ترفع snapshot خالٍ من الترع فوق سحابة تحتوى بيانات */
-      const brCount = Array.isArray(data.branches) ? data.branches.length : 0;
-      if(brCount===0){
-        try{
-          const snap = await db.ref(DB_PATH+'/branches').once('value');
-          const remoteBr = snap.exists() ? snap.val() : null;
-          if(Array.isArray(remoteBr) && remoteBr.length>0){
-            console.warn('[FB-BR] أُلغى رفع فارغ لحماية بيانات السحابة');
-            setBadge('ok');
-            return;
-          }
-        }catch(e){ /* تعذّر الفحص → تابع بحذر */ }
-      }
       _myLastPushTs=data._ts;
       await db.ref(DB_PATH).set(data);
       localStorage.setItem('irrdt_fb_lastpush_ts', String(data._ts));
