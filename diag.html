@@ -1,0 +1,80 @@
+<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8">
+<title>تشخيص حساب التصرف</title>
+<style>
+body{font-family:system-ui,'Segoe UI',Tahoma;background:#f6f1e5;color:#2a2118;padding:16px;line-height:1.6}
+h2{color:#8a6a2c}
+table{border-collapse:collapse;width:100%;font-size:14px;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.1)}
+th,td{border:1px solid #d8c9a8;padding:6px 8px;text-align:center}
+th{background:#e8dcc0}
+.ok{color:#0a7d3a;font-weight:700}
+.no{color:#c0392b;font-weight:700}
+.reason{text-align:right;font-size:13px;color:#8a4b2c}
+.hint{background:#fff8e8;border:1px solid #e0c98a;border-radius:8px;padding:12px;margin-bottom:16px}
+</style></head><body>
+<h2>🔍 تشخيص حساب التصرف بمعادلة مانينج</h2>
+<div class="hint">
+هذه الأداة تقرأ نفس البيانات المحفوظة في متصفحك (localStorage) وتفحص كل ترعة:
+هل بياناتها كافية لحساب التصرف بمانينج، وإن لم تكن، <b>لماذا</b>؟
+افتح هذه الصفحة من <b>نفس الأصل</b> (نفس الدومين/المجلد) الذي يعمل عليه التطبيق حتى ترى بياناتك الفعلية.
+</div>
+<div id="out"></div>
+<script>
+function num(x){ return (x==null||x==='')?null:+x; }
+function area(bw,z,y){ return (bw + z*y)*y; }
+function perim(bw,z,y){ return bw + 2*y*Math.sqrt(1+z*z); }
+function discharge(bw,z,y,n,S){
+  if(!(n>0)||!(S>0)||!(y>0)) return 0;
+  const A=area(bw,z,y), P=perim(bw,z,y), R=P>0?A/P:0;
+  return (1/n)*A*Math.pow(R,2/3)*Math.sqrt(S);
+}
+// اعثر على مفتاح الترع في localStorage
+let branches=null, keyUsed='';
+for(let i=0;i<localStorage.length;i++){
+  const k=localStorage.key(i);
+  if(/branch/i.test(k)){
+    try{ const v=JSON.parse(localStorage.getItem(k)); if(Array.isArray(v)&&v.length&&v[0].id){ branches=v; keyUsed=k; break; } }catch(e){}
+  }
+}
+// قراءات اليوم (اختياري) لعرض المنسوب الخلفى المُدخل
+let readings=null;
+for(let i=0;i<localStorage.length;i++){
+  const k=localStorage.key(i);
+  if(/read/i.test(k)){ try{ const v=JSON.parse(localStorage.getItem(k)); if(v&&typeof v==='object'){ readings=v; break; } }catch(e){} }
+}
+const out=document.getElementById('out');
+if(!branches){
+  out.innerHTML='<p class="no">لم يتم العثور على بيانات الترع في هذا المتصفح. تأكد أنك تفتح هذه الصفحة من نفس مكان التطبيق.</p>';
+} else {
+  // آخر تاريخ قراءات
+  let backOf={};
+  if(readings){
+    const dates=Object.keys(readings).sort();
+    const last=dates[dates.length-1];
+    if(last&&readings[last]) for(const bid in readings[last]) backOf[bid]=readings[last][bid].back;
+  }
+  let rows='';
+  branches.forEach(b=>{
+    const n=num(b.manningN), S=num(b.longSlope), bw=num(b.bedWidth), z=num(b.sideSlope), bed=num(b.bedLevel);
+    let reasons=[];
+    if(!(n>0)) reasons.push('مانينج n = 0 أو فارغ');
+    if(!(S>0)) reasons.push('الميل الطولى S = 0 أو فارغ');
+    if(bw==null||bw<0) reasons.push('عرض القاع غير صالح');
+    if(z==null) reasons.push('ميل الجانب فارغ');
+    if(bed==null) reasons.push('منسوب القاع فارغ');
+    const back=num(backOf[b.id]);
+    let y=null, q=null;
+    if(bed!=null && back!=null){ y=back-bed; if(!(y>0)) reasons.push('العمق (خلفى−قاع) ≤ 0 : '+ (back!=null?back:'—') +' − '+ bed +' = '+ (y!=null?y.toFixed(3):'—')); }
+    else if(back==null) reasons.push('لم يُدخل المنسوب الخلفى بعد');
+    const ready = reasons.length===0;
+    if(ready && y!=null) q=discharge(bw,z,y,n,S);
+    rows+='<tr><td style="text-align:right;font-weight:600">'+(b.name||b.id)+'</td>'+
+      '<td>'+(n??'—')+'</td><td>'+(S??'—')+'</td><td>'+(bw??'—')+'</td><td>'+(z??'—')+'</td><td>'+(bed??'—')+'</td>'+
+      '<td>'+(back??'—')+'</td>'+
+      '<td class="'+(ready?'ok':'no')+'">'+(ready?(q!=null?q.toFixed(3):'جاهز'):'✗')+'</td>'+
+      '<td class="reason">'+(reasons.join(' · ')||'—')+'</td></tr>';
+  });
+  out.innerHTML='<p>المفتاح المُستخدم: <code>'+keyUsed+'</code> — عدد الترع: '+branches.length+'</p>'+
+    '<table><thead><tr><th>الترعة</th><th>n</th><th>S</th><th>عرض القاع</th><th>ميل جانب</th><th>منسوب القاع</th><th>خلفى مُدخل</th><th>التصرف م³/ث</th><th>سبب عدم الحساب</th></tr></thead><tbody>'+rows+'</tbody></table>';
+}
+</script>
+</body></html>
