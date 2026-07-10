@@ -1889,6 +1889,36 @@ function mergeSheetReadings(remote){
   }catch(e){}
 })();
 Store.load();
+/* ═══════════════════════════════════════════════
+   ترحيل وحدة التصرف (مرة واحدة فقط):
+   القيم القديمة المخزّنة للترع العادية بوحدة م³/ث → مليون م³/يوم (× 0.0864)
+   تُستثنى النقاط المحسوبة (الفم، الحجوز) لأنها أصلاً بمليون م³/يوم.
+   علامة الإصدار تمنع تكرار التحويل الذى يُفسد القيم. */
+(function migrateFlowUnits(){
+  const FLAG = 'irrdt.flowUnit.v';
+  const TARGET = '2';   /* الإصدار 2 = مُوحّد بمليون م³/يوم */
+  try{
+    if(localStorage.getItem(FLAG) === TARGET) return;   /* حُوّل من قبل */
+    let touched = 0;
+    for(const date in State.readings){
+      const day = State.readings[date];
+      if(!day || typeof day!=='object') continue;
+      for(const bid in day){
+        const rec = day[bid];
+        if(!rec || rec.flow==null || isNaN(rec.flow)) continue;
+        const computed = (typeof isComputedFlow==='function') ? isComputedFlow(bid) : false;
+        if(computed) continue;                 /* الفم والحجوز: لا تُحوّل */
+        rec.flow = +(+rec.flow * CMS_TO_MCMD).toFixed(3);
+        touched++;
+      }
+    }
+    if(touched > 0) Store.saveReadings();
+    localStorage.setItem(FLAG, TARGET);
+    if(touched > 0 && typeof toast==='function'){
+      setTimeout(()=>toast('✅ تم توحيد وحدة التصرف إلى مليون م³/يوم ('+touched+' قيمة)','ok'), 500);
+    }
+  }catch(e){ console.error('[migrateFlowUnits]', e); }
+})();
 recalcAllDischarges();
 renderShell();
 
@@ -2129,7 +2159,15 @@ if("serviceWorker" in navigator){
         const rec={};
         if(r.f!=null && r.f!=='' && !isNaN(r.f)) rec.front=+r.f;
         if(r.b!=null && r.b!=='' && !isNaN(r.b)) rec.back=+r.b;
-        if(r.flow!=null && r.flow!=='' && !isNaN(r.flow)) rec.flow=+r.flow;
+        if(r.flow!=null && r.flow!=='' && !isNaN(r.flow)){
+          let fv=+r.flow;
+          /* التطبيق القديم يحفظ تصرف الترع العادية بوحدة م³/ث،
+             بينما الفم والحجوز (النقاط المحسوبة) بوحدة مليون م³/يوم.
+             نوّحد كل شىء إلى مليون م³/يوم: نحوّل الترع العادية فقط. */
+          const computed = (typeof isComputedFlow==='function') ? isComputedFlow(pt) : false;
+          if(!computed) fv = fv * CMS_TO_MCMD;
+          rec.flow = +fv.toFixed(3);
+        }
         if(r._ts) rec._ts=+r._ts;
         if(Object.keys(rec).length) out[date][pt]=rec;
       }
