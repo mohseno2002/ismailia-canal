@@ -16,7 +16,7 @@
 <title>التوأم الرقمى — منصة شبكات الرى</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Aref+Ruqaa:wght@400;700&family=Cairo:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Aref+Ruqaa:wght@400;700&family=Cairo:wght@400;600;700;800&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 :root{
   /* ── الثيم التراثى (الخديوية 1863-1869) ── */
@@ -553,7 +553,8 @@ const DEFAULT_CONFIG = {
 const LS = {
   config:   "irrdt.config.v1",
   branches: "irrdt.branches.v1",
-  readings: "irrdt.readings.v1"
+  readings: "irrdt.readings.v1",
+  dour:     "irrdt.dour.v1"
 };
 
 /* الحالة العامة */
@@ -562,10 +563,17 @@ const State = {
   branches: [],     /* الترع/الفروع */
   readings: {},     /* { "YYYY-MM-DD": { branchId: {front,back,flow} } } */
   tab: "overview",
+  activeDour: "أ",  /* المناوبة النشطة اليوم (تُحفظ محلياً) */
   readDate: todayKey()
 };
 
-function todayKey(d){ d=d||new Date(); return d.toISOString().slice(0,10); }
+/* مفتاح تاريخ اليوم بالتوقيت المحلى (وليس UTC) —
+   استخدام toISOString كان يُرجع تاريخ الأمس بعد منتصف الليل بتوقيت مصر */
+function todayKey(d){
+  d = d || new Date();
+  const p = n => String(n).padStart(2, "0");
+  return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate());
+}
 
 /* ────────────────────────────────────────────────
    2) المحرّك الهيدروليكى (Manning) — قطاع شبه منحرف
@@ -614,6 +622,25 @@ function currentMoqannan(){
   const m = State.config.moqannan || {summer:0,winter:0};
   return isSummer() ? m.summer : m.winter;
 }
+
+/* ────────────────────────────────────────────────
+   المناوبات (أ/ب/ج) — منطق موحّد للزمام اليومى
+   يُستخدم فى: النظرة العامة · الميزان المائى · ميزان حجز المنير
+   ──────────────────────────────────────────────── */
+const ROTATIONS = 3;   /* عدد المناوبات */
+function activeDourNow(){ return State.activeDour || "أ"; }
+/* الزمام الذى يشرب اليوم فعلياً لترعة واحدة:
+   - دورها هو النشط اليوم → كامل الزمام
+   - «مستمر» أو بلا دور → الزمام ÷ عدد المناوبات (حصة يومية)
+   - دور غير نشط اليوم → صفر · الأدلة مستبعدة دائماً لتفادى التكرار */
+function dailyZimaamOf(b, active){
+  if(!b || b.isDalil) return 0;
+  const z = +b.zimaam || 0;
+  const d = (b.dour || "").trim();
+  if(d === active) return z;
+  if(d === "مستمر" || d === "") return z / ROTATIONS;
+  return 0;
+}
 </script>
 
 <script>
@@ -628,8 +655,17 @@ const Store = {
     }catch(e){ State.config = structuredClone(DEFAULT_CONFIG); }
     /* دمج أى مفاتيح ناقصة من الافتراضى */
     State.config = Object.assign(structuredClone(DEFAULT_CONFIG), State.config);
+    /* دمج عميق للمقنن + حراسة المصفوفات ضد قيم قديمة/تالفة */
+    State.config.moqannan = Object.assign(
+      { summer: DEFAULT_CONFIG.moqannan.summer, winter: DEFAULT_CONFIG.moqannan.winter },
+      (State.config.moqannan && typeof State.config.moqannan === "object") ? State.config.moqannan : {}
+    );
+    if(!Array.isArray(State.config.reaches))      State.config.reaches = [];
+    if(!Array.isArray(State.config.admins))       State.config.admins = [];
+    if(!Array.isArray(State.config.summerMonths)) State.config.summerMonths = DEFAULT_CONFIG.summerMonths.slice();
     try{ State.branches = JSON.parse(localStorage.getItem(LS.branches)) || []; }catch(e){ State.branches = []; }
     try{ State.readings = JSON.parse(localStorage.getItem(LS.readings)) || {}; }catch(e){ State.readings = {}; }
+    try{ State.activeDour = localStorage.getItem(LS.dour) || State.activeDour || "أ"; }catch(e){}
   },
   saveConfig(){ localStorage.setItem(LS.config, JSON.stringify(State.config)); },
   saveBranches(){ localStorage.setItem(LS.branches, JSON.stringify(State.branches)); },
@@ -671,6 +707,12 @@ function toast(msg, kind){
   const t = el("div", {class:"toast " + (kind||"")}, msg);
   $("#toastHost").appendChild(t);
   setTimeout(() => { t.style.opacity = "0"; t.style.transition=".3s"; setTimeout(()=>t.remove(),300); }, 2600);
+}
+/* حالة فارغة مصغّرة — تُستخدم فى محررات الإعداد وجداول المحطات */
+function emptyMini(t, d){
+  return `<div class="empty" style="padding:26px 14px">${ICON.empty}
+    <div class="t">${esc(t)}</div>
+    <div class="d">${esc(d||"")}</div></div>`;
 }
 
 /* أيقونات SVG */
@@ -722,7 +764,7 @@ function renderShell(){
           <span class="sub">توأم رقمى هيدروليكى · ${esc(c.shortName||"")}</span>
         </div>
         <div class="topbar-spacer"></div>
-        <button class="icon-btn" title="تحديث القراءات من جوجل شيت" onclick="syncFromSheet(false)">${ICON.refresh||ICON.download}</button>
+        <button class="icon-btn" title="تحديث القراءات من جوجل شيت" onclick="syncFromSheet(false)">${ICON.refresh}</button>
         <button class="icon-btn" title="تصدير البيانات" onclick="exportAll()">${ICON.download}</button>
         <button class="icon-btn" title="استيراد البيانات" onclick="importPrompt()">${ICON.upload}</button>
       </div>
@@ -879,7 +921,7 @@ function networkMap(){
 
       <!-- النقاط -->
       ${NODES.map(n=>`
-        <g class="sm-node" onclick="showMapNode('${n.id}')" style="cursor:pointer">
+        <g class="sm-node" onclick="showMapNode('${n.id}', this)" style="cursor:pointer">
           <circle cx="${n.x}" cy="${n.y}" r="${n.big?9:6}" fill="${n.branch?'#a86a2a':n.big?'#9c3a28':'#5a3e22'}" stroke="#f4ead2" stroke-width="2"/>
           ${n.big?`<circle cx="${n.x}" cy="${n.y}" r="13" fill="none" stroke="${n.branch?'#a86a2a':'#9c3a28'}" stroke-width="1.2" opacity=".5"/>`:''}
           <text x="${n.x}" y="${n.y - (n.big?20:14)}" class="sm-label" text-anchor="middle">${n.t}</text>
@@ -911,13 +953,13 @@ const MAP_NODES_INFO = {
   suez:{t:'فرع السويس',d:'يتجه جنوباً نحو خليج السويس · يغذّى محافظة السويس'},
   port:{t:'بورسعيد',d:'ك128.4 · نهاية الترعة عند البحر المتوسط'},
 };
-function showMapNode(id){
+function showMapNode(id, gEl){
   const n=MAP_NODES_INFO[id]; if(!n) return;
   const box=document.getElementById('mapInfo');
   if(box) box.innerHTML=`<span class="smi-icon">📍</span><span class="smi-text"><b>${n.t}</b> — ${n.d}</span>`;
   // إبراز النقطة المختارة
   document.querySelectorAll('.sm-node').forEach(g=>g.classList.remove('active'));
-  if(event&&event.currentTarget) event.currentTarget.classList.add('active');
+  if(gEl && gEl.classList) gEl.classList.add('active');
 }
 
 
@@ -979,18 +1021,17 @@ VIEWS.overview = () => {
   const adminsCount = State.config.admins.length;
   const reachCount = State.config.reaches.length;
   const branchCount = State.branches.filter(x=>x.admin==='branch').length;
-  /* المناسيب اللحظية: آخر قراءات */
+  /* المناسيب اللحظية: قراءات اليوم المختار مرتبة بالكيلومتر */
   const day = State.readings[State.readDate] || {};
-  const readKeys = Object.keys(day);
-  const levelRows = State.branches
+  const levelRows = [...State.branches]
+    .sort((a,b2)=>(+a.km||0)-(+b2.km||0))
     .filter(x=>day[x.id] && (day[x.id].front!=null || day[x.id].back!=null))
     .slice(0,7);
-  const avgLevel = levelRows.length
-    ? levelRows.reduce((s,x)=>{const r=day[x.id];return s+((+r.front||0)+(+r.back||0))/2;},0)/levelRows.length
-    : null;
-  /* توزيع الاستخدامات */
+  /* توزيع الاستخدامات — بنفس منطق الميزان المائى (المناوبة النشطة + المستمر) */
   const moq = currentMoqannan();
-  const agQ = (totalZimaam*moq)/3;  /* بالمناوبات */
+  const active = activeDourNow();
+  const dailyZ = b.reduce((s,x)=>s+dailyZimaamOf(x,active),0);
+  const agQ = dailyZ*moq;
   const drinkQ = (STATIONS_DATA.drinking||[]).reduce((s,x)=>s+(+x.q||0),0);
   const indQ = (STATIONS_DATA.industrial||[]).reduce((s,x)=>s+(+x.q||0),0);
   const useTotal = agQ+drinkQ+indQ || 1;
@@ -1008,13 +1049,14 @@ VIEWS.overview = () => {
   return `
     ${setupBanner()}
     ${heritageBanner()}
+    <div class="heritage-map">${networkMap()}</div>
 
     <!-- مؤشرات الأداء الرئيسية -->
     <div class="kpi-strip">
       ${kpiCard(ICON.branches,"إجمالى الفروع",fmt(branchCount),"فرع رئيسى",'--brand')}
       ${kpiCard('📏',"إجمالى الأطوال",fmt(totalLen,1),"كم",'--accent')}
       ${kpiCard(ICON.balance,"الزمام المقرر",fmt(State.config.officialZimaamK||(totalZimaam/1000),1),"ألف فدان",'--pen-green')}
-      ${kpiCard('🌊',"الطلب اليومى",fmt((agQ+drinkQ+indQ)/1e6,1),"م.م³/يوم",'--brand')}
+      ${kpiCard('🌊',"الطلب اليومى",fmt((agQ+drinkQ+indQ)/1e6,1),"م.م³/ي · دور "+active,'--brand')}
       ${kpiCard('🏛️',"الأحباس",fmt(reachCount),"حبس مائى",'--pen-purple')}
       ${kpiCard('🎯',"المحطات",fmt((STATIONS_DATA.drinking||[]).length+(STATIONS_DATA.industrial||[]).length),"شرب وصناعة",'--gold')}
     </div>
@@ -1043,7 +1085,8 @@ VIEWS.overview = () => {
 
       <!-- توزيع الاستخدامات -->
       <div class="card dash-usage">
-        <div class="card-head"><div class="card-title">💧 توزيع الاستخدامات</div></div>
+        <div class="card-head"><div class="card-title">💧 توزيع الاستخدامات</div>
+          <span class="card-sub">دور ${active} + المستمر</span></div>
         <div class="card-body">
           ${donutChart([
             {label:'زراعة',pct:agPct,color:'#5a6b3a'},
@@ -1246,7 +1289,7 @@ function reachStationsDemand(rch, isLast){
 
 VIEWS.balance = () => {
   const dours = ["أ","ب","ج"];
-  const active = State.activeDour || "أ";
+  const active = activeDourNow();
   return `
   ${setupBanner()}
   <div class="section-title">${ICON.balance} الميزان المائى للأحباس</div>
@@ -1263,7 +1306,12 @@ VIEWS.balance = () => {
   <div id="balanceList"></div>
 `;
 };
-function setActiveDour(d){ State.activeDour=d; renderView(); }
+function setActiveDour(d){
+  State.activeDour = d;
+  try{ localStorage.setItem(LS.dour, d); }catch(e){}
+  recalcAllDischarges();   /* ميزان المنير يعتمد على المناوبة النشطة */
+  renderView();
+}
 AFTER.balance = () => {
   const host = $("#balanceList");
   const reaches = State.config.reaches;
@@ -1273,21 +1321,10 @@ AFTER.balance = () => {
     return;
   }
   const moq = currentMoqannan();
-  const active = State.activeDour || "أ";
-  const ROTATIONS = 3;   /* عدد المناوبات أ/ب/ج */
-  /* الحصة اليومية من الزمام لكل ترعة (فدان يشرب اليوم):
-     - ترعة الدور النشط: تشرب كامل زمامها فى يومها
-     - ترعة مستمرة: زمامها يتوزّع داخلياً على المناوبات → الحصة اليومية = الزمام ÷ عدد المناوبات
-     - بدون دور: تُعامل كمستمرة (توزيع على المناوبات)
-     - الأدلة: مستبعدة */
-  const dailyZimaam = b => {
-    if(b.isDalil) return 0;
-    const z = +b.zimaam||0;
-    const d = (b.dour||"").trim();
-    if(d===active) return z;                 /* دور نشط اليوم → كامل */
-    if(d==="مستمر" || d==="") return z/ROTATIONS;  /* مستمرة → حصة يومية */
-    return 0;                                /* دور غير نشط اليوم */
-  };
+  const active = activeDourNow();
+  /* الحصة اليومية من الزمام لكل ترعة — المنطق الموحّد (dailyZimaamOf):
+     دور نشط → كامل الزمام · مستمر/بلا دور → الزمام ÷ عدد المناوبات · غير ذلك → صفر */
+  const dailyZimaam = b => dailyZimaamOf(b, active);
   host.innerHTML = `<div class="grid cols-2">` + reaches.map((rch,i) => {
     const isLast = (i === reaches.length-1);
     const inReach = State.branches.filter(b => !b.isDalil && (+b.km>=rch.from) && (isLast ? true : (+b.km<rch.to)));
@@ -1539,6 +1576,7 @@ function saveIdentity(){
   c.moqannan.summer = +$("#cfgSummer").value || 0;
   c.moqannan.winter = +$("#cfgWinter").value || 0;
   Store.saveConfig();
+  recalcAllDischarges();   /* المقنن يدخل فى ميزان المنير */
   $("#hdrName").textContent = c.name;
   toast("حُفظت هوية الشبكة","ok");
 }
@@ -1607,13 +1645,17 @@ function saveBranch(id){
   };
   if(id){ const b=State.branches.find(x=>x.id===id); Object.assign(b,data); toast("حُفظ التعديل","ok"); }
   else { data.id=uid(); State.branches.push(data); toast("أُضيفت الترعة","ok"); }
-  Store.saveBranches(); closeModal(); renderView();
+  Store.saveBranches();
+  recalcAllDischarges();   /* الزمام/الموقع يؤثران على ميزان المنير */
+  closeModal(); renderView();
 }
 function deleteBranch(id){
   const b = State.branches.find(x=>x.id===id);
   if(!confirm("حذف «"+(b?b.name:"")+"»؟ لا يمكن التراجع.")) return;
   State.branches = State.branches.filter(x=>x.id!==id);
-  Store.saveBranches(); renderView(); toast("حُذفت الترعة","warn");
+  Store.saveBranches();
+  recalcAllDischarges();
+  renderView(); toast("حُذفت الترعة","warn");
 }
 
 /* ────────────────────────────────────────────────
@@ -1655,25 +1697,18 @@ function calcDischarge(bid, back){
    كل القيم بالمليون م³/يوم. يرجّع null لو تصرف الفم غير متاح. */
 function lossFactor(){ return isSummer() ? 0.05 : 0.03; }   /* 5% صيف · 3% شتاء */
 
-/* احتياجات حبس برقمه (0=الأول): زراعى + شرب + صناعة بالمليون م³/يوم */
+/* احتياجات حبس برقمه (0=الأول): زراعى + شرب + صناعة بالمليون م³/يوم
+   يستخدم dailyZimaamOf الموحّد — نفس أرقام بطاقات الميزان المائى تماماً */
 function reachTotalDemand(reachIdx){
   const reaches = State.config.reaches || [];
   const rch = reaches[reachIdx];
   if(!rch) return 0;
   const isLast = reachIdx === reaches.length - 1;
   const moq = currentMoqannan();
-  const active = State.activeDour || "أ";
-  const ROT = 3;
+  const active = activeDourNow();
   const inReach = State.branches.filter(b => !b.isDalil && (+b.km>=rch.from) && (isLast ? true : (+b.km<rch.to)));
   /* الزمام الذى يشرب اليوم فعلياً (حسب المناوبة) */
-  const dailyZ = inReach.reduce((s,b)=>{
-    if(b.isDalil) return s;
-    const z = +b.zimaam||0;
-    const d = (b.dour||"").trim();
-    if(d===active) return s+z;
-    if(d==="مستمر"||d==="") return s+z/ROT;
-    return s;
-  },0);
+  const dailyZ = inReach.reduce((s,b)=>s+dailyZimaamOf(b, active),0);
   const agDemand = dailyZ*moq/1e6;                 /* زراعى */
   const st = reachStationsDemand(rch, isLast);
   return agDemand + (st.drinkQ/1e6) + (st.indQ/1e6);   /* + شرب + صناعة */
@@ -1714,16 +1749,25 @@ function recalcAllDischarges(){
       }
     }
   }
-  /* حجز المنير: ميزان مائى من الفم (لليوم الحالى) */
+  /* حجز المنير: ميزان مائى من الفم (لليوم الحالى) —
+     ولو اختفى تصرف الفم نمسح القيمة المشتقة كى لا تبقى قديمة مضلِّلة */
   const d = State.readDate;
-  if(State.readings[d] && State.readings[d]['fom_ism'] && State.readings[d]['fom_ism'].flow!=null){
+  const dday = State.readings[d];
+  const fomFlow = (dday && dday['fom_ism']) ? dday['fom_ism'].flow : null;
+  if(fomFlow != null){
     const mq = calcMunirDischarge();
-    if(mq!=null){
-      if(!State.readings[d]['hgz_mnr']) State.readings[d]['hgz_mnr']={};
-      if(State.readings[d]['hgz_mnr'].flow !== mq){
-        State.readings[d]['hgz_mnr'].flow = mq; changed=true; n++;
+    if(mq != null){
+      if(!dday['hgz_mnr']) dday['hgz_mnr'] = {};
+      if(dday['hgz_mnr'].flow !== mq){
+        dday['hgz_mnr'].flow = mq;
+        dday['hgz_mnr']._ts = Date.now();
+        changed = true; n++;
       }
     }
+  } else if(dday && dday['hgz_mnr'] && dday['hgz_mnr'].flow != null){
+    delete dday['hgz_mnr'].flow;
+    dday['hgz_mnr']._ts = Date.now();
+    changed = true;
   }
   if(changed) Store.saveReadings();
   return n;
@@ -1748,7 +1792,6 @@ function setReading(bid,field,val){
     }
     /* حدّث خانة التصرف المعروضة فوراً دون إعادة رسم الجدول كله */
     try{
-      const cell = document.querySelector(`input[oninput*="'${bid}','flow'"], tr input[readonly][title*="محسوب"]`);
       const row = document.activeElement && document.activeElement.closest ? document.activeElement.closest('tr') : null;
       if(row){
         const flowInput = row.querySelector('td:last-child input');
@@ -1756,20 +1799,24 @@ function setReading(bid,field,val){
       }
     }catch(e){}
   }
-  /* لو تغيّر منسوب/تصرف الفم → أعد حساب المنير بالميزان المائى */
+  /* لو تغيّر منسوب/تصرف الفم → أعد حساب المنير بالميزان المائى
+     ولو زال تصرف الفم → امسح قيمة المنير المشتقة (لا مصدر لها) */
   if(bid==='fom_ism'){
-    const mq = calcMunirDischarge();
     const dd = State.readDate;
+    const mq = calcMunirDischarge();
     if(mq!=null){
       if(!State.readings[dd]['hgz_mnr']) State.readings[dd]['hgz_mnr']={};
       State.readings[dd]['hgz_mnr'].flow = mq;
       State.readings[dd]['hgz_mnr']._ts = Date.now();
-      try{
-        const inp = document.querySelector(`input[oninput*="'hgz_mnr','back'"]`);
-        const r = inp ? inp.closest('tr') : null;
-        if(r){ const fi=r.querySelector('td:last-child input'); if(fi) fi.value=mq; }
-      }catch(e){}
+    } else {
+      const mrec = State.readings[dd] && State.readings[dd]['hgz_mnr'];
+      if(mrec && mrec.flow!=null){ delete mrec.flow; mrec._ts = Date.now(); }
     }
+    try{
+      const inp = document.querySelector(`input[oninput*="'hgz_mnr','back'"]`);
+      const r = inp ? inp.closest('tr') : null;
+      if(r){ const fi=r.querySelector('td:last-child input'); if(fi) fi.value=(mq!=null?mq:""); }
+    }catch(e){}
   }
   /* ختم الوقت: الأحدث يكسب عند الدمج */
   State.readings[State.readDate][bid]._ts = Date.now();
@@ -1784,6 +1831,78 @@ function clearReadings(){
 /* ────────────────────────────────────────────────
    10) تصدير / استيراد
    ──────────────────────────────────────────────── */
+/* ════════════════════════════════════════════════
+   محرّك الدمج الموحّد — مصدر واحد للحقيقة
+   يُستخدم فى: الاستيراد (دمج آمن) + مزامنة Firebase (applyRemote)
+   المبدأ: القيمة الحقيقية (غير الصفر/غير الفارغة) تكسب دائماً على
+   الصفر/الفارغ أياً كان الطابع الزمنى؛ الطابع الزمنى مرجِّح فقط
+   عند وجود قيمتين حقيقيتين على الجانبين.
+   ════════════════════════════════════════════════ */
+const IrrMerge = {
+  /* «فارغ» = null/undefined/""/0/NaN/مصفوفة خالية — الصفر مقصود كـ«لا قيمة» */
+  isEmptyVal(v){
+    if(v == null || v === "" || v === 0) return true;
+    if(typeof v === "number" && isNaN(v)) return true;
+    if(Array.isArray(v) && v.length === 0) return true;
+    return false;
+  },
+  /* دمج حقول سجل واحد: incoming فوق base — الحقيقى يكسب على الفارغ */
+  mergeFields(base, incoming, incomingNewer){
+    const out = Object.assign({}, base || {});
+    const src = incoming || {};
+    for(const k in src){
+      const bv = out[k], sv = src[k];
+      if(this.isEmptyVal(sv)){
+        if(this.isEmptyVal(bv)) out[k] = sv;   /* كلاهما فارغ → خذ الوارد */
+        /* الوارد فارغ والمحلى حقيقى → أبقِ المحلى (لا نفقد بيانات) */
+      } else if(this.isEmptyVal(bv)){
+        out[k] = sv;                            /* الوارد حقيقى والمحلى فارغ → الوارد */
+      } else if(incomingNewer){
+        out[k] = sv;                            /* قيمتان حقيقيتان → الأحدث يكسب */
+      }
+    }
+    return out;
+  },
+  /* دمج قائمتى ترع حسب id.
+     union=true (الاستيراد): نُبقى أيضاً ما يوجد محلياً فقط — لا حذف.
+     union=false (المزامنة): عضوية القائمة تتبع الوارد → الحذف ينتقل بين الأجهزة،
+     مع دمج حقلى لكل ترعة مشتركة يمنع مسح القيم الحقيقية بأصفار قديمة. */
+  mergeBranches(localArr, remoteArr, remoteNewer, opts){
+    const union = !!(opts && opts.union);
+    const loc = Array.isArray(localArr) ? localArr : [];
+    const rem = Array.isArray(remoteArr) ? remoteArr : [];
+    const locById = {}; loc.forEach(b => { if(b && b.id) locById[b.id] = b; });
+    const out = rem.map(rb => {
+      const lb = (rb && rb.id) ? locById[rb.id] : null;
+      return lb ? this.mergeFields(lb, rb, remoteNewer) : Object.assign({}, rb);
+    });
+    if(union){
+      const remIds = {}; rem.forEach(b => { if(b && b.id) remIds[b.id] = 1; });
+      loc.forEach(lb => { if(lb && lb.id && !remIds[lb.id]) out.push(lb); });
+    }
+    return out;
+  },
+  /* دمج الإعدادات (روابط المزامنة/المقنن/الأحباس...) بنفس مبدأ الحقيقى-يكسب */
+  mergeConfig(localCfg, remoteCfg, remoteNewer){
+    const merged = this.mergeFields(localCfg || {}, remoteCfg || {}, remoteNewer !== false);
+    return Object.assign(structuredClone(DEFAULT_CONFIG), merged);
+  },
+  /* دمج القراءات: الأحدث (حسب _ts) يكسب على مستوى كل نقطة/يوم */
+  mergeReadings(local, remote){
+    const out = JSON.parse(JSON.stringify(local || {}));
+    const rem = remote || {};
+    for(const date in rem){
+      if(!out[date]) out[date] = {};
+      for(const bid in rem[date]){
+        const r = rem[date][bid] || {}, l = out[date][bid] || {};
+        const rTs = +r._ts || 0, lTs = +l._ts || 0;
+        out[date][bid] = (lTs > 0 && lTs > rTs) ? l : Object.assign({}, l, r);
+      }
+    }
+    return out;
+  }
+};
+
 function exportAll(){
   const payload = { __app:"IrrigationDT", __version:"V1", exportedAt:new Date().toISOString(),
     config:State.config, branches:State.branches, readings:State.readings };
@@ -1793,6 +1912,7 @@ function exportAll(){
   document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
   toast("صُدِّرت البيانات","ok");
 }
+let __importPayload = null;
 function importPrompt(){
   const inp = el("input",{type:"file",accept:".json,application/json"});
   inp.addEventListener("change", () => {
@@ -1801,18 +1921,54 @@ function importPrompt(){
     rd.onload = () => {
       try{
         const d = JSON.parse(rd.result);
-        if(!d.config && !d.branches) throw new Error("ملف غير صالح");
-        if(!confirm("استيراد سيستبدل البيانات الحالية. متابعة؟")) return;
-        if(d.config)   State.config   = Object.assign(structuredClone(DEFAULT_CONFIG), d.config);
-        if(d.branches) State.branches = d.branches;
-        if(d.readings) State.readings = d.readings;
-        Store.saveConfig(); Store.saveBranches(); Store.saveReadings();
-        renderShell(); toast("اكتمل الاستيراد","ok");
+        if(!d || (!d.config && !d.branches && !d.readings)) throw new Error("ملف غير صالح");
+        openImportChoice(d);
       }catch(e){ toast("تعذّر قراءة الملف: "+e.message,"danger"); }
     };
     rd.readAsText(f);
   });
   inp.click();
+}
+function openImportChoice(d){
+  __importPayload = d;
+  const nB = Array.isArray(d.branches) ? d.branches.length : 0;
+  const nR = d.readings ? Object.keys(d.readings).length : 0;
+  const m = el("div",{class:"modal-bg open",id:"importModal"});
+  m.innerHTML = `<div class="modal"><div class="modal-head">
+      <h3>استيراد البيانات</h3>
+      <button class="icon-btn" style="background:var(--surface-2);color:var(--ink-2)" onclick="closeImportModal()">${ICON.x}</button></div>
+    <div class="modal-body">
+      <p style="margin-bottom:12px">الملف يحتوى: <b>${fmt(nB)}</b> ترعة · <b>${fmt(nR)}</b> يوم قراءات${d.config?" · إعدادات الشبكة":""}.</p>
+      <p style="font-size:.88rem;color:var(--ink-2);line-height:1.9">
+        <b>دمج آمن:</b> يضيف الجديد ويكمل الناقص — القيمة الحقيقية تكسب على الصفر/الفارغ، ولا يُمسح شىء محلى.<br>
+        <b>استبدال كامل:</b> يمسح البيانات الحالية ويحل الملف محلها بالكامل.</p>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-primary" onclick="doImport('merge')">دمج آمن</button>
+      <button class="btn btn-danger" onclick="doImport('replace')">استبدال كامل</button>
+      <button class="btn btn-ghost" onclick="closeImportModal()">إلغاء</button>
+    </div></div>`;
+  document.body.appendChild(m);
+  m.addEventListener("click", e=>{ if(e.target===m) closeImportModal(); });
+}
+function closeImportModal(){ const m=$("#importModal"); if(m) m.remove(); __importPayload=null; }
+function doImport(mode){
+  const d = __importPayload;
+  if(!d){ closeImportModal(); return; }
+  if(mode === "replace"){
+    if(!confirm("استبدال كامل: سيمسح كل البيانات الحالية ويحل الملف محلها. متابعة؟")) return;
+    if(d.config)              State.config   = Object.assign(structuredClone(DEFAULT_CONFIG), d.config);
+    if(Array.isArray(d.branches)) State.branches = d.branches;
+    if(d.readings)            State.readings = d.readings;
+  } else {
+    if(d.config)              State.config   = IrrMerge.mergeConfig(State.config, d.config, true);
+    if(Array.isArray(d.branches)) State.branches = IrrMerge.mergeBranches(State.branches, d.branches, true, {union:true});
+    if(d.readings)            State.readings = IrrMerge.mergeReadings(State.readings, d.readings);
+  }
+  Store.saveConfig(); Store.saveBranches(); Store.saveReadings();
+  recalcAllDischarges();
+  closeImportModal(); renderShell();
+  toast(mode === "merge" ? "اكتمل الدمج الآمن" : "اكتمل الاستبدال الكامل","ok");
 }
 
 /* ────────────────────────────────────────────────
@@ -2000,17 +2156,36 @@ if("serviceWorker" in navigator){
              config:config, branches:branches, readings:readings };
   }
 
-  /* تطبيق بيانات السحابة محلياً */
+  /* سلسلة نصية قانونية (مفاتيح مرتبة) للمقارنة بغضّ النظر عن ترتيب الحقول */
+  function stableStr(v){
+    if(Array.isArray(v)) return '['+v.map(stableStr).join(',')+']';
+    if(v && typeof v==='object'){
+      return '{'+Object.keys(v).sort().map(k=>JSON.stringify(k)+':'+stableStr(v[k])).join(',')+'}';
+    }
+    return JSON.stringify(v===undefined?null:v);
+  }
+
+  /* تطبيق بيانات السحابة محلياً — دمج حقلى (وليس استبدالاً كلياً):
+     القيمة الحقيقية المحلية لا تُمسح بصفر/فارغ قادم من جهاز آخر.
+     لو أنقذ الدمج قيماً محلية → نرفع النسخة الموحّدة للسحابة لتتقارب الأجهزة. */
   function applyRemote(data){
     if(!data||typeof data!=='object') return false;
     _applying=true;
+    let rescued=false, recalced=0;
     try{
       let n=0;
+      const M = (typeof IrrMerge!=='undefined') ? IrrMerge : null;
       if(data.config && typeof data.config==='object'){
-        localStorage.setItem(LS.config, JSON.stringify(data.config)); n++;
+        let localCfg={}; try{ localCfg=JSON.parse(localStorage.getItem(LS.config)||'{}'); }catch(e){}
+        const mergedCfg = M ? M.mergeConfig(localCfg, data.config, true) : data.config;
+        if(M && stableStr(mergedCfg)!==stableStr(data.config)) rescued=true;
+        localStorage.setItem(LS.config, JSON.stringify(mergedCfg)); n++;
       }
       if(Array.isArray(data.branches)){
-        localStorage.setItem(LS.branches, JSON.stringify(data.branches)); n++;
+        let localBr=[]; try{ localBr=JSON.parse(localStorage.getItem(LS.branches)||'[]'); }catch(e){}
+        const mergedBr = M ? M.mergeBranches(localBr, data.branches, true, {union:false}) : data.branches;
+        if(M && stableStr(mergedBr)!==stableStr(data.branches)) rescued=true;
+        localStorage.setItem(LS.branches, JSON.stringify(mergedBr)); n++;
       }
       /* دمج المناسيب: ندمج الوارد مع المحلى (لا نمسح ما لم يُرفع بعد) */
       if(data.readings && typeof data.readings==='object'){
@@ -2019,16 +2194,23 @@ if("serviceWorker" in navigator){
         const merged=mergeReadings(local, data.readings);
         localStorage.setItem(LS.readings, JSON.stringify(merged)); n++;
       }
-      // أعد تحميل حالة التطبيق وأعد الرسم
+      // أعد تحميل حالة التطبيق، أعد حساب التصرفات المشتقة، ثم أعد الرسم
       try{ if(typeof Store!=='undefined' && Store.load) Store.load(); }catch(e){}
+      try{ if(typeof recalcAllDischarges==='function') recalced = recalcAllDischarges()||0; }catch(e){}
       setTimeout(refreshUI, 150);
+      if(rescued || recalced>0){
+        setTimeout(()=>{ try{ triggerPush(); }catch(e){} }, 1200);
+      }
       return n>0;
     } finally {
       setTimeout(()=>{ _applying=false; }, 1000);
     }
   }
-  /* دمج قراءتين: الأحدث (حسب _ts) يكسب على مستوى كل نقطة */
+  /* دمج قراءتين: الأحدث (حسب _ts) يكسب على مستوى كل نقطة —
+     يفوّض لمحرك الدمج الموحّد IrrMerge (نفس منطق الاستيراد) */
   function mergeReadings(local, remote){
+    if(typeof IrrMerge!=='undefined') return IrrMerge.mergeReadings(local, remote);
+    /* احتياط لو حُمّل هذا الملف منفرداً */
     const out=JSON.parse(JSON.stringify(local||{}));
     for(const date in remote){
       if(!out[date]) out[date]={};
@@ -2036,13 +2218,7 @@ if("serviceWorker" in navigator){
         const rem=remote[date][bid]||{};
         const loc=out[date][bid]||{};
         const remTs=+rem._ts||0, locTs=+loc._ts||0;
-        if(locTs>0 && locTs>remTs){
-          /* المحلية أحدث — نبقيها */
-          out[date][bid]=loc;
-        } else {
-          /* الوارد أحدث (أو لا طابع محلى) — يكسب */
-          out[date][bid]=Object.assign({}, loc, rem);
-        }
+        out[date][bid] = (locTs>0 && locTs>remTs) ? loc : Object.assign({}, loc, rem);
       }
     }
     return out;
@@ -2069,6 +2245,23 @@ if("serviceWorker" in navigator){
     if(_applying) return;
     try{
       const db=await getDB(); const data=snapshot();
+      /* ── حاجز الرفع الفارغ ──
+         لا نرفع snapshot بلا ترع فوق سحابة بها ترع — يحمى من مسح
+         بيانات السحابة عند تهيئة جهاز جديد قبل اكتمال أول تحميل. */
+      if(!Array.isArray(data.branches) || data.branches.length===0){
+        try{
+          const snap = await db.ref(DB_PATH+'/branches').once('value');
+          const remBr = snap.val();
+          const remHas = Array.isArray(remBr) ? remBr.length>0
+                        : (remBr && typeof remBr==='object' && Object.keys(remBr).length>0);
+          if(remHas){
+            console.warn('[FB-BR] أُلغى رفع حالة فارغة فوق بيانات سحابية موجودة');
+            if(!silent && typeof toast==='function') toast('أُلغى الرفع: المحلى فارغ والسحابة بها بيانات','warn');
+            setBadge('ok');
+            return;
+          }
+        }catch(e){ /* لو فشل الفحص نُكمل الرفع كالمعتاد */ }
+      }
       _myLastPushTs=data._ts;
       await db.ref(DB_PATH).set(data);
       localStorage.setItem('irrdt_fb_lastpush_ts', String(data._ts));
@@ -2125,7 +2318,8 @@ if("serviceWorker" in navigator){
     try{ db = await getDB(); }catch(e){ return; }
     try{
       if(oldAppRef){ try{ oldAppRef.off(); }catch(e){} oldAppRef=null; }
-      const today = (typeof State!=='undefined' && State.readDate) ? State.readDate : new Date().toISOString().slice(0,10);
+      const today = (typeof State!=='undefined' && State.readDate) ? State.readDate
+                  : (typeof todayKey==='function' ? todayKey() : new Date().toISOString().slice(0,10));
       oldAppRef = db.ref(OLD_APP_PATH + '/drBag/' + today);
       oldAppRef.on('value', (snap)=>{
         try{
@@ -2148,13 +2342,21 @@ if("serviceWorker" in navigator){
   }
   /* نعرّضها لإعادة الربط عند تغيير تاريخ القراءة */
   if(typeof window!=='undefined') window.__irrRebindOldApp = bindOldAppListener;
-  /* يحوّل قراءات التطبيق القديم {تاريخ:{نقطة:{f,b,flow}}} لشكل الجديد {front,back,flow} */
+  /* يحوّل قراءات التطبيق القديم {تاريخ:{نقطة:{f,b,flow}}} لشكل الجديد {front,back,flow}
+     مع تجاهل معرّفات لا توجد بالتطبيق (بنفس منطق مزامنة الشيت) */
   function convertOldReadings(drBag){
     const out={};
+    const valid={};
+    try{
+      if(typeof State!=='undefined' && Array.isArray(State.branches))
+        State.branches.forEach(b=>{ if(b&&b.id) valid[b.id]=1; });
+    }catch(e){}
+    const hasValid = Object.keys(valid).length>0;
     for(const date in drBag){
       const day=drBag[date]; if(!day||typeof day!=='object') continue;
       out[date]={};
       for(const pt in day){
+        if(hasValid && !valid[pt]) continue;   /* معرّف غير معروف → تجاهُل */
         const r=day[pt]||{};
         const rec={};
         if(r.f!=null && r.f!=='' && !isNaN(r.f)) rec.front=+r.f;
@@ -2235,7 +2437,30 @@ if("serviceWorker" in navigator){
       if(!cfg.databaseURL) cfg.databaseURL='https://'+cfg.projectId+'-default-rtdb.firebaseio.com';
       saveCfg(cfg);
       fbDB=null;
-      try{ await subscribe(); hookSaveFns(); await push(false); host.remove(); }
+      try{
+        const db = await getDB();
+        /* ── اسحب أولاً ──
+           لو بالسحابة بيانات أحدث من جهاز آخر نطبّقها (بالدمج الحقلى)
+           قبل أى رفع — يمنع كتابة بذرة هذا الجهاز فوق بيانات حقيقية. */
+        let pulled=false;
+        try{
+          const snap = await db.ref(DB_PATH).once('value');
+          const remote = snap.val();
+          const lastPush = +(localStorage.getItem('irrdt_fb_lastpush_ts')||0);
+          const remoteTs = +((remote&&remote._ts)||0);
+          const remoteDev = (remote&&remote._dev)||'';
+          if(remote && remoteTs>lastPush && remoteDev!==DEVICE_ID){
+            applyRemote(remote);
+            pulled=true;
+            _myLastPushTs=remoteTs;
+            localStorage.setItem('irrdt_fb_lastpush_ts', String(remoteTs));
+          }
+        }catch(e){ console.warn('[FB-BR] initial pull', e); }
+        await subscribe(); hookSaveFns();
+        if(pulled){ await new Promise(r=>setTimeout(r,1100)); }   /* انتظر انتهاء التطبيق */
+        await push(false);
+        host.remove();
+      }
       catch(e){ if(typeof toast==='function') toast('فشل الاتصال: '+e.message,'danger'); }
     };
     document.getElementById('fbPushNow').onclick=()=>push(false).catch(()=>{});
