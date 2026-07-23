@@ -2877,20 +2877,6 @@ VIEWS.wapor = function () {
     </div>
   </div>
 
-  <div class="panel">
-    <div class="panel-head">
-      <div class="panel-title">
-        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12l4-4 4 4 4-8 6 12"/></svg>
-        AETI والمطر الفعّال والاحتياج الإجمالى
-      </div>
-      <div class="wp-fld" style="margin:0;min-width:170px"><select id="wpChB"><option value="all">كل الفروع</option></select></div>
-    </div>
-    <div class="panel-body">
-      <canvas id="wpCh1" height="120"></canvas>
-      <div style="margin-top:16px"><canvas id="wpCh2" height="80"></canvas></div>
-      <div class="wp-note r" style="margin-top:13px"><b>قراءة الاتجاه.</b> الخطوط المعروضة مشتقة من AETI وPCP الفعليين ولا تتضمن تصرفات مولّدة. انخفاض AETI قد يعنى تغير الغطاء أو المساحة المزروعة، لذلك لا يُفسَّر كترشيد قبل المراجعة الميدانية.</div>
-    </div>
-  </div>
   </section>
   `;
 };
@@ -3888,7 +3874,7 @@ AFTER.wapor = function(){
     $('wpRMSE').textContent='—';$('wpUV').textContent='±—'; WP.addCalRow(); WP.compute();
   };
   $('wpFB').onchange = ()=>{ WP.shown=200; WP.renderRes() };
-  $('wpChB').onchange = ()=>WP.drawSeries();
+  const chBranch=$('wpChB'); if(chBranch) chBranch.onchange=()=>WP.drawSeries();
   $('wpMore').onclick = ()=>{ WP.shown+=300; WP.renderRes() };
   $('wpExp').onclick  = ()=>WP.exportCsv();
   ['wpE1','wpC1','wpE2','wpC2','wpE3','wpC3','wpPE'].forEach(i=>{
