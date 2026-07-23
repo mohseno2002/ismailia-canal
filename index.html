@@ -12,8 +12,9 @@
 <meta name="apple-mobile-web-app-title" content="Ismailia DT">
 <meta name="mobile-web-app-capable" content="yes">
 
-<meta name="description" content="منصة عامة لإدارة شبكات الرى — توأم رقمى هيدروليكى">
-<title>التوأم الرقمى — منصة شبكات الرى</title>
+<meta name="description" content="التوأم الرقمى لشبكة الإسماعيلية — إصدار صحة المجرى ورصد الاشتباه بالحشائش والتعديات V11">
+<meta name="app-build" content="ISMAILIA-CANAL-HEALTH-V11-20260724">
+<title>الإسماعيلية V11 — صحة المجرى والتعديات</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Aref+Ruqaa:wght@400;700&family=Cairo:wght@400;600;700;800&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
@@ -671,6 +672,156 @@ html,body{overscroll-behavior-y:auto;position:static!important}
   .wp-actions .dr-btn{flex:1;min-width:135px}.wapor-shell .panel-head{align-items:flex-start}
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   رصد الاشتباه بالحشائش المائية — نطاق مستقل تماماً
+   ═══════════════════════════════════════════════════════════════ */
+.weed-shell{
+  --ww-teal:#167b86;--ww-teal-soft:#dceced;--ww-green:#5a6b3a;--ww-green-soft:#e6e3c8;
+  --ww-amber:#a86a2a;--ww-amber-soft:#efe0c0;--ww-red:#9c3a28;--ww-red-soft:#eed5c8;
+  display:grid;gap:16px
+}
+.weed-panel{
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);overflow:hidden
+}
+.weed-head{
+  padding:14px 17px;border-bottom:1px solid var(--line);display:flex;align-items:center;
+  justify-content:space-between;gap:10px;flex-wrap:wrap;
+  background:linear-gradient(180deg,var(--paper),var(--paper-2))
+}
+.weed-title{
+  display:flex;align-items:center;gap:9px;font-family:var(--hand);font-size:1.18rem;
+  font-weight:700;color:var(--brand-dark)
+}
+.weed-title svg{width:21px;height:21px;color:var(--ww-green)}
+.weed-body{padding:17px}
+.weed-source{
+  display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;
+  padding:14px;border:1px solid rgba(22,123,134,.28);border-radius:8px;
+  background:linear-gradient(135deg,var(--ww-teal-soft),var(--ww-green-soft))
+}
+.weed-source-logo{
+  width:48px;height:48px;border-radius:9px;display:grid;place-items:center;color:#fff;
+  background:linear-gradient(145deg,var(--brand-dark),var(--ww-teal));font:800 .72rem var(--mono)
+}
+.weed-source-copy{min-width:0}.weed-source-copy b{display:block;font-size:.9rem;color:var(--ink)}
+.weed-source-copy span{display:block;font-size:.73rem;line-height:1.65;color:var(--ink-2)}
+.weed-source-state{display:flex;align-items:center;gap:7px;font-size:.72rem;font-weight:700;color:var(--ink-2)}
+.weed-dot{width:9px;height:9px;border-radius:50%;background:var(--ink-3);box-shadow:0 0 0 4px rgba(156,135,99,.16)}
+.weed-dot.ok{background:var(--ww-green);box-shadow:0 0 0 4px var(--ww-green-soft)}
+.weed-dot.busy{background:var(--ww-amber);box-shadow:0 0 0 4px var(--ww-amber-soft);animation:weedPulse 1.2s infinite}
+.weed-dot.bad{background:var(--ww-red);box-shadow:0 0 0 4px var(--ww-red-soft)}
+@keyframes weedPulse{50%{opacity:.42}}
+.weed-note{
+  margin-top:11px;padding:10px 13px;border-radius:6px;font-size:.78rem;line-height:1.75;
+  background:var(--ww-amber-soft);border:1px solid rgba(168,106,42,.3);color:#714516
+}
+.weed-note.info{background:var(--ww-teal-soft);border-color:rgba(22,123,134,.28);color:#28555c}
+.weed-note.good{background:var(--ww-green-soft);border-color:rgba(90,107,58,.28);color:#405025}
+.weed-note b{color:var(--ink)}
+.weed-grid{display:grid;gap:10px}.weed-g3{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+.weed-g4{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.weed-field label{display:block;font-size:.74rem;color:var(--ink-2);margin-bottom:4px;font-weight:700}
+.weed-field input,.weed-field select,.weed-field textarea{
+  width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:5px;
+  background:var(--paper);color:var(--ink);font-family:'Tajawal',sans-serif;font-size:.82rem
+}
+.weed-field textarea{min-height:74px;resize:vertical;line-height:1.6}
+.weed-field input:focus,.weed-field select:focus,.weed-field textarea:focus{
+  outline:none;border-color:var(--ww-teal);box-shadow:0 0 0 3px var(--ww-teal-soft)
+}
+.weed-help{display:block;margin-top:4px;font-size:.67rem;line-height:1.5;color:var(--ink-3)}
+.weed-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.weed-btn{
+  border:1px solid var(--line);border-radius:5px;padding:8px 13px;display:inline-flex;
+  align-items:center;justify-content:center;gap:6px;background:var(--paper);color:var(--ink);
+  font-family:'Tajawal',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer;transition:.15s
+}
+.weed-btn:hover{border-color:var(--brand);transform:translateY(-1px)}
+.weed-btn.primary{background:var(--brand);border-color:var(--brand);color:#fff}
+.weed-btn.green{background:var(--ww-green);border-color:var(--ww-green);color:#fff}
+.weed-btn.danger{background:var(--ww-red-soft);border-color:rgba(156,58,40,.35);color:var(--ww-red)}
+.weed-btn:disabled{opacity:.48;cursor:not-allowed;transform:none}
+.weed-progress-box{display:none;margin-top:12px;padding:11px;border:1px solid rgba(22,123,134,.28);border-radius:6px;background:var(--ww-teal-soft)}
+.weed-progress-box.on{display:block}
+.weed-progress-row{display:flex;align-items:center;gap:9px;font-size:.75rem}
+.weed-progress-row b{flex:1}.weed-progress-row span{font:600 .7rem var(--mono);direction:ltr}
+.weed-progress{height:7px;margin-top:8px;border-radius:99px;background:rgba(22,123,134,.15);overflow:hidden}
+.weed-progress i{display:block;width:0;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--brand),var(--ww-green));transition:width .2s}
+.weed-log{
+  margin-top:10px;max-height:125px;overflow:auto;padding:8px 10px;border:1px solid var(--line);
+  border-radius:5px;background:#eadfc6;color:var(--ink-2);direction:ltr;text-align:left;
+  font:400 .68rem/1.7 ui-monospace,'Courier New',monospace
+}
+.weed-log .ok{color:var(--ww-green)}.weed-log .warn{color:var(--ww-amber)}.weed-log .err{color:var(--ww-red)}
+.weed-kpis{display:grid;grid-template-columns:repeat(5,minmax(125px,1fr));gap:9px}
+.weed-kpi{position:relative;overflow:hidden;padding:12px 13px;border:1px solid var(--line);border-radius:7px;background:var(--paper)}
+.weed-kpi::before{content:'';position:absolute;inset-inline-start:0;top:0;bottom:0;width:3px;background:var(--ww-teal)}
+.weed-kpi.green::before{background:var(--ww-green)}.weed-kpi.amber::before{background:var(--ww-amber)}.weed-kpi.red::before{background:var(--ww-red)}
+.weed-kpi span{display:block;font-size:.7rem;color:var(--ink-2);line-height:1.4}
+.weed-kpi b{display:block;margin:4px 0 2px;font:700 1.35rem var(--mono);color:var(--ink);direction:ltr;text-align:right}
+.weed-kpi small{display:block;color:var(--ink-3);font-size:.64rem}
+.weed-map-wrap{position:relative}.weed-map{
+  display:block;width:100%;height:330px;border:1px solid var(--line);border-radius:7px;
+  background:linear-gradient(180deg,#e8dfc9,#f2e8d0);touch-action:manipulation
+}
+.weed-legend{display:flex;flex-wrap:wrap;gap:11px;margin-top:8px;font-size:.7rem;color:var(--ink-2)}
+.weed-legend span{display:flex;align-items:center;gap:5px}.weed-swatch{width:12px;height:12px;border-radius:3px;display:inline-block}
+.weed-map-hint{margin-top:6px;font-size:.68rem;color:var(--ink-3)}
+.weed-table-wrap{overflow:auto;border:1px solid var(--line);border-radius:6px;max-height:520px}
+.weed-table{width:100%;min-width:1180px;border-collapse:collapse;font-size:.76rem}
+.weed-table th{position:sticky;top:0;z-index:2;background:var(--paper-2);color:var(--brand-dark);white-space:nowrap}
+.weed-table th,.weed-table td{padding:8px 9px;border-bottom:1px solid var(--line);text-align:right;vertical-align:middle}
+.weed-table tr:hover td{background:rgba(220,236,237,.35)}
+.weed-table .num{font-family:var(--mono);direction:ltr;text-align:center;white-space:nowrap}
+.weed-table select{padding:5px 7px;border:1px solid var(--line);border-radius:4px;background:var(--paper);font-family:'Tajawal',sans-serif;font-size:.72rem}
+.weed-badge{display:inline-block;padding:3px 8px;border-radius:99px;font-size:.66rem;font-weight:700;white-space:nowrap}
+.weed-badge.clear{background:var(--ww-teal-soft);color:var(--ww-teal)}
+.weed-badge.low{background:#ece5c9;color:#7d6b29}.weed-badge.med{background:var(--ww-amber-soft);color:var(--ww-amber)}
+.weed-badge.high{background:var(--ww-red-soft);color:var(--ww-red)}.weed-badge.urgent{background:var(--ww-red);color:#fff}
+.weed-badge.na{background:var(--paper-2);color:var(--ink-3)}
+.weed-empty{text-align:center;padding:34px 15px;color:var(--ink-2)}
+.weed-empty b{display:block;color:var(--ink);margin-bottom:4px}
+.weed-module-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(280px,.85fr);gap:12px}
+.weed-chart{
+  display:block;width:100%;height:265px;border:1px solid var(--line);border-radius:7px;
+  background:linear-gradient(180deg,#f4ead2,#eadfc6)
+}
+.weed-summary-list{display:grid;gap:7px}
+.weed-summary-row{
+  display:grid;grid-template-columns:minmax(0,1fr) auto;gap:9px;align-items:center;
+  padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:var(--paper)
+}
+.weed-summary-row span{font-size:.72rem;color:var(--ink-2)}
+.weed-summary-row b{font:700 .78rem var(--mono);direction:ltr;color:var(--ink)}
+.weed-form-box{padding:12px;border:1px solid var(--line);border-radius:7px;background:rgba(244,234,210,.72)}
+.weed-form-title{font-family:var(--hand);font-size:1.05rem;font-weight:700;color:var(--brand);margin-bottom:9px}
+.weed-photo-preview{
+  display:none;width:100%;max-width:220px;max-height:145px;object-fit:cover;margin-top:8px;
+  border:1px solid var(--line);border-radius:6px;background:var(--paper-2)
+}
+.weed-photo-preview.on{display:block}
+.weed-thumb{width:52px;height:38px;object-fit:cover;border:1px solid var(--line);border-radius:4px}
+.weed-coord{font:600 .68rem var(--mono);direction:ltr;text-align:left;color:var(--ink-2)}
+.weed-divider{height:1px;background:var(--line);margin:13px 0}
+.weed-callout{
+  padding:10px 12px;border-inline-start:4px solid var(--ww-amber);border-radius:5px;
+  background:var(--ww-amber-soft);font-size:.73rem;line-height:1.7;color:#714516
+}
+.weed-table.compact{min-width:860px}
+.weed-table.missions{min-width:1050px}
+.weed-badge.verified{background:#dce8cf;color:#405025}
+.weed-badge.rejected{background:#e4e1da;color:#665f54}
+.weed-spin{width:13px;height:13px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:weedSpin .7s linear infinite}
+@keyframes weedSpin{to{transform:rotate(360deg)}}
+@media(max-width:900px){.weed-kpis{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:768px){
+  .weed-body{padding:13px}.weed-source{grid-template-columns:auto minmax(0,1fr)}
+  .weed-source-state{grid-column:1/-1}.weed-map{height:285px}
+  .weed-actions .weed-btn{flex:1;min-width:135px}.weed-kpis{grid-template-columns:1fr 1fr}
+  .weed-module-grid{grid-template-columns:1fr}.weed-chart{height:230px}
+}
+
 </style>
 
 </head>
@@ -883,6 +1034,9 @@ const ICON = {
   download:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
   refresh:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>',
   stations:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4"/><path d="M9 9v.01M9 12v.01M9 15v.01M9 18v.01"/></svg>',
+  weeds:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 20c4-5 7-8 13-10"/><path d="M8 15C5 9 8 5 16 4c1 7-2 11-8 11Z"/><path d="M13 12c2 0 4 1 6 3"/><path d="M2 21h20"/></svg>',
+  map:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m3 6 5-3 8 3 5-3v15l-5 3-8-3-5 3Z"/><path d="M8 3v15M16 6v15"/></svg>',
+  save:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 3h13l3 3v15H4Z"/><path d="M8 3v6h8V3M8 21v-7h8v7"/></svg>',
   wapor:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.7 2.5 15.3 0 18M12 3c-2.5 2.7-2.5 15.3 0 18"/><path d="M17.5 5.5l2-2"/></svg>',
   upload:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>',
   x:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
@@ -898,6 +1052,7 @@ const ICON = {
    ──────────────────────────────────────────────── */
 const TABS = [
   { id:"overview", label:"نظرة عامة", icon:ICON.overview },
+  { id:"weeds",    label:"صحة المجرى · V11", icon:ICON.weeds },
   { id:"branches", label:"الترع والفروع", icon:ICON.branches },
   { id:"readings", label:"القراءات اليومية", icon:ICON.readings },
   { id:"balance",  label:"الميزان المائى", icon:ICON.balance },
@@ -917,7 +1072,7 @@ function renderShell(){
         <div class="logo">${ICON.wave}</div>
         <div class="brand-txt">
           <span class="net" id="hdrName">${esc(c.name)}</span>
-          <span class="sub">توأم رقمى هيدروليكى · ${esc(c.shortName||"")}</span>
+          <span class="sub">🌿 إصدار صحة المجرى V11 · حشائش وتعديات · توأم رقمى هيدروليكى · ${esc(c.shortName||"")}</span>
         </div>
         <div class="topbar-spacer"></div>
         <button class="icon-btn" title="تحديث القراءات من جوجل شيت" onclick="syncFromSheet(false)">${ICON.refresh}</button>
@@ -2242,7 +2397,9 @@ if(State.config.sheetAutoSync && (State.config.sheetSyncUrl||"").trim()){
 /* PWA: service worker — ملف حقيقى (شرط ظهور زر التثبيت) */
 if("serviceWorker" in navigator){
   window.addEventListener("load", function(){
-    navigator.serviceWorker.register("./sw.js").catch(function(e){ console.warn("SW reg failed", e); });
+    navigator.serviceWorker.register("./sw.js?v=canal-health-v11-20260724", {updateViaCache:"none"})
+      .then(function(reg){ return reg.update(); })
+      .catch(function(e){ console.warn("SW reg failed", e); });
   });
 }
 </script>
@@ -3923,6 +4080,1324 @@ AFTER.wapor = function(){
   if(!WP._resizeBound){
     WP._resizeBound=true;
     window.addEventListener('resize',()=>{ if(State.tab==='wapor') WP.mapDraw() });
+  }
+};
+</script>
+
+<script>
+"use strict";
+/* ════════════════════════════════════════════════════════════════════
+   رصد الاشتباه بالحشائش المائية — Sentinel-2 L2A + إسناد هيدروليكى
+   وحدة مستقلة: لا تغيّر WaPOR أو الحسابات أو بيانات الشبكة الأصلية.
+   ════════════════════════════════════════════════════════════════════ */
+const WW = {
+  API: "https://earth-search.aws.element84.com/v1/search",
+  COLLECTION: "sentinel-2-l2a",
+  SAVE_KEY: "ismailia.weedWatch.analysis.v1",
+  VALIDATION_KEY: "ismailia.weedWatch.validation.v1",
+  HISTORY_KEY: "ismailia.weedWatch.history.v1",
+  MISSIONS_KEY: "ismailia.weedWatch.missions.v1",
+  MAINTENANCE_KEY: "ismailia.weedWatch.maintenance.v1",
+  REQUIRED_ASSETS: ["red","green","nir","swir16","scl"],
+  config: {
+    fromDate: "", toDate: "", cloudMax: 30, startKm: 0, endKm: 126,
+    segmentKm: 1, corridorM: 180, ndvi: .35, minCluster: 3
+  },
+  scenes: [], selectedCurrent: "", selectedPrevious: "",
+  results: [], lastRun: null, validation: {}, history: [], missions: [], maintenance: [], logs: [],
+  pendingPhoto: "", pendingCoords: null, pendingMissionKey: null,
+  running: false, abort: null, readerCache: new Map(), mapRows: []
+};
+
+/* خط المجرى الحقيقى — OpenStreetMap relation 10369130 (ODbL)،
+   أُدرج داخل الملف لضمان ثبات التطبيق وعدم الاعتماد على استدعاء OSM وقت التشغيل. */
+WW.CENTERLINE = [[31.2403942,30.1051655],[31.2421373,30.1053312],[31.2444636,30.1055075],[31.2462263,30.1058537],[31.2526631,30.1076121],[31.2560534,30.1085216],[31.2593364,30.1090599],[31.2706017,30.110582],[31.2799787,30.1118999],[31.2820548,30.1124429],[31.2836828,30.113632],[31.2846565,30.1148512],[31.2856221,30.1180809],[31.2883687,30.1263401],[31.2928104,30.1392935],[31.2954497,30.1459923],[31.3042903,30.1650098],[31.3139462,30.1853406],[31.3149976,30.1883825],[31.3162422,30.1902743],[31.3188171,30.1959681],[31.3231086,30.2064646],[31.3278079,30.2185917],[31.3305974,30.2257671],[31.3332367,30.2318853],[31.3346529,30.2352038],[31.3362837,30.2373357],[31.3415837,30.2433234],[31.3465619,30.2490327],[31.3508105,30.2537593],[31.3551449,30.258393],[31.3592219,30.2627484],[31.3600802,30.2635268],[31.3621187,30.2647686],[31.3682856,30.2681597],[31.3712382,30.2698465],[31.3764953,30.2725522],[31.3813448,30.2752207],[31.3829112,30.2764437],[31.3842416,30.2781485],[31.3853144,30.2808725],[31.3856578,30.2826143],[31.3854003,30.2859311],[31.3857007,30.288099],[31.3864946,30.2900815],[31.3890266,30.2942133],[31.392374,30.2994935],[31.3999057,30.3120907],[31.412158,30.3321689],[31.4140892,30.3351136],[31.4149904,30.3361136],[31.4165353,30.3373915],[31.417973,30.3382434],[31.4380359,30.3487617],[31.4639353,30.3623709],[31.4788134,30.3701071],[31.4913093,30.3766465],[31.4942225,30.3778793],[31.5167627,30.3851806],[31.5301471,30.389833],[31.543646,30.3942918],[31.5470014,30.3953796],[31.5487302,30.3961986],[31.5497544,30.3966838],[31.5516251,30.3980075],[31.5695606,30.4126419],[31.5785966,30.4199294],[31.5835675,30.4239492],[31.5872128,30.4268544],[31.5888145,30.4278735],[31.5903728,30.4286633],[31.6106422,30.4370266],[31.6294626,30.44478],[31.6309234,30.4455884],[31.6330002,30.4471406],[31.6418152,30.4541589],[31.6482,30.4591866],[31.6544209,30.4640125],[31.6572581,30.4658802],[31.6608371,30.4682224],[31.6652699,30.4711215],[31.6840235,30.4833978],[31.6936229,30.48969],[31.7030154,30.4958762],[31.7089553,30.4997033],[31.7115401,30.501645],[31.7135113,30.5039077],[31.7143459,30.5055662],[31.7149775,30.5074116],[31.7152959,30.5088782],[31.7153107,30.509667],[31.7153238,30.5103625],[31.7130535,30.5199173],[31.7118053,30.5246371],[31.7106263,30.5294958],[31.7102035,30.5321351],[31.7102331,30.5347987],[31.7107244,30.5372999],[31.7112586,30.5388635],[31.7119279,30.5404993],[31.7133186,30.5422582],[31.7146353,30.5439219],[31.7152738,30.544513],[31.7163011,30.5451789],[31.7201342,30.5475478],[31.7264749,30.5512103],[31.7281205,30.5519005],[31.7300827,30.5521247],[31.7314237,30.5521711],[31.7325309,30.5523617],[31.7349979,30.5532058],[31.7369511,30.5544793],[31.7397993,30.556689],[31.7416157,30.5579424],[31.7448425,30.5592218],[31.7506886,30.5616834],[31.7534944,30.562939],[31.7551514,30.5635858],[31.7569595,30.5639367],[31.761967,30.5646416],[31.7646734,30.5650315],[31.7659216,30.5650791],[31.7674927,30.5648647],[31.7692054,30.5646317],[31.7804145,30.5629865],[31.782436,30.5625395],[31.7843143,30.5618098],[31.7895557,30.5597652],[31.805059,30.555881],[31.8220372,30.5515139],[31.8343652,30.5479378],[31.8431692,30.5453597],[31.8453674,30.5449696],[31.8471812,30.5449873],[31.8691282,30.5460542],[31.8818426,30.5467106],[31.8880507,30.546996],[31.8909449,30.5471767],[31.8924472,30.547386],[31.8940926,30.5479349],[31.9092267,30.5539595],[31.9172243,30.5571557],[31.9234434,30.5595337],[31.9249338,30.5598316],[31.926448,30.5599142],[31.9277631,30.5598272],[31.9295124,30.5595361],[31.9346224,30.5584874],[31.9360841,30.5584233],[31.9379007,30.5585983],[31.9491188,30.5598311],[31.9603284,30.5610514],[31.9751627,30.5626156],[31.9879208,30.5640181],[31.9896978,30.5640854],[31.991951,30.5638467],[32.0177287,30.5600443],[32.0223858,30.5593109],[32.024507,30.558944],[32.0305627,30.5574458],[32.0459508,30.5538656],[32.0603349,30.5504896],[32.061623,30.5503161],[32.0629043,30.5503161],[32.0754433,30.5513942],[32.086945,30.5523201],[32.0933539,30.5540058],[32.099361,30.5557001],[32.1096115,30.5584433],[32.1147304,30.5600337],[32.1179459,30.5610481],[32.1377258,30.5673375],[32.1478156,30.5704492],[32.1540746,30.5724615],[32.155321,30.5728336],[32.1569887,30.5730264],[32.1645118,30.5726418],[32.1778984,30.5718121],[32.1794436,30.5717289],[32.1816189,30.5716075],[32.1840498,30.571169],[32.1888425,30.5702115],[32.1910372,30.5702002],[32.2055632,30.5703384],[32.2164642,30.5683384],[32.2183378,30.5684116],[32.2206097,30.5686048],[32.2237316,30.5688556],[32.2256808,30.5686315],[32.2343967,30.5676963],[32.236406,30.5678701],[32.2381069,30.5681328],[32.2393106,30.5683496],[32.2437369,30.5691918],[32.2451549,30.5695761],[32.245965,30.5702529],[32.2466808,30.5709111],[32.2475269,30.5723339],[32.2484302,30.5757433],[32.2489126,30.5774464],[32.2493055,30.5778994],[32.2497432,30.578173],[32.254038,30.580733],[32.2566358,30.582187],[32.2572348,30.5825373],[32.2586783,30.5834571],[32.2597969,30.5841039],[32.2624123,30.5856365],[32.2633908,30.5861634],[32.2646484,30.5866287],[32.2804146,30.5911896],[32.2809081,30.5912501],[32.2814325,30.5911863],[32.2818763,30.591041],[32.2822802,30.5908025],[32.2825371,30.5905571],[32.2839839,30.5887104],[32.2840996,30.5885637],[32.2844217,30.5881518],[32.2848595,30.5878537],[32.2849638,30.5878291],[32.2861791,30.58765],[32.2894929,30.5873259],[32.2901584,30.5874028],[32.2908832,30.5876007],[32.2957393,30.5892018],[32.2992448,30.5903088]];
+
+WW.shiftDate = function(days){
+  const d=new Date();d.setDate(d.getDate()+days);return todayKey(d);
+};
+WW.config.fromDate=WW.shiftDate(-120);
+WW.config.toDate=todayKey();
+WW.loadSaved = function(){
+  try{
+    const x=JSON.parse(localStorage.getItem(WW.SAVE_KEY)||"null");
+    if(x){
+      if(x.config) WW.config=Object.assign(WW.config,x.config);
+      if(Array.isArray(x.results)) WW.results=x.results;
+      if(x.lastRun) WW.lastRun=x.lastRun;
+    }
+  }catch(_){}
+  try{WW.validation=JSON.parse(localStorage.getItem(WW.VALIDATION_KEY)||"{}")||{}}
+  catch(_){WW.validation={}}
+  try{const x=JSON.parse(localStorage.getItem(WW.HISTORY_KEY)||"[]");WW.history=Array.isArray(x)?x:[]}
+  catch(_){WW.history=[]}
+  try{const x=JSON.parse(localStorage.getItem(WW.MISSIONS_KEY)||"[]");WW.missions=Array.isArray(x)?x:[]}
+  catch(_){WW.missions=[]}
+  try{const x=JSON.parse(localStorage.getItem(WW.MAINTENANCE_KEY)||"[]");WW.maintenance=Array.isArray(x)?x:[]}
+  catch(_){WW.maintenance=[]}
+};
+WW.save = function(){
+  try{localStorage.setItem(WW.SAVE_KEY,JSON.stringify({
+    config:WW.config,results:WW.results,lastRun:WW.lastRun
+  }))}catch(_){}
+};
+WW.saveValidation = function(){
+  try{localStorage.setItem(WW.VALIDATION_KEY,JSON.stringify(WW.validation))}catch(_){}
+};
+WW.saveHistory = function(){
+  try{localStorage.setItem(WW.HISTORY_KEY,JSON.stringify(WW.history))}catch(_){}
+};
+WW.saveMissions = function(){
+  try{localStorage.setItem(WW.MISSIONS_KEY,JSON.stringify(WW.missions))}catch(e){
+    toast("تعذّر حفظ المأمورية؛ قد تكون مساحة التخزين ممتلئة","danger")
+  }
+};
+WW.saveMaintenance = function(){
+  try{localStorage.setItem(WW.MAINTENANCE_KEY,JSON.stringify(WW.maintenance))}catch(_){}
+};
+WW.loadSaved();
+
+WW.geoDistanceKm = function(a,b){
+  const R=6371,d=Math.PI/180,x=(b[0]-a[0])*d*Math.cos((a[1]+b[1])*d/2),y=(b[1]-a[1])*d;
+  return R*Math.hypot(x,y);
+};
+WW.pathNodes = function(){
+  if(WW._pathNodes)return WW._pathNodes;
+  let total=0,cum=[0];
+  for(let i=1;i<WW.CENTERLINE.length;i++){total+=WW.geoDistanceKm(WW.CENTERLINE[i-1],WW.CENTERLINE[i]);cum.push(total)}
+  WW._pathNodes=WW.CENTERLINE.map((p,i)=>({km:total?cum[i]/total*126:0,lon:p[0],lat:p[1]}));
+  return WW._pathNodes;
+};
+WW.coordAtKm = function(km){
+  const p=WW.pathNodes();
+  if(!p.length)return null;
+  if(km<=p[0].km)return {lat:p[0].lat,lon:p[0].lon};
+  if(km>=p[p.length-1].km)return {lat:p[p.length-1].lat,lon:p[p.length-1].lon};
+  for(let i=1;i<p.length;i++){
+    if(km<=p[i].km){
+      const a=p[i-1],b=p[i],t=(km-a.km)/(b.km-a.km||1);
+      return {lat:a.lat+(b.lat-a.lat)*t,lon:a.lon+(b.lon-a.lon)*t};
+    }
+  }
+  return null;
+};
+WW.reachOf = function(km){
+  const r=(State.config.reaches||[]).find((x,i,a)=>km>=+x.from&&(i===a.length-1?km<=+x.to:km<+x.to));
+  return r?r.name:"المجرى الرئيسى";
+};
+WW.buildSegments = function(){
+  const a=Math.max(0,+WW.config.startKm||0),b=Math.min(126,+WW.config.endKm||126);
+  const step=Math.max(.5,Math.min(2,+WW.config.segmentKm||1)),out=[];
+  if(b<=a)return out;
+  for(let from=a;from<b-.0001;from+=step){
+    const to=Math.min(b,from+step),p0=WW.coordAtKm(from),p1=WW.coordAtKm(to);
+    if(!p0||!p1)continue;
+    const mid=(from+to)/2,pm=WW.coordAtKm(mid);
+    out.push({
+      key:from.toFixed(2)+"-"+to.toFixed(2),from:+from.toFixed(2),to:+to.toFixed(2),
+      mid:+mid.toFixed(3),p0,p1,pm,reach:WW.reachOf(mid)
+    });
+  }
+  return out;
+};
+WW.pathBounds = function(){
+  const p=WW.pathNodes(),pad=.012;
+  return [
+    Math.min(...p.map(x=>x.lon))-pad,Math.min(...p.map(x=>x.lat))-pad,
+    Math.max(...p.map(x=>x.lon))+pad,Math.max(...p.map(x=>x.lat))+pad
+  ];
+};
+WW.inBbox = function(item,p,pad){
+  const b=item?.bbox;if(!b||b.length<4||!p)return false;pad=pad||0;
+  return p.lon>=b[0]+pad&&p.lon<=b[2]-pad&&p.lat>=b[1]+pad&&p.lat<=b[3]-pad;
+};
+WW.itemCloud = item=>{
+  const raw=item?.properties?.["eo:cloud_cover"],v=raw==null?NaN:+raw;return Number.isFinite(v)?v:100;
+};
+WW.pickItem = function(scene,seg){
+  if(!scene)return null;
+  const pad=(+WW.config.corridorM||180)/111000;
+  let c=scene.items.filter(i=>WW.inBbox(i,seg.p0,pad)&&WW.inBbox(i,seg.p1,pad));
+  if(!c.length)c=scene.items.filter(i=>WW.inBbox(i,seg.pm,0));
+  return c.sort((a,b)=>WW.itemCloud(a)-WW.itemCloud(b))[0]||null;
+};
+WW.sceneCoverage = function(items,segments){
+  if(!segments.length)return 0;
+  const ok=segments.filter(s=>items.some(i=>WW.inBbox(i,s.pm,0))).length;
+  return ok/segments.length*100;
+};
+WW.sceneByDate = date=>WW.scenes.find(s=>s.date===date)||null;
+WW.sceneLabel = function(s){
+  return s.date+" · تغطية "+s.coverage.toFixed(0)+"٪ · سحب "+s.cloud.toFixed(0)+"٪";
+};
+
+VIEWS.weeds = function(){
+  const c=WW.config,lr=WW.lastRun;
+  return `
+  <section class="weed-shell" aria-label="رصد الاشتباه بالحشائش المائية">
+    <div class="weed-panel">
+      <div class="weed-head">
+        <div class="weed-title">${ICON.weeds} رصد الاشتباه بالحشائش المائية</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap"><a href="https://earth-search.aws.element84.com/v1/collections/sentinel-2-l2a" target="_blank" rel="noopener" style="font-size:.72rem;color:var(--brand)">مصدر Sentinel‑2 ↗</a><a href="https://www.openstreetmap.org/relation/10369130" target="_blank" rel="noopener" style="font-size:.72rem;color:var(--brand)">مسار المجرى OSM ↗</a></div>
+      </div>
+      <div class="weed-body">
+        <div class="weed-source">
+          <div class="weed-source-logo">S2<br>L2A</div>
+          <div class="weed-source-copy">
+            <b>Sentinel‑2 L2A · Earth Search STAC + Cloud Optimized GeoTIFF</b>
+            <span>اتصال مباشر بلا مفتاح API. تُقرأ النطاقات المطلوبة فقط، على خط مجرى موثق من OpenStreetMap relation 10369130 (ODbL) ومضمّن داخل الملف.</span>
+          </div>
+          <div class="weed-source-state"><i class="weed-dot" id="wwDot"></i><span id="wwStatus">${lr?"نتائج محفوظة محلياً":"فى انتظار البحث"}</span></div>
+        </div>
+        <div class="weed-note"><b>ضابط مهنى:</b> الناتج «اشتباه طيفى بحشائش مائية» وليس إثباتاً لنوع نباتى. يتحول إلى حالة مؤكدة فقط بعد المعاينة الميدانية، ولا تُنسب أى مشكلة هيدروليكية للحشائش من دون تزامن الدليلين.</div>
+      </div>
+    </div>
+
+    <div class="weed-panel">
+      <div class="weed-head"><div class="weed-title">${ICON.setup} إعداد نطاق الفحص</div><span style="font-size:.7rem;color:var(--ink-3)">المجرى الرئيسى · ك0 إلى ك126</span></div>
+      <div class="weed-body">
+        <div class="weed-grid weed-g4">
+          <div class="weed-field"><label>من تاريخ</label><input id="wwFromDate" type="date" value="${esc(c.fromDate)}"></div>
+          <div class="weed-field"><label>إلى تاريخ</label><input id="wwToDate" type="date" value="${esc(c.toDate)}"></div>
+          <div class="weed-field"><label>أقصى سحب بالمشهد</label><input id="wwCloud" type="number" min="5" max="80" step="5" value="${c.cloudMax}"><span class="weed-help">٪ من بيانات Sentinel‑2 الوصفية</span></div>
+          <div class="weed-field"><label>عتبة NDVI للاشتباه</label><input id="wwNdvi" type="number" min=".2" max=".75" step=".05" value="${c.ndvi}"><span class="weed-help">تُعايَر لاحقاً بالمعاينات</span></div>
+          <div class="weed-field"><label>بداية الفحص ك</label><input id="wwStartKm" type="number" min="0" max="125.5" step=".5" value="${c.startKm}"></div>
+          <div class="weed-field"><label>نهاية الفحص ك</label><input id="wwEndKm" type="number" min=".5" max="126" step=".5" value="${c.endKm}"></div>
+          <div class="weed-field"><label>طول القطاع</label><select id="wwStep">
+            <option value=".5"${+c.segmentKm===.5?" selected":""}>500 متر</option>
+            <option value="1"${+c.segmentKm===1?" selected":""}>1 كيلومتر</option>
+            <option value="2"${+c.segmentKm===2?" selected":""}>2 كيلومتر</option>
+          </select><span class="weed-help">1 كم موصى به للهاتف</span></div>
+          <div class="weed-field"><label>نصف نطاق البحث حول المسار</label><select id="wwCorridor">
+            <option value="100"${+c.corridorM===100?" selected":""}>100 متر</option>
+            <option value="180"${+c.corridorM===180?" selected":""}>180 متر</option>
+            <option value="250"${+c.corridorM===250?" selected":""}>250 متر</option>
+          </select><span class="weed-help">يُحصر الماء طيفياً داخل هذا النطاق</span></div>
+        </div>
+        <div class="weed-actions">
+          <button class="weed-btn primary" id="wwFind">${ICON.refresh} البحث عن الصور</button>
+          <button class="weed-btn green" id="wwAnalyze" disabled>${ICON.weeds} بدء التحليل</button>
+          <button class="weed-btn danger" id="wwCancel" disabled>${ICON.x} إلغاء</button>
+          <button class="weed-btn" id="wwExport" ${WW.results.length?"":"disabled"}>${ICON.download} تصدير CSV</button>
+          <button class="weed-btn" id="wwClear">${ICON.trash} مسح النتائج المحلية</button>
+        </div>
+        <div class="weed-help" style="margin-top:8px">فحص ك0–ك126 يقرأ صوراً حقيقية كبيرة وقد يستغرق عدة دقائق حسب سرعة الاتصال؛ يمكن بدء نطاق أقصر للتجربة، ويظل زر الإلغاء متاحاً أثناء التحليل.</div>
+        <div class="weed-grid weed-g3" style="margin-top:12px">
+          <div class="weed-field"><label>الصورة الحالية</label><select id="wwCurrent"><option value="">ابحث أولاً فى الفهرس</option></select></div>
+          <div class="weed-field"><label>صورة المقارنة السابقة</label><select id="wwPrevious"><option value="">بدون مقارنة حتى البحث</option></select></div>
+          <div class="weed-field"><label>حالة آخر تشغيل</label><div id="wwLastRun" style="min-height:37px;padding:8px 10px;border:1px solid var(--line);border-radius:5px;background:var(--paper);font-size:.76rem;color:var(--ink-2)">${lr?esc(lr.currentDate)+" · "+fmt(lr.analyzed||0)+" قطاع":"لم يُشغَّل التحليل بعد"}</div></div>
+        </div>
+        <div class="weed-progress-box" id="wwProgressBox">
+          <div class="weed-progress-row"><b id="wwProgressText">جارٍ التنفيذ…</b><span id="wwProgressPct">0%</span></div>
+          <div class="weed-progress"><i id="wwProgressBar"></i></div>
+        </div>
+        <div class="weed-log" id="wwLog"><span>جاهز — لا تُولَّد أى مشاهدات افتراضية.</span></div>
+      </div>
+    </div>
+
+    <div class="weed-panel">
+      <div class="weed-head"><div class="weed-title">${ICON.overview} ملخص الرصد</div><span id="wwSceneMeta" style="font-size:.7rem;color:var(--ink-3)">${lr?"Sentinel‑2 · "+esc(lr.currentDate):"لا توجد نتيجة بعد"}</span></div>
+      <div class="weed-body">
+        <div class="weed-kpis">
+          <div class="weed-kpi"><span>تاريخ الصورة</span><b id="wwKDate">—</b><small id="wwKPrev">المقارنة: —</small></div>
+          <div class="weed-kpi green"><span>الطول الصالح للتحليل</span><b id="wwKLength">—</b><small>كم من النطاق المختار</small></div>
+          <div class="weed-kpi amber"><span>مساحة الاشتباه</span><b id="wwKArea">—</b><small>م² داخل الحرم المائى المستنتج</small></div>
+          <div class="weed-kpi red"><span>قطاعات أولوية مرتفعة</span><b id="wwKHigh">—</b><small>بعد الإسناد الهيدروليكى</small></div>
+          <div class="weed-kpi"><span>جودة البكسلات الصالحة</span><b id="wwKQuality">—</b><small>بعد استبعاد السحب والظلال</small></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="weed-panel">
+      <div class="weed-head"><div class="weed-title">${ICON.wave} خريطة الاشتباه على المسار</div><span style="font-size:.7rem;color:var(--ink-3)">مسار OSM موثق · الكيلومترات مربوطة خطياً من ك0 إلى ك126</span></div>
+      <div class="weed-body">
+        <div class="weed-map-wrap"><canvas class="weed-map" id="wwMap" aria-label="خريطة قطاعات الاشتباه"></canvas></div>
+        <div class="weed-legend">
+          <span><i class="weed-swatch" style="background:#167b86"></i>لا اشتباه</span>
+          <span><i class="weed-swatch" style="background:#c39a32"></i>مراجعة</span>
+          <span><i class="weed-swatch" style="background:#a86a2a"></i>مرتفعة</span>
+          <span><i class="weed-swatch" style="background:#9c3a28"></i>عاجلة مع إسناد هيدروليكى</span>
+          <span><i class="weed-swatch" style="background:#9c8763"></i>لا بيانات صالحة</span>
+        </div>
+        <div class="weed-map-hint">المس أى قطاع لعرض ملخصه. الخريطة تشغيلية وليست بديلاً عن رفع مساحى أو معاينة ميدانية.</div>
+      </div>
+    </div>
+
+    <div class="weed-panel">
+      <div class="weed-head"><div class="weed-title">${ICON.readings} قطاعات الفحص وأولوية المعاينة</div><button class="weed-btn" id="wwExport2" ${WW.results.length?"":"disabled"}>${ICON.download} CSV</button></div>
+      <div class="weed-body">
+        <div class="weed-table-wrap">
+          <table class="weed-table">
+            <thead><tr><th>القطاع</th><th>الحبس</th><th>المساحة م²</th><th>التغطية ٪</th><th>الطول المتأثر</th><th>التغير</th><th>NDVI</th><th>جودة البيانات</th><th>الثقة</th><th>الإسناد الهيدروليكى</th><th>الأولوية</th><th>المعاينة</th><th>ملاحظة</th><th>مأمورية</th></tr></thead>
+            <tbody id="wwRows"><tr><td colspan="14"><div class="weed-empty"><b>لا توجد نتائج بعد</b>ابحث عن الصور ثم شغّل التحليل. لن تُعرض أرقام افتراضية.</div></td></tr></tbody>
+          </table>
+        </div>
+        <div class="weed-note info" id="wwMethod"><b>منهج التصنيف:</b> قناع SCL للسحب والظلال، ثم NDVI ≥ ${(+c.ndvi).toFixed(2)} مع سياق مائى من MNDWI/SCL للصورتين، واستبعاد حافتى المجرى، وحذف التجمعات الأقل من ${c.minCluster} بكسلات متصلة. الإسناد الهيدروليكى يعنى انحراف فرق المنسوب عن مرجع الموقع أو انخفاض التصرف عن وسيط سجله؛ ولا يثبت السببية بمفرده.</div>
+      </div>
+    </div>
+
+    <div class="weed-panel" id="wwEncPanel">
+      <div class="weed-head"><div class="weed-title">${ICON.map} رصد الاشتباه بالتعديات داخل حرم المتابعة</div><span style="font-size:.7rem;color:var(--ink-3)">مقارنة طيفية بين صورتين · يلزم تحقق ميدانى وقانونى</span></div>
+      <div class="weed-body">
+        <div class="weed-kpis">
+          <div class="weed-kpi red"><span>إجمالى مساحة التغير المشتبه</span><b id="wwEncArea">—</b><small>م² داخل نطاق المتابعة</small></div>
+          <div class="weed-kpi amber"><span>القطاعات ذات التغير</span><b id="wwEncSectors">—</b><small>قطاعات تحتاج مراجعة</small></div>
+          <div class="weed-kpi green"><span>زراعة مستحدثة</span><b id="wwEncVeg">—</b><small>م² مشتبهة</small></div>
+          <div class="weed-kpi"><span>مبانٍ أو ردم محتمل</span><b id="wwEncBuilt">—</b><small>م² مشتبهة</small></div>
+          <div class="weed-kpi"><span>فقد مسطح مائى</span><b id="wwEncLoss">—</b><small>م² تحتاج مراجعة عاجلة</small></div>
+        </div>
+        <div class="weed-table-wrap" style="margin-top:12px">
+          <table class="weed-table compact">
+            <thead><tr><th>القطاع</th><th>المساحة م²</th><th>النوع الغالب</th><th>زراعة</th><th>مبانٍ/ردم</th><th>فقد ماء</th><th>جودة المقارنة</th><th>الثقة</th><th>الأولوية</th><th>التحقق</th><th>مأمورية</th></tr></thead>
+            <tbody id="wwEncRows"><tr><td colspan="11"><div class="weed-empty"><b>لا توجد مقارنة بعد</b>اختر صورتين مختلفتين وشغّل التحليل.</div></td></tr></tbody>
+          </table>
+        </div>
+        <div class="weed-callout" style="margin-top:11px"><b>تنبيه قانونى وهندسى:</b> نطاق البحث حول مسار OSM هو حرم متابعة تشغيلى وليس حد ملكية أو قرار إزالة. «زراعة مستحدثة» و«مبانٍ أو ردم محتمل» و«فقد مسطح مائى» كلها مؤشرات تغير طيفى فقط، ولا تعتمد كتعدٍ إلا بعد الرفع والمعاينة ومراجعة المستندات.</div>
+      </div>
+    </div>
+
+    <div class="weed-panel" id="wwHistoryPanel">
+      <div class="weed-head"><div class="weed-title">${ICON.balance} الرصد الزمنى وسرعة الانتشار</div><span id="wwHistoryMeta" style="font-size:.7rem;color:var(--ink-3)">السجل يتكون من التحليلات الفعلية المحفوظة</span></div>
+      <div class="weed-body">
+        <div class="weed-kpis">
+          <div class="weed-kpi"><span>تواريخ الرصد المحفوظة</span><b id="wwHistDates">—</b><small>لنفس إعدادات النطاق</small></div>
+          <div class="weed-kpi amber"><span>التغير منذ الرصد السابق</span><b id="wwHistDelta">—</b><small>م² حشائش مشتبهة</small></div>
+          <div class="weed-kpi red"><span>قطاعات مستمرة</span><b id="wwHistPersistent">—</b><small>ظهرت فى آخر 3 رصدات</small></div>
+          <div class="weed-kpi green"><span>اشتباه عودة بعد التطهير</span><b id="wwHistRecurrence">—</b><small>يحتاج معاينة</small></div>
+          <div class="weed-kpi"><span>أعلى معدل نمو</span><b id="wwHistGrowth">—</b><small>م²/يوم بين آخر رصدين</small></div>
+        </div>
+        <div class="weed-module-grid" style="margin-top:12px">
+          <div><canvas class="weed-chart" id="wwTrendChart" aria-label="منحنى المساحة المشتبهة زمنياً"></canvas><div class="weed-map-hint">الخط الأخضر: الحشائش المشتبهة · الخط الأحمر: التعديات المشتبهة. لا تظهر نقاط غير ناتجة عن صور فعلية.</div></div>
+          <div>
+            <div class="weed-form-title">أسرع القطاعات تغيراً</div>
+            <div class="weed-summary-list" id="wwTrendRows"><div class="weed-empty"><b>لا يوجد سجل كافٍ</b>يلزم تاريخا تصوير على الأقل.</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="weed-panel" id="wwMissionPanel">
+      <div class="weed-head"><div class="weed-title">${ICON.stations} مأموريات المعاينة الميدانية</div><button class="weed-btn" id="wwMissionExport">${ICON.download} CSV المأموريات</button></div>
+      <div class="weed-body">
+        <div class="weed-form-box">
+          <div class="weed-form-title">إضافة مأمورية موثقة</div>
+          <div class="weed-grid weed-g4">
+            <div class="weed-field"><label>نوع المأمورية</label><select id="wwMissionType"><option value="weeds">حشائش مائية</option><option value="encroachment">تعديات</option><option value="followup">متابعة تطهير</option></select></div>
+            <div class="weed-field"><label>التاريخ</label><input id="wwMissionDate" type="date" value="${todayKey()}"></div>
+            <div class="weed-field"><label>من ك</label><input id="wwMissionFrom" type="number" min="0" max="126" step=".1" value="${c.startKm}"></div>
+            <div class="weed-field"><label>إلى ك</label><input id="wwMissionTo" type="number" min="0" max="126" step=".1" value="${Math.min(126,+c.startKm+(+c.segmentKm||1))}"></div>
+            <div class="weed-field"><label>القائم بالمعاينة</label><input id="wwMissionInspector" placeholder="الاسم أو الإدارة"></div>
+            <div class="weed-field"><label>الحالة</label><select id="wwMissionStatus"><option value="planned">مخططة</option><option value="visited">تمت المعاينة</option><option value="confirmed">مؤكد ميدانياً</option><option value="rejected">غير مؤكد</option><option value="cleared">تم التطهير/الإزالة</option></select></div>
+            <div class="weed-field"><label>الكثافة/الشدة</label><select id="wwMissionDensity"><option value="">غير محدد</option><option value="low">منخفضة</option><option value="medium">متوسطة</option><option value="high">مرتفعة</option></select></div>
+            <div class="weed-field"><label>التصنيف الميدانى</label><select id="wwMissionClass"><option value="">غير محدد</option><option>ورد النيل</option><option>حشائش طافية</option><option>حشائش غاطسة</option><option>قصب/هيش</option><option>زراعة داخل الحرم</option><option>مبانٍ أو ردم</option><option>فقد جزء مائى</option><option>أخرى</option></select></div>
+          </div>
+          <div class="weed-grid weed-g3" style="margin-top:10px">
+            <div class="weed-field"><label>الموقع</label><button class="weed-btn" id="wwMissionGps" type="button">${ICON.map} التقاط GPS</button><div class="weed-coord" id="wwMissionCoords">لم يُلتقط الموقع</div></div>
+            <div class="weed-field"><label>صورة ميدانية اختيارية</label><input id="wwMissionPhoto" type="file" accept="image/*" capture="environment"><img class="weed-photo-preview" id="wwMissionPreview" alt="معاينة الصورة"></div>
+            <div class="weed-field"><label>ملاحظات وتوصية</label><textarea id="wwMissionNote" placeholder="وصف الحالة، الإجراء المقترح، أى ملاحظات تشغيلية"></textarea></div>
+          </div>
+          <div class="weed-actions"><button class="weed-btn green" id="wwMissionSave">${ICON.save} حفظ المأمورية</button><button class="weed-btn" id="wwMissionReset">تفريغ النموذج</button></div>
+        </div>
+        <div class="weed-table-wrap" style="margin-top:12px">
+          <table class="weed-table missions">
+            <thead><tr><th>التاريخ</th><th>النوع</th><th>القطاع</th><th>المعاين</th><th>الحالة</th><th>الشدة</th><th>التصنيف</th><th>GPS</th><th>صورة</th><th>ملاحظات</th><th>حذف</th></tr></thead>
+            <tbody id="wwMissionRows"><tr><td colspan="11"><div class="weed-empty"><b>لا توجد مأموريات محفوظة</b>أنشئ مأمورية من أى قطاع أو من النموذج أعلاه.</div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="weed-panel" id="wwWorkPanel">
+      <div class="weed-head"><div class="weed-title">${ICON.refresh} تقييم أعمال التطهير قبل/بعد</div><div style="display:flex;align-items:center;gap:9px"><span style="font-size:.7rem;color:var(--ink-3)">صور فعلية + قراءات هيدروليكية متاحة</span><button class="weed-btn" id="wwWorkExport">${ICON.download} CSV الأعمال</button></div></div>
+      <div class="weed-body">
+        <div class="weed-form-box">
+          <div class="weed-grid weed-g4">
+            <div class="weed-field"><label>تاريخ التنفيذ</label><input id="wwWorkDate" type="date" value="${todayKey()}"></div>
+            <div class="weed-field"><label>من ك</label><input id="wwWorkFrom" type="number" min="0" max="126" step=".1" value="${c.startKm}"></div>
+            <div class="weed-field"><label>إلى ك</label><input id="wwWorkTo" type="number" min="0" max="126" step=".1" value="${Math.min(126,+c.startKm+(+c.segmentKm||1))}"></div>
+            <div class="weed-field"><label>طريقة التنفيذ</label><select id="wwWorkMethod"><option>تطهير ميكانيكى</option><option>تطهير يدوى</option><option>كراكة/حفار</option><option>إزالة تعديات</option><option>أخرى</option></select></div>
+            <div class="weed-field"><label>الجهة المنفذة</label><input id="wwWorkContractor" placeholder="الإدارة أو المقاول"></div>
+            <div class="weed-field"><label>التكلفة الفعلية بالجنيه</label><input id="wwWorkCost" type="number" min="0" step="1" placeholder="اختيارى"></div>
+            <div class="weed-field" style="grid-column:span 2"><label>ملاحظات</label><input id="wwWorkNote" placeholder="الأعمال المنفذة والمعدات وأى ملاحظات"></div>
+          </div>
+          <div class="weed-actions"><button class="weed-btn green" id="wwWorkSave">${ICON.save} حفظ وتقييم</button></div>
+        </div>
+        <div class="weed-table-wrap" style="margin-top:12px">
+          <table class="weed-table compact">
+            <thead><tr><th>التاريخ/القطاع</th><th>قبل</th><th>بعد</th><th>المساحة قبل</th><th>المساحة بعد</th><th>الإزالة</th><th>فرق المنسوب</th><th>التصرف</th><th>كفاءة التكلفة</th><th>النتيجة</th><th>حذف</th></tr></thead>
+            <tbody id="wwWorkRows"><tr><td colspan="11"><div class="weed-empty"><b>لا توجد أعمال مسجلة</b>يلزم رصد سابق ولاحق لتقييم الأثر الفضائى.</div></td></tr></tbody>
+          </table>
+        </div>
+        <div class="weed-note info"><b>قاعدة التقييم:</b> يختار التطبيق أقرب رصد فضائى قبل التنفيذ وأقرب رصد بعده لنفس القطاع، ويعرض القراءات الهيدروليكية القريبة إن وجدت. التحسن المتزامن يدعم القرار لكنه لا يثبت السببية منفرداً.</div>
+      </div>
+    </div>
+  </section>`;
+};
+
+WW.$ = id=>document.getElementById(id);
+WW.readControls = function(){
+  const v=id=>WW.$(id)?.value;
+  WW.config.fromDate=v("wwFromDate")||WW.config.fromDate;
+  WW.config.toDate=v("wwToDate")||WW.config.toDate;
+  WW.config.cloudMax=Math.max(5,Math.min(80,+v("wwCloud")||30));
+  WW.config.ndvi=Math.max(.2,Math.min(.75,+v("wwNdvi")||.35));
+  WW.config.startKm=Math.max(0,Math.min(125.5,+v("wwStartKm")||0));
+  WW.config.endKm=Math.max(.5,Math.min(126,+v("wwEndKm")||126));
+  WW.config.segmentKm=+v("wwStep")||1;
+  WW.config.corridorM=+v("wwCorridor")||180;
+  WW.save();
+};
+WW.setStatus = function(text,state){
+  const t=WW.$("wwStatus"),d=WW.$("wwDot");if(t)t.textContent=text;
+  if(d)d.className="weed-dot"+(state?" "+state:"");
+};
+WW.setProgress = function(on,text,pct){
+  const b=WW.$("wwProgressBox"),t=WW.$("wwProgressText"),p=WW.$("wwProgressPct"),bar=WW.$("wwProgressBar");
+  if(b)b.classList.toggle("on",!!on);if(t&&text)t.textContent=text;
+  const n=Math.max(0,Math.min(100,+pct||0));if(p)p.textContent=n.toFixed(0)+"%";if(bar)bar.style.width=n+"%";
+};
+WW.log = function(msg,kind){
+  WW.logs.push({msg:String(msg),kind:kind||"",at:new Date().toLocaleTimeString("en-GB",{hour12:false})});
+  if(WW.logs.length>50)WW.logs.shift();
+  const box=WW.$("wwLog");
+  if(box){
+    box.innerHTML=WW.logs.map(x=>`<div class="${x.kind}">[${x.at}] ${esc(x.msg)}</div>`).join("");
+    box.scrollTop=box.scrollHeight;
+  }
+};
+WW.setBusy = function(on){
+  WW.running=!!on;
+  ["wwFind","wwAnalyze","wwClear"].forEach(id=>{const e=WW.$(id);if(e)e.disabled=on});
+  ["wwFromDate","wwToDate","wwCloud","wwNdvi","wwStartKm","wwEndKm","wwStep","wwCorridor","wwCurrent","wwPrevious"].forEach(id=>{const e=WW.$(id);if(e)e.disabled=on});
+  const c=WW.$("wwCancel");if(c)c.disabled=!on;
+};
+WW.populateSceneSelects = function(){
+  const cur=WW.$("wwCurrent"),prev=WW.$("wwPrevious");if(!cur||!prev)return;
+  if(!WW.scenes.length){
+    cur.innerHTML='<option value="">لا توجد صور مطابقة</option>';
+    prev.innerHTML='<option value="">لا توجد صورة مقارنة</option>';return;
+  }
+  cur.innerHTML=WW.scenes.map(s=>`<option value="${esc(s.date)}">${esc(WW.sceneLabel(s))}</option>`).join("");
+  prev.innerHTML='<option value="">بدون مقارنة</option>'+WW.scenes.map(s=>`<option value="${esc(s.date)}">${esc(WW.sceneLabel(s))}</option>`).join("");
+  cur.value=WW.selectedCurrent||WW.scenes[0].date;
+  prev.value=WW.selectedPrevious||"";
+  const a=WW.$("wwAnalyze");if(a)a.disabled=WW.running||!cur.value;
+};
+
+WW.fetchJSON = async function(url,signal){
+  const r=await fetch(url,{headers:{Accept:"application/geo+json, application/json"},signal});
+  const text=await r.text();
+  if(!r.ok)throw new Error("HTTP "+r.status+" · "+text.slice(0,120));
+  return JSON.parse(text);
+};
+WW.searchScenes = async function(){
+  WW.readControls();
+  if(WW.config.fromDate>WW.config.toDate){toast("تاريخ البداية أكبر من النهاية","danger");return}
+  const segments=WW.buildSegments();
+  if(!segments.length){toast("راجع بداية ونهاية نطاق الفحص","danger");return}
+  WW.abort=new AbortController();WW.setBusy(true);WW.setStatus("قراءة فهرس Sentinel‑2","busy");
+  WW.setProgress(true,"البحث فى فهرس الصور…",8);WW.log("Earth Search STAC — catalog query started.");
+  try{
+    const u=new URL(WW.API);
+    u.searchParams.set("collections",WW.COLLECTION);
+    u.searchParams.set("bbox",WW.pathBounds().join(","));
+    u.searchParams.set("datetime",WW.config.fromDate+"T00:00:00Z/"+WW.config.toDate+"T23:59:59Z");
+    u.searchParams.set("limit","100");u.searchParams.set("sortby","-properties.datetime");
+    let next=u.href,features=[];
+    for(let page=0;next&&page<3;page++){
+      const data=await WW.fetchJSON(next,WW.abort.signal);
+      features.push(...(data.features||[]));
+      const n=(data.links||[]).find(x=>x.rel==="next"&&(!x.method||x.method==="GET"));
+      next=n?.href?new URL(n.href,next).href:null;
+      WW.setProgress(true,"قراءة صفحة الفهرس "+(page+1)+"…",Math.min(38,15+(page+1)*10));
+    }
+    const valid=features.filter(f=>{
+      const cloud=WW.itemCloud(f),assets=f.assets||{};
+      return cloud<=WW.config.cloudMax&&WW.REQUIRED_ASSETS.every(k=>assets[k]?.href);
+    });
+    const groups=new Map();
+    valid.forEach(f=>{
+      const dt=String(f.properties?.datetime||f.properties?.start_datetime||"").slice(0,10);
+      if(!dt)return;
+      const g=groups.get(dt)||{date:dt,items:[]};g.items.push(f);groups.set(dt,g);
+    });
+    const sampleSegments=segments.filter((_,i)=>i%Math.max(1,Math.round(2/WW.config.segmentKm))===0);
+    WW.scenes=[...groups.values()].map(g=>{
+      const uniqueCloud=g.items.map(WW.itemCloud);
+      g.cloud=uniqueCloud.reduce((a,b)=>a+b,0)/(uniqueCloud.length||1);
+      g.coverage=WW.sceneCoverage(g.items,sampleSegments);return g;
+    }).filter(g=>g.coverage>0).sort((a,b)=>b.date.localeCompare(a.date)||b.coverage-a.coverage);
+    const best=WW.scenes.find(s=>s.coverage>=70)||WW.scenes[0];
+    WW.selectedCurrent=best?.date||"";
+    const currentMs=best?new Date(best.date+"T00:00:00Z").getTime():0;
+    const older=WW.scenes.find(s=>currentMs-new Date(s.date+"T00:00:00Z").getTime()>=4*86400000&&s.coverage>=60);
+    WW.selectedPrevious=older?.date||"";
+    WW.populateSceneSelects();
+    if(!WW.scenes.length){
+      WW.setStatus("لا توجد صورة مطابقة","bad");WW.log("No usable scenes matched cloud/coverage filters.","warn");
+      toast("لا توجد صور صالحة ضمن الفترة وحد السحب المحدد","danger");
+    }else{
+      WW.setStatus("تم العثور على "+WW.scenes.length+" تاريخ تصوير","ok");
+      WW.log("Usable acquisition dates: "+WW.scenes.length+".","ok");
+      WW.log("Selected current: "+WW.selectedCurrent+" · previous: "+(WW.selectedPrevious||"none")+".","ok");
+    }
+    WW.setProgress(false,"",100);
+  }catch(e){
+    if(e.name==="AbortError"){WW.setStatus("أُلغى البحث","");WW.log("Catalog query cancelled.","warn")}
+    else{WW.setStatus("فشل اتصال Sentinel‑2","bad");WW.log(e.message,"err");toast("تعذّر جلب فهرس الصور: "+e.message,"danger")}
+    WW.setProgress(false,"",0);
+  }finally{WW.setBusy(false);WW.abort=null;WW.populateSceneSelects()}
+};
+
+/* تحويل WGS84 إلى UTM Zone 36N — كامل نطاق ترعة الإسماعيلية يقع داخله. */
+WW.toUtm36 = function(lat,lon){
+  const a=6378137,e=0.08181919084262149,e2=e*e,ep2=e2/(1-e2),k0=.9996;
+  const ph=lat*Math.PI/180,la=lon*Math.PI/180,la0=33*Math.PI/180;
+  const s=Math.sin(ph),c=Math.cos(ph),t=Math.tan(ph),N=a/Math.sqrt(1-e2*s*s);
+  const T=t*t,C=ep2*c*c,A=c*(la-la0);
+  const M=a*((1-e2/4-3*e2*e2/64-5*e2*e2*e2/256)*ph
+    -(3*e2/8+3*e2*e2/32+45*e2*e2*e2/1024)*Math.sin(2*ph)
+    +(15*e2*e2/256+45*e2*e2*e2/1024)*Math.sin(4*ph)
+    -(35*e2*e2*e2/3072)*Math.sin(6*ph));
+  const x=k0*N*(A+(1-T+C)*A**3/6+(5-18*T+T*T+72*C-58*ep2)*A**5/120)+500000;
+  let y=k0*(M+N*t*(A*A/2+(5-T+9*C+4*C*C)*A**4/24+(61-58*T+T*T+600*C-330*ep2)*A**6/720));
+  if(lat<0)y+=10000000;return {x,y};
+};
+WW.makeGeom = function(seg){
+  const a=WW.toUtm36(seg.p0.lat,seg.p0.lon),b=WW.toUtm36(seg.p1.lat,seg.p1.lon);
+  const half=+WW.config.corridorM||180,minX=Math.min(a.x,b.x)-half,maxX=Math.max(a.x,b.x)+half;
+  const minY=Math.min(a.y,b.y)-half,maxY=Math.max(a.y,b.y)+half;
+  const width=Math.max(2,Math.ceil((maxX-minX)/10)),height=Math.max(2,Math.ceil((maxY-minY)/10));
+  const vx=b.x-a.x,vy=b.y-a.y,len=Math.hypot(vx,vy)||1;
+  return {a,b,vx,vy,len,len2:len*len,half,minX,maxX,minY,maxY,width,height,
+    dx:(maxX-minX)/width,dy:(maxY-minY)/height,pixelArea:((maxX-minX)/width)*((maxY-minY)/height)};
+};
+WW.openAsset = async function(item,key){
+  const asset=item?.assets?.[key],url=asset?.href;if(!url)throw new Error("النطاق "+key+" غير متاح");
+  if(WW.readerCache.has(url))return WW.readerCache.get(url);
+  const promise=(async()=>{
+    await WP.ensureGeoTIFF();
+    const tiff=await GeoTIFF.fromUrl(url,{blockSize:524288,cacheSize:180});
+    const image=await tiff.getImage(0),bbox=image.getBoundingBox();
+    const rb=asset["raster:bands"]?.[0]||{};
+    let nodata=rb.nodata;
+    if(nodata==null){const g=image.getGDALNoData?.();if(g!=null&&g!=="")nodata=+g}
+    return {image,bbox,width:image.getWidth(),height:image.getHeight(),
+      scale:Number.isFinite(+rb.scale)?+rb.scale:1,offset:Number.isFinite(+rb.offset)?+rb.offset:0,
+      nodata:Number.isFinite(+nodata)?+nodata:null,key};
+  })();
+  WW.readerCache.set(url,promise);
+  try{return await promise}catch(e){WW.readerCache.delete(url);throw e}
+};
+WW.readBand = async function(item,key,g,signal){
+  const epsg=+item?.properties?.["proj:epsg"];
+  if(epsg&&epsg!==32636)throw new Error("نظام إحداثيات غير مدعوم EPSG:"+epsg);
+  const r=await WW.openAsset(item,key),bb=r.bbox;
+  const tol=25;
+  if(g.minX<bb[0]-tol||g.maxX>bb[2]+tol||g.minY<bb[1]-tol||g.maxY>bb[3]+tol)
+    throw new Error("القطاع يعبر حد بلاطة الصورة");
+  const rx=(bb[2]-bb[0])/r.width,ry=(bb[3]-bb[1])/r.height;
+  const x0=Math.max(0,Math.floor((g.minX-bb[0])/rx)),x1=Math.min(r.width,Math.ceil((g.maxX-bb[0])/rx));
+  const y0=Math.max(0,Math.floor((bb[3]-g.maxY)/ry)),y1=Math.min(r.height,Math.ceil((bb[3]-g.minY)/ry));
+  if(x1<=x0||y1<=y0)throw new Error("نافذة الرستر فارغة");
+  if(signal?.aborted)throw new DOMException("Aborted","AbortError");
+  const raw=await r.image.readRasters({window:[x0,y0,x1,y1],width:g.width,height:g.height,
+    samples:[0],interleave:true,resampleMethod:"nearest",signal});
+  if(signal?.aborted)throw new DOMException("Aborted","AbortError");
+  const out=new Float32Array(raw.length);
+  for(let i=0;i<raw.length;i++){
+    const v=raw[i];
+    out[i]=!Number.isFinite(v)||(r.nodata!=null&&v===r.nodata)||(v===0&&key!=="scl")
+      ?NaN:v*r.scale+r.offset;
+  }
+  return out;
+};
+WW.loadSceneGrid = async function(item,g,signal){
+  const arrays=await Promise.all(WW.REQUIRED_ASSETS.map(k=>WW.readBand(item,k,g,signal)));
+  const out={};WW.REQUIRED_ASSETS.forEach((k,i)=>out[k]=arrays[i]);return out;
+};
+WW.validScl = function(v){
+  if(!Number.isFinite(v))return false;
+  return ![0,1,3,8,9,10,11].includes(Math.round(v));
+};
+WW.metrics = function(scene,i){
+  if(!scene)return null;
+  const red=scene.red[i],green=scene.green[i],nir=scene.nir[i],swir=scene.swir16[i],scl=scene.scl[i];
+  if(![red,green,nir,swir].every(Number.isFinite)||!WW.validScl(scl))return null;
+  const ndvi=(nir-red)/(nir+red||1e-9),mndwi=(green-swir)/(green+swir||1e-9);
+  const ndbi=(swir-nir)/(swir+nir||1e-9);
+  return {ndvi,mndwi,ndbi,water:Math.round(scl)===6||(mndwi>.05&&ndvi<.25)};
+};
+WW.filterClusters = function(mask,w,h,minCount){
+  const n=mask.length,seen=new Uint8Array(n),keep=new Uint8Array(n),queue=new Int32Array(n);
+  for(let start=0;start<n;start++){
+    if(!mask[start]||seen[start])continue;
+    let qh=0,qt=0;queue[qt++]=start;seen[start]=1;
+    while(qh<qt){
+      const i=queue[qh++],y=Math.floor(i/w),x=i-y*w;
+      for(let yy=Math.max(0,y-1);yy<=Math.min(h-1,y+1);yy++)for(let xx=Math.max(0,x-1);xx<=Math.min(w-1,x+1);xx++){
+        const j=yy*w+xx;if(!seen[j]&&mask[j]){seen[j]=1;queue[qt++]=j}
+      }
+    }
+    if(qt>=minCount)for(let k=0;k<qt;k++)keep[queue[k]]=1;
+  }
+  return keep;
+};
+WW.classify = function(current,previous,g){
+  const n=g.width*g.height,inside=new Uint8Array(n),validC=new Uint8Array(n),validP=new Uint8Array(n);
+  const water=new Uint8Array(n),waterC=new Uint8Array(n),waterP=new Uint8Array(n);
+  const cross=new Float32Array(n),bin=new Int16Array(n),ndviC=new Float32Array(n),ndviP=new Float32Array(n);
+  const mndwiC=new Float32Array(n),mndwiP=new Float32Array(n),ndbiC=new Float32Array(n),ndbiP=new Float32Array(n);
+  const bins=Math.ceil(g.len/20)+2;
+  const minCross=new Float32Array(bins),maxCross=new Float32Array(bins);
+  minCross.fill(Infinity);maxCross.fill(-Infinity);bin.fill(-1);
+  [ndviC,ndviP,mndwiC,mndwiP,ndbiC,ndbiP].forEach(a=>a.fill(NaN));
+  let insideCount=0;
+  for(let row=0;row<g.height;row++)for(let col=0;col<g.width;col++){
+    const i=row*g.width+col,x=g.minX+(col+.5)*g.dx,y=g.maxY-(row+.5)*g.dy;
+    const wx=x-g.a.x,wy=y-g.a.y,t=(wx*g.vx+wy*g.vy)/g.len2;
+    if(t<0||t>1)continue;
+    const cr=(-wx*g.vy+wy*g.vx)/g.len;if(Math.abs(cr)>g.half)continue;
+    inside[i]=1;insideCount++;cross[i]=cr;const bi=Math.min(bins-1,Math.max(0,Math.floor(t*g.len/20)));bin[i]=bi;
+    const mc=WW.metrics(current,i),mp=WW.metrics(previous,i);
+    if(mc){validC[i]=1;ndviC[i]=mc.ndvi;mndwiC[i]=mc.mndwi;ndbiC[i]=mc.ndbi;if(mc.water)waterC[i]=1}
+    if(mp){validP[i]=1;ndviP[i]=mp.ndvi;mndwiP[i]=mp.mndwi;ndbiP[i]=mp.ndbi;if(mp.water)waterP[i]=1}
+    if(mc?.water||mp?.water){
+      water[i]=1;if(cr<minCross[bi])minCross[bi]=cr;if(cr>maxCross[bi])maxCross[bi]=cr;
+    }
+  }
+  const nearWater=i=>{
+    const y=Math.floor(i/g.width),x=i-y*g.width;
+    for(let yy=Math.max(0,y-2);yy<=Math.min(g.height-1,y+2);yy++)
+      for(let xx=Math.max(0,x-2);xx<=Math.min(g.width-1,x+2);xx++)if(water[yy*g.width+xx])return true;
+    return false;
+  };
+  const channel=new Uint8Array(n),candC=new Uint8Array(n),candP=new Uint8Array(n);
+  let channelCount=0,validChannel=0;
+  for(let i=0;i<n;i++){
+    if(!inside[i])continue;
+    const bi=bin[i],mn=minCross[bi],mx=maxCross[bi],span=mx-mn,nw=nearWater(i);
+    let ch=false;
+    if(Number.isFinite(span)&&span>=20)ch=cross[i]>=mn+5&&cross[i]<=mx-5;
+    else if(nw&&Math.abs(cross[i])<=g.half*.85)ch=true;
+    if(!ch)continue;
+    channel[i]=1;channelCount++;if(validC[i])validChannel++;
+    if(validC[i]&&ndviC[i]>=WW.config.ndvi&&mndwiC[i]>-.45)candC[i]=1;
+    if(validP[i]&&ndviP[i]>=WW.config.ndvi&&mndwiP[i]>-.45)candP[i]=1;
+  }
+  const keepC=WW.filterClusters(candC,g.width,g.height,WW.config.minCluster);
+  const keepP=WW.filterClusters(candP,g.width,g.height,WW.config.minCluster);
+  const encVeg=new Uint8Array(n),encBuilt=new Uint8Array(n),encLoss=new Uint8Array(n);
+  let guardCount=0,guardValid=0;
+  if(previous){
+    for(let i=0;i<n;i++){
+      if(!inside[i])continue;
+      const bi=bin[i],mn=minCross[bi],mx=maxCross[bi],span=mx-mn;
+      const outside=Number.isFinite(span)&&span>=20
+        ?(cross[i]<mn-10||cross[i]>mx+10)
+        :Math.abs(cross[i])>g.half*.42;
+      if(outside){guardCount++;if(validC[i]&&validP[i])guardValid++}
+      if(!(validC[i]&&validP[i]))continue;
+      if(waterP[i]&&!waterC[i]&&ndviC[i]<.45){encLoss[i]=1;continue}
+      if(!outside)continue;
+      const dNdvi=ndviC[i]-ndviP[i],dNdbi=ndbiC[i]-ndbiP[i];
+      if(ndviC[i]>=.45&&ndviP[i]<=.32&&dNdvi>=.18)encVeg[i]=1;
+      else if(ndbiC[i]>=.04&&dNdbi>=.12&&ndviC[i]<.35&&mndwiC[i]<0)encBuilt[i]=1;
+    }
+  }
+  const encMin=Math.max(4,WW.config.minCluster),keepVeg=WW.filterClusters(encVeg,g.width,g.height,encMin);
+  const keepBuilt=WW.filterClusters(encBuilt,g.width,g.height,encMin),keepLoss=WW.filterClusters(encLoss,g.width,g.height,encMin);
+  const stats=function(keep,ndvi){
+    let count=0,sum=0;const affected=new Set();
+    for(let i=0;i<n;i++)if(keep[i]){count++;sum+=ndvi[i];affected.add(bin[i])}
+    return {count,area:count*g.pixelArea,meanNdvi:count?sum/count:null,
+      affectedM:Math.min(g.len,affected.size*20)};
+  };
+  const a=stats(keepC,ndviC),b=stats(keepP,ndviP);
+  const enc={available:!!previous,area:0,vegArea:0,builtArea:0,lossArea:0,affectedM:0,
+    validPct:guardCount?guardValid/guardCount*100:0,type:"لا تغير دال"};
+  if(previous){
+    const affected=new Set();let total=0,veg=0,built=0,loss=0;
+    for(let i=0;i<n;i++){
+      if(keepVeg[i])veg++;
+      if(keepBuilt[i])built++;
+      if(keepLoss[i])loss++;
+      if(keepVeg[i]||keepBuilt[i]||keepLoss[i]){total++;affected.add(bin[i])}
+    }
+    enc.area=total*g.pixelArea;enc.vegArea=veg*g.pixelArea;enc.builtArea=built*g.pixelArea;
+    enc.lossArea=loss*g.pixelArea;enc.affectedM=Math.min(g.len,affected.size*20);
+    const types=[["زراعة مستحدثة",enc.vegArea],["مبانٍ أو ردم محتمل",enc.builtArea],["فقد مسطح مائى",enc.lossArea]].sort((x,y)=>y[1]-x[1]);
+    if(types[0][1]>0)enc.type=types[0][0];
+  }
+  a.channelArea=channelCount*g.pixelArea;
+  a.coverage=a.channelArea?a.area/a.channelArea*100:0;
+  a.validPct=channelCount?validChannel/channelCount*100:0;
+  a.previousArea=b.area;a.previousCoverage=a.channelArea?b.area/a.channelArea*100:0;
+  a.previousAffectedM=b.affectedM;a.previousMeanNdvi=b.meanNdvi;
+  a.change=a.area-b.area;a.insideCount=insideCount;a.encroachment=enc;
+  return a;
+};
+
+WW.median = function(a){
+  if(!a.length)return null;const x=a.slice().sort((p,q)=>p-q),m=Math.floor(x.length/2);
+  return x.length%2?x[m]:(x[m-1]+x[m])/2;
+};
+WW.hydraulicEvidence = function(seg,sceneDate){
+  const target=new Date(sceneDate+"T00:00:00").getTime(),dates=Object.keys(State.readings||{});
+  let bestDate=null,bestGap=Infinity;
+  dates.forEach(d=>{const gap=Math.abs(new Date(d+"T00:00:00").getTime()-target)/86400000;if(gap<bestGap){bestGap=gap;bestDate=d}});
+  if(!bestDate||bestGap>14)return {support:false,label:"لا قراءة مناظرة ±14 يوم",date:null};
+  const day=State.readings[bestDate]||{};
+  const sites=State.branches.filter(b=>day[b.id]&&Math.abs((+b.km||0)-seg.mid)<=5)
+    .sort((a,b)=>Math.abs((+a.km||0)-seg.mid)-Math.abs((+b.km||0)-seg.mid));
+  const site=sites[0];if(!site)return {support:false,label:"لا نقطة قياس قريبة",date:bestDate};
+  const rec=day[site.id]||{},reasons=[];
+  if(rec.front!=null&&rec.back!=null&&site.refFront!=null&&site.refBack!=null&&Number.isFinite(+rec.front)&&Number.isFinite(+rec.back)&&Number.isFinite(+site.refFront)&&Number.isFinite(+site.refBack)){
+    const actual=Math.abs(+rec.front-+rec.back),ref=Math.abs(+site.refFront-+site.refBack);
+    if(actual-ref>Math.max(.05,ref*.25))reasons.push("فرق منسوب أعلى من المرجع");
+  }
+  if(rec.flow!=null&&Number.isFinite(+rec.flow)){
+    const hist=dates.map(d=>State.readings[d]?.[site.id]?.flow).map(v=>v==null?NaN:+v).filter(Number.isFinite);
+    const med=WW.median(hist);
+    if(hist.length>=5&&med>0&&+rec.flow<med*.75)reasons.push("تصرف أقل من وسيط السجل");
+  }
+  return {support:reasons.length>0,label:reasons.length?reasons.join(" + "):"لا انحراف هيدروليكى دال",
+    date:bestDate,site:site.name,gap:+bestGap.toFixed(0)};
+};
+WW.confidence = function(s,cloud,hasPrevious){
+  if(!s.area)return {code:"none",label:"لا اشتباه"};
+  let score=0;if(s.validPct>=80)score+=2;else if(s.validPct>=60)score++;
+  if(cloud<=20)score++;if(s.coverage>=3)score++;if(s.area>=1000)score++;
+  if(hasPrevious&&s.previousArea>0)score+=2;if(hasPrevious&&s.change>0)score++;
+  return score>=6?{code:"high",label:"مرتفعة"}:score>=4?{code:"med",label:"متوسطة"}:{code:"low",label:"منخفضة"};
+};
+WW.priority = function(conf,hydro,area){
+  if(!area)return {code:"clear",label:"لا اشتباه"};
+  if(hydro.support&&(conf.code==="high"||conf.code==="med"))return {code:"urgent",label:"عاجلة ميدانياً"};
+  if(conf.code==="high")return {code:"high",label:"مرتفعة"};
+  if(conf.code==="med")return {code:"med",label:"مراجعة"};
+  return {code:"low",label:"متابعة"};
+};
+WW.encConfidence = function(enc,cloud){
+  if(!enc?.available)return {code:"na",label:"تحتاج صورتين"};
+  if(!enc.area)return {code:"clear",label:"لا تغير دال"};
+  let score=0;
+  if(enc.validPct>=80)score+=2;else if(enc.validPct>=60)score++;
+  if(cloud<=20)score++;
+  if(enc.area>=400)score++;if(enc.area>=1200)score++;
+  if(enc.affectedM>=100)score++;if(enc.lossArea>=400)score++;
+  return score>=5?{code:"high",label:"مرتفعة"}:score>=3?{code:"med",label:"متوسطة"}:{code:"low",label:"منخفضة"};
+};
+WW.encPriority = function(enc,conf){
+  if(!enc?.available)return {code:"na",label:"غير متاح"};
+  if(!enc.area)return {code:"clear",label:"لا تغير دال"};
+  if(conf.code==="high"&&(enc.area>=1200||enc.lossArea>=400))return {code:"urgent",label:"معاينة عاجلة"};
+  if(conf.code==="high"||enc.area>=800)return {code:"high",label:"مرتفعة"};
+  if(conf.code==="med")return {code:"med",label:"مراجعة"};
+  return {code:"low",label:"متابعة"};
+};
+WW.processSegment = async function(seg,currentScene,previousScene,signal){
+  const item=WW.pickItem(currentScene,seg);
+  const base={...seg,sceneDate:currentScene.date,previousDate:previousScene?.date||null};
+  if(!item)return {...base,status:"no-data",reason:"لا بلاطة تغطى القطاع"};
+  try{
+    const g=WW.makeGeom(seg),prevItem=previousScene?WW.pickItem(previousScene,seg):null;
+    const current=await WW.loadSceneGrid(item,g,signal);
+    let previous=null;
+    if(prevItem)try{previous=await WW.loadSceneGrid(prevItem,g,signal)}catch(_){previous=null}
+    const s=WW.classify(current,previous,g),cloud=WW.itemCloud(item);
+    if(!s.channelArea)return {...base,status:"no-data",reason:"لم يُستنتج حرم مائى صالح",itemId:item.id,cloud};
+    const hydro=WW.hydraulicEvidence(seg,currentScene.date),conf=WW.confidence(s,cloud,!!previous);
+    const pri=WW.priority(conf,hydro,s.area),field=WW.validation[seg.key]||{status:"unreviewed",note:""};
+    const enc=s.encroachment||{available:false,area:0},encConf=WW.encConfidence(enc,cloud);
+    enc.confidence=encConf;enc.priority=WW.encPriority(enc,encConf);
+    return {...base,status:"ok",itemId:item.id,previousItemId:prevItem?.id||null,cloud,
+      area:s.area,previousArea:s.previousArea,change:s.change,coverage:s.coverage,
+      affectedM:s.affectedM,previousAffectedM:s.previousAffectedM,meanNdvi:s.meanNdvi,
+      previousMeanNdvi:s.previousMeanNdvi,previousCoverage:s.previousCoverage,
+      validPct:s.validPct,channelArea:s.channelArea,encroachment:enc,
+      confidence:conf,priority:pri,hydraulic:hydro,fieldStatus:field.status||"unreviewed",fieldNote:field.note||""};
+  }catch(e){
+    if(e.name==="AbortError")throw e;
+    return {...base,status:"no-data",reason:e.message,itemId:item.id,cloud:WW.itemCloud(item)};
+  }
+};
+WW.runPool = async function(items,limit,handler,onProgress){
+  const out=new Array(items.length);let cursor=0,done=0;
+  async function worker(){
+    while(true){
+      const i=cursor++;if(i>=items.length)return;
+      out[i]=await handler(items[i],i);done++;onProgress?.(done,items.length);
+    }
+  }
+  await Promise.all(Array.from({length:Math.min(limit,items.length)},worker));return out;
+};
+WW.historySignature = function(){
+  const c=WW.config;
+  return [c.startKm,c.endKm,c.segmentKm,c.corridorM,(+c.ndvi).toFixed(2)].join("|");
+};
+WW.compactHistoryRow = function(r,previous){
+  if(previous){
+    return {key:r.key,from:r.from,to:r.to,reach:r.reach,
+      status:r.previousItemId&&r.status==="ok"?"ok":"no-data",
+      area:+r.previousArea||0,coverage:+r.previousCoverage||0,affectedM:+r.previousAffectedM||0,
+      meanNdvi:r.previousMeanNdvi==null?null:+r.previousMeanNdvi,validPct:+r.validPct||0,
+      itemId:r.previousItemId||null,encArea:null};
+  }
+  return {key:r.key,from:r.from,to:r.to,reach:r.reach,status:r.status,
+    area:+r.area||0,coverage:+r.coverage||0,affectedM:+r.affectedM||0,
+    meanNdvi:r.meanNdvi==null?null:+r.meanNdvi,validPct:+r.validPct||0,itemId:r.itemId||null,
+    encArea:r.encroachment?.available?+r.encroachment.area||0:null,
+    encType:r.encroachment?.type||null};
+};
+WW.upsertHistory = function(run){
+  if(!run?.date||!Array.isArray(run.results))return;
+  const i=WW.history.findIndex(x=>x.id===run.id);
+  if(i>=0){
+    if(WW.history[i].mode==="full"&&run.mode==="comparison")return;
+    WW.history[i]=run;
+  }else WW.history.push(run);
+  WW.history.sort((a,b)=>a.date.localeCompare(b.date));
+  if(WW.history.length>36)WW.history=WW.history.slice(-36);
+};
+WW.archiveAnalysis = function(){
+  if(!WW.lastRun||!WW.results.length)return;
+  const signature=WW.historySignature(),base={
+    signature,startKm:+WW.config.startKm,endKm:+WW.config.endKm,segmentKm:+WW.config.segmentKm,
+    corridorM:+WW.config.corridorM,ndvi:+WW.config.ndvi,completedAt:WW.lastRun.completedAt,
+    source:WW.lastRun.source
+  };
+  if(WW.lastRun.previousDate){
+    WW.upsertHistory({...base,id:WW.lastRun.previousDate+"|"+signature,date:WW.lastRun.previousDate,
+      mode:"comparison",results:WW.results.map(r=>WW.compactHistoryRow(r,true))});
+  }
+  WW.upsertHistory({...base,id:WW.lastRun.currentDate+"|"+signature,date:WW.lastRun.currentDate,
+    mode:"full",results:WW.results.map(r=>WW.compactHistoryRow(r,false))});
+  WW.saveHistory();
+};
+WW.analyze = async function(){
+  WW.readControls();
+  const curDate=WW.$("wwCurrent")?.value,prevDate=WW.$("wwPrevious")?.value;
+  const current=WW.sceneByDate(curDate),previous=prevDate&&prevDate!==curDate?WW.sceneByDate(prevDate):null;
+  if(!current){toast("ابحث عن الصور واختر صورة حالية","danger");return}
+  const segments=WW.buildSegments();if(!segments.length){toast("نطاق الكيلومترات غير صالح","danger");return}
+  WW.abort=new AbortController();WW.readerCache.clear();WW.setBusy(true);
+  WW.setStatus("جارٍ تحليل Sentinel‑2","busy");WW.setProgress(true,"تهيئة نطاقات COG…",2);
+  WW.log("Analysis started: "+curDate+" · segments "+segments.length+".");
+  try{
+    const results=await WW.runPool(segments,2,
+      s=>WW.processSegment(s,current,previous,WW.abort.signal),
+      (done,total)=>{
+        const pct=5+done/total*92;WW.setProgress(true,"تحليل القطاع "+done+" من "+total,pct);
+        if(done===1||done%10===0||done===total)WW.log("Processed "+done+"/"+total+" segments.","ok");
+      });
+    WW.results=results;
+    WW.lastRun={currentDate:curDate,previousDate:previous?.date||null,analyzed:segments.length,
+      completedAt:new Date().toISOString(),source:"Earth Search / Sentinel-2 L2A · OpenStreetMap relation 10369130"};
+    WW.archiveAnalysis();WW.save();WW.renderResults();WW.setStatus("اكتمل التحليل","ok");WW.setProgress(false,"",100);
+    const ok=results.filter(r=>r.status==="ok").length;
+    WW.log("Completed — usable "+ok+"/"+results.length+" segments.","ok");
+    toast("اكتمل تحليل "+ok+" قطاع ببيانات صالحة","ok");
+  }catch(e){
+    if(e.name==="AbortError"){WW.setStatus("أُلغى التحليل","");WW.log("Analysis cancelled by user.","warn");toast("تم إلغاء التحليل","brand")}
+    else{WW.setStatus("فشل التحليل","bad");WW.log(e.message,"err");toast("تعذّر التحليل: "+e.message,"danger")}
+    WW.setProgress(false,"",0);
+  }finally{WW.readerCache.clear();WW.setBusy(false);WW.abort=null;WW.populateSceneSelects()}
+};
+
+WW.areaText = n=>Number.isFinite(+n)?Math.round(+n).toLocaleString("ar-EG"):"—";
+WW.badge = function(x){
+  if(!x)return '<span class="weed-badge na">—</span>';
+  return `<span class="weed-badge ${esc(x.code||"na")}">${esc(x.label||"—")}</span>`;
+};
+WW.fieldOptions = function(status){
+  const o=[["unreviewed","غير مُعاين"],["confirmed","مؤكد ميدانياً"],["cleared","ليس حشائش"]];
+  return o.map(x=>`<option value="${x[0]}"${status===x[0]?" selected":""}>${x[1]}</option>`).join("");
+};
+WW.renderResults = function(){
+  const rows=WW.results||[],ok=rows.filter(r=>r.status==="ok");
+  const area=ok.reduce((a,r)=>a+(+r.area||0),0),channel=ok.reduce((a,r)=>a+(+r.channelArea||0),0);
+  const length=ok.reduce((a,r)=>a+(r.to-r.from),0),quality=ok.length?ok.reduce((a,r)=>a+(+r.validPct||0),0)/ok.length:0;
+  const high=ok.filter(r=>["urgent","high"].includes(r.priority?.code)&&r.fieldStatus!=="cleared").length;
+  const set=(id,v)=>{const e=WW.$(id);if(e)e.textContent=v};
+  set("wwKDate",WW.lastRun?.currentDate||"—");set("wwKPrev","المقارنة: "+(WW.lastRun?.previousDate||"—"));
+  set("wwKLength",ok.length?length.toFixed(1):"—");set("wwKArea",ok.length?WW.areaText(area):"—");
+  set("wwKHigh",ok.length?String(high):"—");set("wwKQuality",ok.length?quality.toFixed(0)+"٪":"—");
+  set("wwSceneMeta",WW.lastRun?"Sentinel‑2 · "+WW.lastRun.currentDate+" · تغطية صالحة "+ok.length+"/"+rows.length:"لا توجد نتيجة بعد");
+  set("wwLastRun",WW.lastRun?WW.lastRun.currentDate+" · "+rows.length+" قطاع · "+ok.length+" صالح":"لم يُشغَّل التحليل بعد");
+  const exp=WW.$("wwExport"),exp2=WW.$("wwExport2");if(exp)exp.disabled=!rows.length;if(exp2)exp2.disabled=!rows.length;
+  const body=WW.$("wwRows");
+  if(body){
+    if(!rows.length)body.innerHTML='<tr><td colspan="14"><div class="weed-empty"><b>لا توجد نتائج بعد</b>ابحث عن الصور ثم شغّل التحليل. لن تُعرض أرقام افتراضية.</div></td></tr>';
+    else body.innerHTML=rows.map(r=>{
+      if(r.status!=="ok")return `<tr data-key="${esc(r.key)}"><td class="num">ك${r.from.toFixed(1)}–${r.to.toFixed(1)}</td><td>${esc(r.reach)}</td><td colspan="7"><span class="weed-badge na">لا بيانات صالحة</span> <span style="color:var(--ink-3);font-size:.68rem">${esc(r.reason||"")}</span></td><td>—</td><td>${WW.badge({code:"na",label:"غير مصنف"})}</td><td><select class="ww-field" data-key="${esc(r.key)}">${WW.fieldOptions((WW.validation[r.key]||{}).status||"unreviewed")}</select></td><td><button class="weed-btn ww-note" data-key="${esc(r.key)}" style="padding:4px 7px">✎</button></td><td><button class="weed-btn ww-mission" data-key="${esc(r.key)}" data-kind="weeds" style="padding:4px 7px">＋</button></td></tr>`;
+      const ch=r.change==null?"—":(r.change>=0?"+":"")+WW.areaText(r.change);
+      const h=r.hydraulic||{},field=WW.validation[r.key]||{status:r.fieldStatus||"unreviewed",note:r.fieldNote||""};
+      return `<tr data-key="${esc(r.key)}">
+        <td class="num">ك${r.from.toFixed(1)}–${r.to.toFixed(1)}</td><td>${esc(r.reach)}</td>
+        <td class="num">${WW.areaText(r.area)}</td><td class="num">${r.coverage.toFixed(1)}</td>
+        <td class="num">${Math.round(r.affectedM)} م</td><td class="num">${ch}</td>
+        <td class="num">${r.meanNdvi==null?"—":r.meanNdvi.toFixed(2)}</td><td class="num">${r.validPct.toFixed(0)}٪</td>
+        <td>${WW.badge(r.confidence)}</td>
+        <td title="${esc((h.site||"")+" "+(h.date||""))}">${h.support?'<span class="weed-badge high">داعم</span> ':'<span class="weed-badge clear">غير دال</span> '}${esc(h.label||"—")}</td>
+        <td>${WW.badge(r.priority)}</td>
+        <td><select class="ww-field" data-key="${esc(r.key)}">${WW.fieldOptions(field.status||"unreviewed")}</select></td>
+        <td><button class="weed-btn ww-note" data-key="${esc(r.key)}" title="${esc(field.note||"إضافة ملاحظة")}" style="padding:4px 7px">✎</button></td>
+        <td><button class="weed-btn ww-mission" data-key="${esc(r.key)}" data-kind="weeds" style="padding:4px 7px">＋</button></td>
+      </tr>`;
+    }).join("");
+    body.querySelectorAll(".ww-field").forEach(s=>s.onchange=()=>WW.setFieldStatus(s.dataset.key,s.value));
+    body.querySelectorAll(".ww-note").forEach(b=>b.onclick=()=>WW.editNote(b.dataset.key));
+    body.querySelectorAll(".ww-mission").forEach(b=>b.onclick=()=>WW.prefillMission(b.dataset.key,b.dataset.kind));
+  }
+  const method=WW.$("wwMethod");
+  if(method)method.innerHTML=`<b>منهج التصنيف:</b> قناع SCL للسحب والظلال، ثم NDVI ≥ ${WW.config.ndvi.toFixed(2)} مع سياق مائى من MNDWI/SCL للصورتين، واستبعاد حافتى المجرى، وحذف التجمعات الأقل من ${WW.config.minCluster} بكسلات متصلة. إجمالى الحرم المائى المستنتج فى النتائج الحالية ${channel?WW.areaText(channel)+" م²":"—"}. الإسناد الهيدروليكى مؤشر أولوية ولا يثبت السببية بمفرده.`;
+  WW.drawMap();WW.renderEncroachments();WW.renderHistory();WW.renderMissions();WW.renderMaintenance();
+};
+WW.encFieldOptions = function(status){
+  const o=[["unreviewed","غير مُعاين"],["confirmed","مؤكد تعدٍ"],["rejected","ليس تعدياً"],["resolved","تمت الإزالة/التصحيح"]];
+  return o.map(x=>`<option value="${x[0]}"${status===x[0]?" selected":""}>${x[1]}</option>`).join("");
+};
+WW.renderEncroachments = function(){
+  const valid=(WW.results||[]).filter(r=>r.status==="ok"&&r.encroachment?.available);
+  const changed=valid.filter(r=>(+r.encroachment.area||0)>0);
+  const sum=k=>changed.reduce((a,r)=>a+(+r.encroachment[k]||0),0);
+  const set=(id,v)=>{const e=WW.$(id);if(e)e.textContent=v};
+  set("wwEncArea",valid.length?WW.areaText(sum("area")):"—");
+  set("wwEncSectors",valid.length?String(changed.length):"—");
+  set("wwEncVeg",valid.length?WW.areaText(sum("vegArea")):"—");
+  set("wwEncBuilt",valid.length?WW.areaText(sum("builtArea")):"—");
+  set("wwEncLoss",valid.length?WW.areaText(sum("lossArea")):"—");
+  const body=WW.$("wwEncRows");if(!body)return;
+  if(!WW.lastRun?.previousDate){
+    body.innerHTML='<tr><td colspan="11"><div class="weed-empty"><b>يلزم اختيار صورتين</b>رصد التعديات يعتمد على تغير حقيقى بين تاريخين.</div></td></tr>';return;
+  }
+  if(!valid.length){
+    body.innerHTML='<tr><td colspan="11"><div class="weed-empty"><b>لا توجد مقارنة صالحة</b>تعذرت قراءة الصورة السابقة أو لم تتقاطع مع النطاق.</div></td></tr>';return;
+  }
+  if(!changed.length){
+    body.innerHTML='<tr><td colspan="11"><div class="weed-empty"><b>لا يوجد تغير طيفى دال</b>لم تتجاوز أى تجمعات عتبات الاشتباه الحالية.</div></td></tr>';return;
+  }
+  body.innerHTML=changed.sort((a,b)=>(+b.encroachment.area||0)-(+a.encroachment.area||0)).map(r=>{
+    const e=r.encroachment,v=WW.validation["enc:"+r.key]||{status:"unreviewed"};
+    return `<tr>
+      <td class="num">ك${r.from.toFixed(1)}–${r.to.toFixed(1)}</td>
+      <td class="num">${WW.areaText(e.area)}</td><td>${esc(e.type||"—")}</td>
+      <td class="num">${WW.areaText(e.vegArea)}</td><td class="num">${WW.areaText(e.builtArea)}</td>
+      <td class="num">${WW.areaText(e.lossArea)}</td><td class="num">${(+e.validPct||0).toFixed(0)}٪</td>
+      <td>${WW.badge(e.confidence)}</td><td>${WW.badge(e.priority)}</td>
+      <td><select class="ww-enc-field" data-key="${esc(r.key)}">${WW.encFieldOptions(v.status||"unreviewed")}</select></td>
+      <td><button class="weed-btn ww-mission" data-key="${esc(r.key)}" data-kind="encroachment" style="padding:4px 7px">＋</button></td>
+    </tr>`;
+  }).join("");
+  body.querySelectorAll(".ww-enc-field").forEach(s=>s.onchange=()=>WW.setEncStatus(s.dataset.key,s.value));
+  body.querySelectorAll(".ww-mission").forEach(b=>b.onclick=()=>WW.prefillMission(b.dataset.key,b.dataset.kind));
+};
+WW.setEncStatus = function(key,status){
+  const k="enc:"+key,old=WW.validation[k]||{};
+  WW.validation[k]={status,note:old.note||"",updatedAt:new Date().toISOString()};
+  WW.saveValidation();WW.renderEncroachments();toast("تم حفظ نتيجة التحقق من التعدى","ok");
+};
+WW.historyRuns = function(){
+  const signature=WW.historySignature();
+  return (WW.history||[]).filter(r=>r.signature===signature).sort((a,b)=>a.date.localeCompare(b.date));
+};
+WW.runTotal = function(run,key){
+  return (run?.results||[]).filter(r=>r.status==="ok").reduce((a,r)=>a+(+r[key]||0),0);
+};
+WW.runRangeTotal = function(run,from,to,key){
+  return (run?.results||[]).filter(r=>r.status==="ok"&&((r.from+r.to)/2)>=from&&((r.from+r.to)/2)<=to)
+    .reduce((a,r)=>a+(+r[key]||0),0);
+};
+WW.renderHistory = function(){
+  const runs=WW.historyRuns(),set=(id,v)=>{const e=WW.$(id);if(e)e.textContent=v};
+  set("wwHistDates",runs.length?String(runs.length):"—");
+  const last=runs.at(-1),prev=runs.at(-2),lastTotal=WW.runTotal(last,"area"),prevTotal=WW.runTotal(prev,"area");
+  const delta=last&&prev?lastTotal-prevTotal:null;
+  set("wwHistDelta",delta==null?"—":(delta>=0?"+":"")+WW.areaText(delta));
+  let persistent=null;
+  if(runs.length>=3){
+    const recent=runs.slice(-3),keys=new Set(recent[0].results.filter(r=>r.status==="ok"&&+r.area>0).map(r=>r.key));
+    persistent=[...keys].filter(k=>recent.every(run=>run.results.some(r=>r.key===k&&r.status==="ok"&&+r.area>0))).length;
+  }
+  set("wwHistPersistent",persistent==null?"—":String(persistent));
+  let recurrence=0;
+  if(typeof WW.evaluateWork==="function"){
+    recurrence=(WW.maintenance||[]).map(WW.evaluateWork).filter(x=>x.recurrence).length;
+  }
+  set("wwHistRecurrence",WW.maintenance.length?String(recurrence):"—");
+  let maxDaily=null,top=[];
+  if(last&&prev){
+    const days=Math.max(1,(new Date(last.date+"T00:00:00Z")-new Date(prev.date+"T00:00:00Z"))/86400000);
+    const pm=new Map(prev.results.map(r=>[r.key,r]));
+    top=last.results.filter(r=>r.status==="ok").map(r=>{
+      const p=pm.get(r.key),change=(+r.area||0)-(+p?.area||0);
+      return {r,change,daily:change/days};
+    }).sort((a,b)=>b.daily-a.daily).slice(0,6);
+    maxDaily=top.length?top[0].daily:null;
+  }
+  set("wwHistGrowth",maxDaily==null?"—":(maxDaily>=0?"+":"")+WW.areaText(maxDaily));
+  const meta=WW.$("wwHistoryMeta");
+  if(meta)meta.textContent=runs.length
+    ?runs[0].date+" ← "+runs.at(-1).date+" · ك"+WW.config.startKm+"–"+WW.config.endKm
+    :"السجل يتكون من التحليلات الفعلية المحفوظة";
+  const host=WW.$("wwTrendRows");
+  if(host){
+    if(!top.length)host.innerHTML='<div class="weed-empty"><b>لا يوجد سجل كافٍ</b>يلزم تاريخا تصوير على الأقل.</div>';
+    else host.innerHTML=top.map(x=>`<div class="weed-summary-row"><span>ك${x.r.from.toFixed(1)}–${x.r.to.toFixed(1)} · ${esc(x.r.reach||"")}</span><b>${x.change>=0?"+":""}${WW.areaText(x.change)} م²</b></div>`).join("");
+  }
+  WW.drawTrend();
+};
+WW.drawTrend = function(){
+  const canvas=WW.$("wwTrendChart");if(!canvas)return;
+  const runs=WW.historyRuns(),rect=canvas.getBoundingClientRect(),dpr=Math.min(2,window.devicePixelRatio||1);
+  const w=Math.max(300,rect.width||300),h=Math.max(220,rect.height||265);
+  canvas.width=Math.round(w*dpr);canvas.height=Math.round(h*dpr);
+  const ctx=canvas.getContext("2d");ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);
+  if(runs.length<2){
+    ctx.fillStyle="#715b3d";ctx.font="700 14px Tajawal, sans-serif";ctx.textAlign="center";
+    ctx.fillText("يلزم تاريخا رصد فعليان على الأقل",w/2,h/2);return;
+  }
+  const pad={l:52,r:20,t:25,b:42},weed=runs.map(r=>WW.runTotal(r,"area"));
+  const enc=runs.map(r=>r.results.some(x=>x.encArea!=null)?WW.runTotal(r,"encArea"):null);
+  const vals=[...weed,...enc.filter(Number.isFinite)],max=Math.max(1,...vals);
+  const x=i=>pad.l+i*(w-pad.l-pad.r)/Math.max(1,runs.length-1);
+  const y=v=>h-pad.b-(+v||0)/max*(h-pad.t-pad.b);
+  ctx.strokeStyle="rgba(168,132,60,.2)";ctx.fillStyle="#715b3d";ctx.lineWidth=1;ctx.font="10px Tajawal, sans-serif";
+  for(let i=0;i<=4;i++){
+    const yy=pad.t+i*(h-pad.t-pad.b)/4;ctx.beginPath();ctx.moveTo(pad.l,yy);ctx.lineTo(w-pad.r,yy);ctx.stroke();
+    ctx.textAlign="right";ctx.fillText(Math.round(max*(1-i/4)).toLocaleString("ar-EG"),pad.l-6,yy+3);
+  }
+  const draw=(arr,color)=>{
+    ctx.strokeStyle=color;ctx.lineWidth=2.5;ctx.beginPath();let started=false;
+    arr.forEach((v,i)=>{if(v==null)return;const xx=x(i),yy=y(v);started?ctx.lineTo(xx,yy):ctx.moveTo(xx,yy);started=true});ctx.stroke();
+    arr.forEach((v,i)=>{if(v==null)return;ctx.fillStyle=color;ctx.beginPath();ctx.arc(x(i),y(v),3.5,0,Math.PI*2);ctx.fill()});
+  };
+  draw(weed,"#5a6b3a");draw(enc,"#9c3a28");
+  ctx.fillStyle="#715b3d";ctx.textAlign="center";ctx.font="10px Tajawal, sans-serif";
+  runs.forEach((r,i)=>{if(runs.length<=8||i===0||i===runs.length-1||i%Math.ceil(runs.length/6)===0)ctx.fillText(r.date.slice(5),x(i),h-18)});
+  ctx.textAlign="right";ctx.font="700 11px Tajawal, sans-serif";ctx.fillStyle="#5a6b3a";ctx.fillText("■ حشائش",w-92,15);
+  ctx.fillStyle="#9c3a28";ctx.fillText("■ تعديات",w-20,15);
+};
+WW.setFieldStatus = function(key,status){
+  const old=WW.validation[key]||{};WW.validation[key]={status,note:old.note||"",updatedAt:new Date().toISOString()};
+  WW.saveValidation();
+  const r=WW.results.find(x=>x.key===key);if(r)r.fieldStatus=status;
+  WW.save();WW.renderResults();toast("تم حفظ نتيجة المعاينة محلياً","ok");
+};
+WW.editNote = function(key){
+  const old=WW.validation[key]||{status:"unreviewed",note:""};
+  const note=prompt("ملاحظة المعاينة الميدانية:",old.note||"");if(note===null)return;
+  WW.validation[key]={status:old.status||"unreviewed",note:note.trim(),updatedAt:new Date().toISOString()};
+  WW.saveValidation();const r=WW.results.find(x=>x.key===key);if(r)r.fieldNote=note.trim();
+  WW.save();WW.renderResults();toast("تم حفظ الملاحظة","ok");
+};
+WW.missionLabels = {
+  type:{weeds:"حشائش مائية",encroachment:"تعديات",followup:"متابعة تطهير"},
+  status:{planned:"مخططة",visited:"تمت المعاينة",confirmed:"مؤكد ميدانياً",rejected:"غير مؤكد",cleared:"تم التطهير/الإزالة"},
+  density:{low:"منخفضة",medium:"متوسطة",high:"مرتفعة"}
+};
+WW.prefillMission = function(key,kind){
+  const r=WW.results.find(x=>x.key===key);if(!r)return;
+  WW.pendingMissionKey=key;
+  const set=(id,v)=>{const e=WW.$(id);if(e)e.value=v};
+  set("wwMissionType",kind||"weeds");set("wwMissionFrom",r.from);set("wwMissionTo",r.to);
+  if(kind==="encroachment")set("wwMissionClass",r.encroachment?.type||"");
+  const note=WW.$("wwMissionNote");
+  if(note)note.value="مرجع الرصد الفضائى: "+(WW.lastRun?.currentDate||"—")+" · "+(kind==="encroachment"?(r.encroachment?.type||"تغير مشتبه"):(r.priority?.label||"اشتباه حشائش"));
+  WW.$("wwMissionPanel")?.scrollIntoView({behavior:"smooth",block:"start"});
+};
+WW.resetMissionForm = function(){
+  const set=(id,v)=>{const e=WW.$(id);if(e)e.value=v};
+  set("wwMissionType","weeds");set("wwMissionDate",todayKey());set("wwMissionFrom",WW.config.startKm);
+  set("wwMissionTo",Math.min(126,+WW.config.startKm+(+WW.config.segmentKm||1)));set("wwMissionInspector","");
+  set("wwMissionStatus","planned");set("wwMissionDensity","");set("wwMissionClass","");set("wwMissionNote","");
+  const f=WW.$("wwMissionPhoto");if(f)f.value="";
+  const p=WW.$("wwMissionPreview");if(p){p.src="";p.classList.remove("on")}
+  WW.pendingPhoto="";WW.pendingCoords=null;WW.pendingMissionKey=null;
+  const c=WW.$("wwMissionCoords");if(c)c.textContent="لم يُلتقط الموقع";
+};
+WW.captureMissionGps = function(){
+  if(!navigator.geolocation){toast("تحديد الموقع غير مدعوم على هذا الجهاز","danger");return}
+  const out=WW.$("wwMissionCoords");if(out)out.textContent="جارٍ تحديد الموقع…";
+  navigator.geolocation.getCurrentPosition(pos=>{
+    WW.pendingCoords={lat:+pos.coords.latitude.toFixed(6),lon:+pos.coords.longitude.toFixed(6),
+      accuracy:Math.round(pos.coords.accuracy||0),capturedAt:new Date().toISOString()};
+    if(out)out.textContent=WW.pendingCoords.lat+", "+WW.pendingCoords.lon+" · ±"+WW.pendingCoords.accuracy+"م";
+    toast("تم التقاط الموقع","ok");
+  },e=>{if(out)out.textContent="تعذّر تحديد الموقع";toast("تعذّر GPS: "+e.message,"danger")},
+  {enableHighAccuracy:true,timeout:15000,maximumAge:30000});
+};
+WW.readMissionPhoto = function(file){
+  if(!file)return Promise.resolve("");
+  if(!file.type.startsWith("image/"))return Promise.reject(new Error("الملف المختار ليس صورة"));
+  return new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onerror=()=>reject(new Error("تعذرت قراءة الصورة"));
+    reader.onload=()=>{
+      const img=new Image();img.onerror=()=>reject(new Error("صيغة الصورة غير مدعومة"));
+      img.onload=()=>{
+        let w=img.naturalWidth,h=img.naturalHeight,scale=Math.min(1,960/Math.max(w,h));
+        w=Math.max(1,Math.round(w*scale));h=Math.max(1,Math.round(h*scale));
+        const cv=document.createElement("canvas"),ctx=cv.getContext("2d");
+        let data="";
+        for(let tries=0;tries<6;tries++){
+          cv.width=w;cv.height=h;ctx.drawImage(img,0,0,w,h);
+          data=cv.toDataURL("image/jpeg",tries<3?.72:.62);
+          if(data.length<=230000||Math.max(w,h)<=420)break;
+          w=Math.round(w*.78);h=Math.round(h*.78);
+        }
+        resolve(data);
+      };
+      img.src=reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+};
+WW.saveMission = function(){
+  const v=id=>WW.$(id)?.value,from=+v("wwMissionFrom"),to=+v("wwMissionTo");
+  if(!v("wwMissionDate")||!Number.isFinite(from)||!Number.isFinite(to)||to<=from||from<0||to>126){
+    toast("راجع تاريخ وحدود القطاع","danger");return;
+  }
+  const m={id:(globalThis.crypto?.randomUUID?.()||("m_"+Date.now()+"_"+Math.random().toString(36).slice(2,7))),
+    type:v("wwMissionType")||"weeds",date:v("wwMissionDate"),from:+from.toFixed(2),to:+to.toFixed(2),
+    inspector:(v("wwMissionInspector")||"").trim(),status:v("wwMissionStatus")||"planned",
+    density:v("wwMissionDensity")||"",classification:v("wwMissionClass")||"",
+    note:(v("wwMissionNote")||"").trim(),coords:WW.pendingCoords,photo:WW.pendingPhoto||"",
+    sourceDate:WW.lastRun?.currentDate||null,sourceKey:WW.pendingMissionKey,createdAt:new Date().toISOString()};
+  WW.missions.unshift(m);WW.saveMissions();WW.renderMissions();WW.resetMissionForm();
+  if(m.sourceKey&&m.type==="weeds"&&["confirmed","rejected","cleared"].includes(m.status)){
+    const old=WW.validation[m.sourceKey]||{},status=m.status==="rejected"?"cleared":"confirmed";
+    WW.validation[m.sourceKey]={status,note:old.note||"",updatedAt:new Date().toISOString()};
+  }
+  if(m.sourceKey&&m.type==="encroachment"&&["confirmed","rejected","cleared"].includes(m.status)){
+    const k="enc:"+m.sourceKey,old=WW.validation[k]||{},status=m.status==="cleared"?"resolved":m.status;
+    WW.validation[k]={status,note:old.note||"",updatedAt:new Date().toISOString()};
+  }
+  WW.saveValidation();WW.renderResults();
+  toast("تم حفظ المأمورية الميدانية","ok");
+};
+WW.renderMissions = function(){
+  const body=WW.$("wwMissionRows");if(!body)return;
+  if(!WW.missions.length){
+    body.innerHTML='<tr><td colspan="11"><div class="weed-empty"><b>لا توجد مأموريات محفوظة</b>أنشئ مأمورية من أى قطاع أو من النموذج أعلاه.</div></td></tr>';return;
+  }
+  body.innerHTML=WW.missions.slice().sort((a,b)=>(b.date||"").localeCompare(a.date||"")).map(m=>{
+    const coords=m.coords?`${m.coords.lat}, ${m.coords.lon}`:"—";
+    const statusCode=m.status==="confirmed"?"verified":m.status==="rejected"?"rejected":m.status==="cleared"?"clear":"na";
+    return `<tr>
+      <td class="num">${esc(m.date||"—")}</td><td>${esc(WW.missionLabels.type[m.type]||m.type)}</td>
+      <td class="num">ك${(+m.from).toFixed(1)}–${(+m.to).toFixed(1)}</td><td>${esc(m.inspector||"—")}</td>
+      <td><span class="weed-badge ${statusCode}">${esc(WW.missionLabels.status[m.status]||m.status)}</span></td>
+      <td>${esc(WW.missionLabels.density[m.density]||m.density||"—")}</td><td>${esc(m.classification||"—")}</td>
+      <td class="weed-coord">${esc(coords)}</td>
+      <td>${m.photo?`<a href="${esc(m.photo)}" target="_blank" rel="noopener"><img class="weed-thumb" src="${esc(m.photo)}" alt="صورة المأمورية"></a>`:"—"}</td>
+      <td title="${esc(m.note||"")}">${esc((m.note||"—").slice(0,70))}</td>
+      <td><button class="weed-btn danger ww-mission-del" data-id="${esc(m.id)}" style="padding:4px 7px">${ICON.trash}</button></td>
+    </tr>`;
+  }).join("");
+  body.querySelectorAll(".ww-mission-del").forEach(b=>b.onclick=()=>WW.deleteMission(b.dataset.id));
+};
+WW.deleteMission = function(id){
+  if(!confirm("حذف هذه المأمورية المحلية؟"))return;
+  WW.missions=WW.missions.filter(x=>x.id!==id);WW.saveMissions();WW.renderMissions();toast("تم حذف المأمورية","warn");
+};
+WW.exportMissions = function(){
+  if(!WW.missions.length){toast("لا توجد مأموريات للتصدير","danger");return}
+  const head=["التاريخ","النوع","من ك","إلى ك","المعاين","الحالة","الشدة","التصنيف","خط العرض","خط الطول","دقة GPS م","تاريخ صورة المرجع","ملاحظات"];
+  const lines=[head.map(WW.csvCell).join(",")];
+  WW.missions.forEach(m=>lines.push([m.date,WW.missionLabels.type[m.type]||m.type,m.from,m.to,m.inspector,
+    WW.missionLabels.status[m.status]||m.status,WW.missionLabels.density[m.density]||m.density,m.classification,
+    m.coords?.lat,m.coords?.lon,m.coords?.accuracy,m.sourceDate,m.note].map(WW.csvCell).join(",")));
+  WW.downloadCsv("ismailia_field_missions_"+todayKey()+".csv",lines);
+};
+WW.hydraulicWorkSnapshot = function(work){
+  const dates=Object.keys(State.readings||{}).sort(),target=new Date(work.date+"T00:00:00").getTime(),maxGap=30;
+  const beforeDates=dates.filter(d=>d<=work.date).sort((a,b)=>b.localeCompare(a));
+  const afterDates=dates.filter(d=>d>work.date).sort();
+  const within=d=>Math.abs(new Date(d+"T00:00:00").getTime()-target)/86400000<=maxGap;
+  const beforeDate=beforeDates.find(within),afterDate=afterDates.find(within);
+  if(!beforeDate||!afterDate)return null;
+  const mid=(+work.from+ +work.to)/2,beforeDay=State.readings[beforeDate]||{},afterDay=State.readings[afterDate]||{};
+  const sites=(State.branches||[]).filter(s=>Math.abs((+s.km||0)-mid)<=5&&beforeDay[s.id]&&afterDay[s.id])
+    .sort((a,b)=>Math.abs((+a.km||0)-mid)-Math.abs((+b.km||0)-mid));
+  const site=sites[0];if(!site)return null;
+  const snap=(rec,date)=>{
+    const f=rec.front==null?NaN:+rec.front,b=rec.back==null?NaN:+rec.back,q=rec.flow==null?NaN:+rec.flow;
+    return {date,head:Number.isFinite(f)&&Number.isFinite(b)?Math.abs(f-b):null,flow:Number.isFinite(q)?q:null};
+  };
+  return {site:site.name,before:snap(beforeDay[site.id],beforeDate),after:snap(afterDay[site.id],afterDate)};
+};
+WW.evaluateWork = function(work){
+  const runs=WW.historyRuns(),before=runs.filter(r=>r.date<=work.date).at(-1)||null;
+  const after=runs.find(r=>r.date>work.date)||null;
+  const beforeArea=before?WW.runRangeTotal(before,+work.from,+work.to,"area"):null;
+  const afterArea=after?WW.runRangeTotal(after,+work.from,+work.to,"area"):null;
+  const removed=beforeArea!=null&&afterArea!=null?beforeArea-afterArea:null;
+  const removedPct=removed!=null&&beforeArea>0?removed/beforeArea*100:null;
+  let recurrence=false;
+  if(after&&beforeArea>0&&afterArea!=null&&afterArea<=beforeArea*.55){
+    recurrence=runs.filter(r=>r.date>after.date).some(r=>{
+      const a=WW.runRangeTotal(r,+work.from,+work.to,"area");
+      return a>afterArea+Math.max(300,beforeArea*.2);
+    });
+  }
+  const hydraulic=WW.hydraulicWorkSnapshot(work);
+  const cost=+work.cost||0,costEfficiency=removed>0&&cost>0?cost/removed:null;
+  return {work,before,after,beforeArea,afterArea,removed,removedPct,recurrence,hydraulic,costEfficiency};
+};
+WW.saveWork = function(){
+  const v=id=>WW.$(id)?.value,from=+v("wwWorkFrom"),to=+v("wwWorkTo");
+  if(!v("wwWorkDate")||!Number.isFinite(from)||!Number.isFinite(to)||to<=from||from<0||to>126){
+    toast("راجع تاريخ وحدود عمل التطهير","danger");return;
+  }
+  WW.maintenance.unshift({id:(globalThis.crypto?.randomUUID?.()||("w_"+Date.now()+"_"+Math.random().toString(36).slice(2,7))),
+    date:v("wwWorkDate"),from:+from.toFixed(2),to:+to.toFixed(2),method:v("wwWorkMethod")||"",
+    contractor:(v("wwWorkContractor")||"").trim(),cost:+v("wwWorkCost")||0,
+    note:(v("wwWorkNote")||"").trim(),createdAt:new Date().toISOString()});
+  WW.saveMaintenance();WW.renderMaintenance();WW.renderHistory();toast("تم حفظ العمل وتحديث التقييم","ok");
+};
+WW.renderMaintenance = function(){
+  const body=WW.$("wwWorkRows");if(!body)return;
+  if(!WW.maintenance.length){
+    body.innerHTML='<tr><td colspan="11"><div class="weed-empty"><b>لا توجد أعمال مسجلة</b>يلزم رصد سابق ولاحق لتقييم الأثر الفضائى.</div></td></tr>';return;
+  }
+  body.innerHTML=WW.maintenance.slice().sort((a,b)=>(b.date||"").localeCompare(a.date||"")).map(w=>{
+    const e=WW.evaluateWork(w),h=e.hydraulic;
+    const removed=e.removed==null?"—":(e.removed>=0?"":"زيادة ")+WW.areaText(Math.abs(e.removed))+" م²";
+    const result=!e.before?"بانتظار رصد سابق":!e.after?"بانتظار رصد لاحق":e.recurrence?"اشتباه عودة بعد التطهير":e.removed>0?"تحسن مرصود":"لا تحسن فضائى دال";
+    const code=e.recurrence?"urgent":e.removed>0?"verified":e.after?"med":"na";
+    const head=h&&h.before.head!=null&&h.after.head!=null?`${h.before.head.toFixed(3)} ← ${h.after.head.toFixed(3)} م`:"—";
+    const flow=h&&h.before.flow!=null&&h.after.flow!=null?`${h.before.flow.toFixed(3)} ← ${h.after.flow.toFixed(3)}`:"—";
+    return `<tr>
+      <td><b>${esc(w.date)}</b><br><span class="num">ك${(+w.from).toFixed(1)}–${(+w.to).toFixed(1)}</span><br><small>${esc(w.method||"")}</small></td>
+      <td class="num">${e.before?esc(e.before.date):"—"}</td><td class="num">${e.after?esc(e.after.date):"—"}</td>
+      <td class="num">${e.beforeArea==null?"—":WW.areaText(e.beforeArea)}</td><td class="num">${e.afterArea==null?"—":WW.areaText(e.afterArea)}</td>
+      <td class="num">${removed}${e.removedPct==null?"":" · "+e.removedPct.toFixed(0)+"٪"}</td>
+      <td title="${esc(h?.site||"")}">${head}</td><td title="${esc(h?.site||"")}">${flow}</td>
+      <td class="num">${e.costEfficiency==null?"—":Math.round(e.costEfficiency).toLocaleString("ar-EG")+" ج/م²"}</td>
+      <td><span class="weed-badge ${code}">${esc(result)}</span></td>
+      <td><button class="weed-btn danger ww-work-del" data-id="${esc(w.id)}" style="padding:4px 7px">${ICON.trash}</button></td>
+    </tr>`;
+  }).join("");
+  body.querySelectorAll(".ww-work-del").forEach(b=>b.onclick=()=>WW.deleteWork(b.dataset.id));
+};
+WW.deleteWork = function(id){
+  if(!confirm("حذف سجل العمل المحلى؟"))return;
+  WW.maintenance=WW.maintenance.filter(x=>x.id!==id);WW.saveMaintenance();
+  WW.renderMaintenance();WW.renderHistory();toast("تم حذف سجل العمل","warn");
+};
+WW.exportWork = function(){
+  if(!WW.maintenance.length){toast("لا توجد أعمال للتصدير","danger");return}
+  const head=["تاريخ التنفيذ","من ك","إلى ك","الطريقة","الجهة المنفذة","التكلفة","رصد قبل","رصد بعد","المساحة قبل م2","المساحة بعد م2","المساحة المزاحة م2","نسبة الإزالة %","موقع القياس","فرق المنسوب قبل","فرق المنسوب بعد","التصرف قبل","التصرف بعد","اشتباه عودة","ملاحظات"];
+  const lines=[head.map(WW.csvCell).join(",")];
+  WW.maintenance.forEach(w=>{
+    const e=WW.evaluateWork(w),h=e.hydraulic;
+    lines.push([w.date,w.from,w.to,w.method,w.contractor,w.cost,e.before?.date,e.after?.date,e.beforeArea,e.afterArea,e.removed,e.removedPct,
+      h?.site,h?.before?.head,h?.after?.head,h?.before?.flow,h?.after?.flow,e.recurrence?"نعم":"لا",w.note].map(WW.csvCell).join(","));
+  });
+  WW.downloadCsv("ismailia_maintenance_evaluation_"+todayKey()+".csv",lines);
+};
+WW.riskColor = function(r){
+  if(!r||r.status!=="ok")return "#9c8763";
+  return ({urgent:"#9c3a28",high:"#a86a2a",med:"#c39a32",low:"#b9a455",clear:"#167b86"})[r.priority?.code]||"#9c8763";
+};
+WW.drawMap = function(){
+  const canvas=WW.$("wwMap");if(!canvas)return;
+  const rect=canvas.getBoundingClientRect(),dpr=Math.min(2,window.devicePixelRatio||1);
+  canvas.width=Math.max(300,Math.round(rect.width*dpr));canvas.height=Math.max(220,Math.round(rect.height*dpr));
+  const ctx=canvas.getContext("2d");ctx.setTransform(dpr,0,0,dpr,0,0);
+  const w=canvas.width/dpr,h=canvas.height/dpr,pad=34,nodes=WW.pathNodes();
+  const minLon=Math.min(...nodes.map(p=>p.lon)),maxLon=Math.max(...nodes.map(p=>p.lon));
+  const minLat=Math.min(...nodes.map(p=>p.lat)),maxLat=Math.max(...nodes.map(p=>p.lat));
+  const xy=p=>({x:pad+(p.lon-minLon)/(maxLon-minLon||1)*(w-pad*2),
+    y:h-pad-(p.lat-minLat)/(maxLat-minLat||1)*(h-pad*2)});
+  ctx.clearRect(0,0,w,h);
+  ctx.strokeStyle="rgba(168,132,60,.12)";ctx.lineWidth=1;
+  for(let i=1;i<5;i++){const y=pad+i*(h-pad*2)/5;ctx.beginPath();ctx.moveTo(pad,y);ctx.lineTo(w-pad,y);ctx.stroke()}
+  ctx.lineCap="round";ctx.lineJoin="round";ctx.strokeStyle="#92b7bd";ctx.lineWidth=11;ctx.beginPath();
+  nodes.forEach((p,i)=>{const q=xy(p);i?ctx.lineTo(q.x,q.y):ctx.moveTo(q.x,q.y)});ctx.stroke();
+  WW.mapRows=[];
+  (WW.results||[]).forEach(r=>{
+    const a=xy({lat:r.p0.lat,lon:r.p0.lon}),b=xy({lat:r.p1.lat,lon:r.p1.lon});
+    ctx.strokeStyle=WW.riskColor(r);ctx.lineWidth=7;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
+    WW.mapRows.push({r,a,b});
+  });
+  [0,28,74.7,126].forEach(km=>{
+    const p=WW.coordAtKm(km),q=xy(p);ctx.fillStyle="#f4ead2";ctx.strokeStyle="#5a3e22";ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.arc(q.x,q.y,5,0,Math.PI*2);ctx.fill();ctx.stroke();
+    ctx.fillStyle="#5a3e22";ctx.font="700 11px Tajawal, sans-serif";ctx.textAlign="center";
+    ctx.fillText("ك"+km,q.x,Math.max(14,q.y-10));
+  });
+  ctx.fillStyle="#5a3e22";ctx.font="700 13px Tajawal, sans-serif";ctx.textAlign="right";
+  ctx.fillText("ترعة الإسماعيلية — رصد Sentinel‑2",w-pad,20);
+  ctx.textAlign="left";ctx.font="700 11px sans-serif";ctx.fillText("N ↑",pad,20);
+  canvas.onclick=e=>{
+    if(!WW.mapRows.length)return;
+    const r=canvas.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;
+    let best=null,dist=Infinity;
+    WW.mapRows.forEach(o=>{
+      const vx=o.b.x-o.a.x,vy=o.b.y-o.a.y,t=Math.max(0,Math.min(1,((x-o.a.x)*vx+(y-o.a.y)*vy)/(vx*vx+vy*vy||1)));
+      const d=Math.hypot(x-(o.a.x+t*vx),y-(o.a.y+t*vy));if(d<dist){dist=d;best=o.r}
+    });
+    if(best&&dist<28)toast("ك"+best.from.toFixed(1)+"–"+best.to.toFixed(1)+" · "+(best.priority?.label||"لا بيانات")+" · "+(best.status==="ok"?WW.areaText(best.area)+" م²":best.reason),"brand");
+  };
+};
+WW.csvCell = v=>'"'+String(v==null?"":v).replace(/"/g,'""')+'"';
+WW.downloadCsv = function(name,lines){
+  const blob=new Blob(["\ufeff"+lines.join("\r\n")],{type:"text/csv;charset=utf-8"});
+  const a=document.createElement("a"),url=URL.createObjectURL(blob);a.href=url;a.download=name;a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),1500);
+};
+WW.exportCsv = function(){
+  if(!WW.results.length){toast("لا توجد نتائج للتصدير","danger");return}
+  const head=["مصدر البيانات","تاريخ الصورة","تاريخ المقارنة","من ك","إلى ك","الحبس","الحالة","مساحة الحشائش م2","المساحة السابقة م2","التغير م2","التغطية %","الطول المتأثر م","NDVI","جودة البيانات %","ثقة الحشائش","الإسناد الهيدروليكى","موقع القياس","تاريخ القياس","أولوية الحشائش","معاينة الحشائش","ملاحظة","مساحة تغير التعديات م2","نوع التغير الغالب","زراعة مستحدثة م2","مبانى أو ردم م2","فقد مسطح مائى م2","ثقة التعديات","أولوية التعديات","التحقق من التعدى","STAC Item"];
+  const lines=[head.map(WW.csvCell).join(",")];
+  WW.results.forEach(r=>{
+    const f=WW.validation[r.key]||{status:r.fieldStatus||"unreviewed",note:r.fieldNote||""};
+    const statusName={unreviewed:"غير مُعاين",confirmed:"مؤكد ميدانياً",cleared:"ليس حشائش"}[f.status]||f.status;
+    const ev=WW.validation["enc:"+r.key]||{status:"unreviewed"},encStatus={unreviewed:"غير مُعاين",confirmed:"مؤكد تعدٍ",rejected:"ليس تعدياً",resolved:"تمت الإزالة/التصحيح"}[ev.status]||ev.status;
+    const e=r.encroachment||{};
+    lines.push(["Earth Search / Sentinel-2 L2A · OpenStreetMap relation 10369130",r.sceneDate,r.previousDate,r.from,r.to,r.reach,r.status==="ok"?"صالح":r.reason,
+      r.area,r.previousArea,r.change,r.coverage,r.affectedM,r.meanNdvi,r.validPct,r.confidence?.label,
+      r.hydraulic?.label,r.hydraulic?.site,r.hydraulic?.date,r.priority?.label,statusName,f.note,
+      e.available?e.area:null,e.type,e.vegArea,e.builtArea,e.lossArea,e.confidence?.label,e.priority?.label,encStatus,r.itemId].map(WW.csvCell).join(","));
+  });
+  WW.downloadCsv("ismailia_canal_health_"+(WW.lastRun?.currentDate||todayKey())+".csv",lines);
+};
+WW.clearResults = function(){
+  if(!confirm("مسح نتائج آخر تشغيل فقط؟ لن يُمسح السجل الزمنى أو المأموريات أو أعمال التطهير."))return;
+  WW.results=[];WW.lastRun=null;WW.scenes=[];WW.selectedCurrent="";WW.selectedPrevious="";
+  localStorage.removeItem(WW.SAVE_KEY);WW.logs=[];renderView();toast("مُسحت النتائج المحلية","ok");
+};
+
+AFTER.weeds = function(){
+  const bindChange=["wwFromDate","wwToDate","wwCloud","wwNdvi","wwStartKm","wwEndKm","wwStep","wwCorridor"];
+  bindChange.forEach(id=>{const e=WW.$(id);if(e)e.onchange=WW.readControls});
+  const find=WW.$("wwFind"),an=WW.$("wwAnalyze"),cancel=WW.$("wwCancel"),clear=WW.$("wwClear");
+  if(find)find.onclick=WW.searchScenes;if(an)an.onclick=WW.analyze;
+  if(cancel)cancel.onclick=()=>WW.abort?.abort();if(clear)clear.onclick=WW.clearResults;
+  const ex=WW.$("wwExport"),ex2=WW.$("wwExport2");if(ex)ex.onclick=WW.exportCsv;if(ex2)ex2.onclick=WW.exportCsv;
+  const cur=WW.$("wwCurrent"),prev=WW.$("wwPrevious");
+  if(cur)cur.onchange=()=>WW.selectedCurrent=cur.value;if(prev)prev.onchange=()=>WW.selectedPrevious=prev.value;
+  const gps=WW.$("wwMissionGps"),ms=WW.$("wwMissionSave"),mr=WW.$("wwMissionReset"),me=WW.$("wwMissionExport");
+  if(gps)gps.onclick=WW.captureMissionGps;if(ms)ms.onclick=WW.saveMission;if(mr)mr.onclick=WW.resetMissionForm;
+  if(me)me.onclick=WW.exportMissions;
+  const photo=WW.$("wwMissionPhoto");
+  if(photo)photo.onchange=async()=>{
+    const file=photo.files?.[0];if(!file){WW.pendingPhoto="";return}
+    try{
+      WW.pendingPhoto=await WW.readMissionPhoto(file);
+      const p=WW.$("wwMissionPreview");if(p){p.src=WW.pendingPhoto;p.classList.add("on")}
+      toast("تم تجهيز الصورة للحفظ المحلى","ok");
+    }catch(e){WW.pendingPhoto="";toast(e.message,"danger")}
+  };
+  const ws=WW.$("wwWorkSave"),we=WW.$("wwWorkExport");if(ws)ws.onclick=WW.saveWork;if(we)we.onclick=WW.exportWork;
+  if(WW.lastRun&&WW.results.length&&!WW.history.some(r=>r.date===WW.lastRun.currentDate&&r.signature===WW.historySignature()))WW.archiveAnalysis();
+  WW.populateSceneSelects();WW.renderResults();
+  if(WW.running){WW.setBusy(true);WW.setStatus("عملية رصد مستمرة","busy")}
+  if(!WW._resizeBound){
+    WW._resizeBound=true;window.addEventListener("resize",()=>{if(State.tab==="weeds"){WW.drawMap();WW.drawTrend()}});
   }
 };
 </script>
