@@ -17,6 +17,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Aref+Ruqaa:wght@400;700&family=Cairo:wght@400;600;700;800&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" defer></script>
 <style>
 :root{
   /* ── الثيم التراثى (الخديوية 1863-1869) ── */
@@ -517,6 +518,159 @@ html,body{overscroll-behavior-y:auto;position:static!important}
 .smi-icon{font-size:1.2rem;flex-shrink:0}
 .smi-text b{color:var(--brand);font-weight:700}
 
+/* ═══════════════════════════════════════════════════════════════
+   WaPOR v3 — وحدة الاستهلاك المائى الفعلى
+   النطاق مقصور على التبويب حتى لا يؤثر على بقية واجهة التطبيق.
+   ═══════════════════════════════════════════════════════════════ */
+.wapor-shell{
+  --cyan:#167b86;--cyan-dim:#0e5a8a;--cyan-soft:#dceced;
+  --green:#5a6b3a;--green-soft:#e6e3c8;
+  --amber:#a86a2a;--amber-soft:#efe0c0;
+  --red:#9c3a28;--red-soft:#eed5c8;
+  --ink-0:var(--ink);--ink-1:var(--ink-2);--ink-2:var(--ink-3);--ink-3:#9c8763;
+  --bg-0:#dfd0ae;--bg-1:var(--paper);--bg-2:var(--paper-2);--bg-3:#d1c19d;
+  --line-hi:var(--line);--shadow-2:var(--shadow-l);
+  display:grid;gap:16px;
+}
+.wapor-shell .panel{
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);overflow:hidden;
+}
+.wapor-shell .panel-head{
+  padding:14px 17px;border-bottom:1px solid var(--line);display:flex;align-items:center;
+  justify-content:space-between;gap:10px;flex-wrap:wrap;background:linear-gradient(180deg,var(--paper),var(--paper-2));
+}
+.wapor-shell .panel-title{
+  font-family:var(--hand);font-size:1.18rem;font-weight:700;color:var(--brand-dark);
+  display:flex;align-items:center;gap:9px;
+}
+.wapor-shell .panel-title .ico{width:20px;height:20px;flex:0 0 20px;color:var(--cyan)}
+.wapor-shell .panel-body{padding:17px}
+.wapor-shell .dr-btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:8px 13px;
+  border-radius:5px;border:1px solid var(--line-hi);font-family:'Tajawal',sans-serif;
+  font-size:.83rem;font-weight:700;cursor:pointer;transition:.15s;background:var(--paper);color:var(--ink);
+}
+.wapor-shell .dr-btn:hover{border-color:var(--brand);transform:translateY(-1px)}
+.wapor-shell .dr-btn.primary{background:var(--brand);border-color:var(--brand);color:#fff}
+.wapor-shell .dr-btn.primary:hover{background:var(--brand-dark)}
+.wapor-shell .dr-btn.outline{background:var(--paper);color:var(--brand-dark)}
+.wapor-shell .dr-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.wapor-shell .table-scroll{overflow:auto;border:1px solid var(--line);border-radius:5px}
+.wapor-shell .data-table{min-width:760px;font-size:.8rem}
+.wapor-shell .data-table th{background:var(--paper-2)}
+.wapor-shell .data-table input,.wapor-shell .data-table select{max-width:100%}
+.wp-note{
+  padding:10px 13px;border-radius:6px;font-size:.79rem;line-height:1.75;margin-bottom:11px;
+  background:var(--cyan-soft);border:1px solid rgba(22,123,134,.28);color:#28555c
+}
+.wp-note.w{background:var(--amber-soft);border-color:rgba(168,106,42,.3);color:#714516}
+.wp-note.g{background:var(--green-soft);border-color:rgba(90,107,58,.3);color:#405025}
+.wp-note.r{background:var(--red-soft);border-color:rgba(156,58,40,.28);color:#7a2d22}
+.wp-note b{color:var(--ink-0)}
+.wp-grid{display:grid;gap:10px;margin-bottom:12px}
+.wp-g2{grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}
+.wp-g3{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.wp-g4{grid-template-columns:repeat(auto-fit,minmax(152px,1fr))}
+.wp-fld label{display:block;font-size:.76rem;color:var(--ink-2);margin-bottom:4px;font-weight:700}
+.wp-fld input,.wp-fld select,.wp-fld textarea{
+  width:100%;font-family:'Tajawal',sans-serif;font-size:.82rem;padding:8px 10px;
+  border:1px solid var(--line-hi);border-radius:5px;background:var(--bg-1);color:var(--ink-0)
+}
+.wp-fld input:focus,.wp-fld select:focus,.wp-fld textarea:focus{
+  outline:none;border-color:var(--cyan);box-shadow:0 0 0 3px var(--cyan-soft)
+}
+.wp-fld option{background:var(--bg-1);color:var(--ink-0)}
+.wp-hint{font-size:.72rem;color:var(--ink-2);margin-top:4px;line-height:1.6}
+.wp-kpi{
+  background:var(--bg-1);border:1px solid var(--line);border-radius:7px;
+  padding:12px 13px;position:relative;overflow:hidden
+}
+.wp-kpi::before{content:'';position:absolute;inset-inline-start:0;top:0;bottom:0;width:3px;background:var(--cyan)}
+.wp-kpi.g::before{background:var(--green)}.wp-kpi.a::before{background:var(--amber)}.wp-kpi.r::before{background:var(--red)}
+.wp-kpi .l{font-size:.74rem;color:var(--ink-2);display:block;margin-bottom:4px;line-height:1.4}
+.wp-kpi .v{font-family:var(--mono);font-size:1.45rem;font-weight:700;color:var(--ink-0);display:block;direction:ltr;text-align:right}
+.wp-kpi .u{font-size:.68rem;color:var(--ink-2)}.wp-kpi .s{font-size:.68rem;color:var(--ink-2);margin-top:3px;display:block}
+.wp-bdg{
+  display:inline-block;margin-top:5px;font-size:.66rem;padding:2px 8px;border-radius:99px;
+  font-family:var(--mono);background:var(--cyan-soft);color:var(--cyan)
+}
+.wp-bdg.ok{background:var(--green-soft);color:var(--green)}
+.wp-bdg.w{background:var(--amber-soft);color:var(--amber)}
+.wp-bdg.b{background:var(--red-soft);color:var(--red)}
+.wp-tag{display:inline-block;font-size:.65rem;padding:2px 7px;border-radius:5px;font-family:var(--mono)}
+.wp-t-c{background:var(--green-soft);color:var(--green)}.wp-t-u{background:var(--red-soft);color:var(--red)}
+.wp-t-e{background:var(--amber-soft);color:var(--amber)}.wp-t-i{background:var(--cyan-soft);color:var(--cyan)}
+.wp-map{
+  width:100%;height:420px;background:#e9dfc8;border-radius:6px;display:block;
+  border:1px solid var(--line);touch-action:none;cursor:grab
+}
+.wp-map:active{cursor:grabbing}
+.wp-lgd{display:flex;gap:12px;flex-wrap:wrap;padding:9px 2px 0;font-size:.72rem;color:var(--ink-2)}
+.wp-lg{display:flex;align-items:center;gap:5px}.wp-sw{width:11px;height:11px;border-radius:3px;flex:0 0 11px}
+.wp-log{
+  font-family:ui-monospace,'Courier New',monospace;font-size:.7rem;background:#eadfc6;color:var(--ink-1);
+  padding:9px 11px;border-radius:5px;max-height:140px;overflow-y:auto;direction:ltr;text-align:left;
+  line-height:1.75;border:1px solid var(--line)
+}
+.wp-log .e{color:var(--red)}.wp-log .s{color:var(--green)}.wp-log .w{color:var(--amber)}
+.wp-prog{height:5px;background:var(--bg-3);border-radius:99px;overflow:hidden;margin:9px 0}
+.wp-prog i{display:block;height:100%;background:linear-gradient(90deg,var(--brand),var(--cyan));width:0;transition:width .18s}
+.wp-ubar{height:6px;border-radius:99px;background:var(--bg-3);position:relative;overflow:hidden;margin-top:7px}
+.wp-ufill{position:absolute;top:0;bottom:0;background:linear-gradient(90deg,var(--brand),var(--cyan));border-radius:99px}
+.wp-ulab{display:flex;justify-content:space-between;font-family:var(--mono);font-size:.65rem;color:var(--ink-2);margin-top:3px}
+.wp-empty{text-align:center;padding:32px 16px;color:var(--ink-2)}
+.wp-empty b{display:block;color:var(--ink-1);margin-bottom:4px;font-size:.85rem}
+.wp-seg{display:inline-flex;border:1px solid var(--line-hi);border-radius:5px;overflow:hidden}
+.wp-seg button{border:0;background:transparent;font-family:'Tajawal',sans-serif;font-size:.74rem;font-weight:700;padding:6px 13px;cursor:pointer;color:var(--ink-2)}
+.wp-seg button.on{background:var(--brand);color:#fff}
+.wp-tip{
+  position:absolute;pointer-events:none;background:var(--bg-2);border:1px solid var(--line-hi);
+  border-radius:5px;padding:8px 11px;font-size:.75rem;color:var(--ink-0);z-index:60;
+  box-shadow:var(--shadow-2);max-width:230px;line-height:1.6;display:none
+}
+.wp-wrap{position:relative}
+.wp-source{
+  border:1px solid rgba(22,123,134,.3);background:linear-gradient(135deg,var(--cyan-soft),var(--green-soft));
+  border-radius:7px;padding:13px;margin-bottom:12px
+}
+.wp-source-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.wp-source-logo{
+  width:42px;height:42px;border-radius:7px;background:linear-gradient(145deg,var(--brand-dark),var(--cyan));
+  display:grid;place-items:center;color:#fff;font:700 .8rem var(--mono);flex:0 0 42px
+}
+.wp-source-title{flex:1;min-width:190px}.wp-source-title b{display:block;color:var(--ink-0);font-size:.84rem}
+.wp-source-title span{font-size:.72rem;color:var(--ink-2);line-height:1.6;display:block}
+.wp-status-dot{width:9px;height:9px;border-radius:50%;background:var(--ink-3);box-shadow:0 0 0 4px rgba(156,135,99,.16);display:inline-block}
+.wp-status-dot.ok{background:var(--green);box-shadow:0 0 0 4px var(--green-soft)}
+.wp-status-dot.busy{background:var(--amber);box-shadow:0 0 0 4px var(--amber-soft);animation:wpPulse 1.2s infinite}
+.wp-status-dot.bad{background:var(--red);box-shadow:0 0 0 4px var(--red-soft)}
+@keyframes wpPulse{50%{opacity:.42}}
+.wp-status-grid{display:grid;grid-template-columns:repeat(4,minmax(125px,1fr));gap:8px;margin-top:12px}
+.wp-stat{background:rgba(244,234,210,.82);border:1px solid var(--line);border-radius:6px;padding:8px 10px;min-width:0}
+.wp-stat span{display:block;font-size:.67rem;color:var(--ink-2);margin-bottom:2px}
+.wp-stat b{display:block;font:600 .72rem var(--mono);direction:ltr;text-align:right;color:var(--ink-0);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wp-link{font-size:.72rem;color:var(--cyan);text-decoration:none;white-space:nowrap}.wp-link:hover{text-decoration:underline}
+.wp-check{display:flex!important;align-items:flex-start;gap:7px;font-size:.74rem!important;color:var(--ink-1)!important;cursor:pointer;line-height:1.5}
+.wp-check input{width:auto;margin-top:3px;accent-color:var(--cyan)}
+.wp-loadbox{display:none;margin:11px 0;padding:11px;border:1px solid rgba(22,123,134,.28);border-radius:6px;background:var(--cyan-soft)}
+.wp-loadbox.on{display:block}
+.wp-loadrow{display:flex;align-items:center;gap:9px;font-size:.75rem}.wp-loadrow b{flex:1;color:var(--ink-0)}
+.wp-loadrow span{font:600 .7rem var(--mono);direction:ltr}
+.wp-meter{height:7px;border-radius:99px;background:var(--bg-3);overflow:hidden;margin:8px 0 6px}
+.wp-meter i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--cyan),var(--green));border-radius:inherit;transition:width .2s}
+.wp-quality{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.wp-quality div{border-inline-start:2px solid var(--cyan);padding-inline-start:8px}
+.wp-quality span{display:block;font-size:.67rem;color:var(--ink-2)}.wp-quality b{font:600 .72rem var(--mono);color:var(--ink-0)}
+.wp-spin{width:13px;height:13px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:wpSpin .7s linear infinite;display:inline-block;vertical-align:-2px}
+@keyframes wpSpin{to{transform:rotate(360deg)}}
+.wp-actions{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:11px}
+@media(max-width:768px){
+  .wapor-shell .panel-body{padding:13px}.wp-map{height:315px}.wp-kpi .v{font-size:1.3rem}
+  .wp-status-grid{grid-template-columns:1fr 1fr}.wp-quality{grid-template-columns:1fr}
+  .wp-actions .dr-btn{flex:1;min-width:135px}.wapor-shell .panel-head{align-items:flex-start}
+}
+
 </style>
 
 </head>
@@ -729,6 +883,7 @@ const ICON = {
   download:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
   refresh:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>',
   stations:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4"/><path d="M9 9v.01M9 12v.01M9 15v.01M9 18v.01"/></svg>',
+  wapor:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.7 2.5 15.3 0 18M12 3c-2.5 2.7-2.5 15.3 0 18"/><path d="M17.5 5.5l2-2"/></svg>',
   upload:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>',
   x:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
   info:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>',
@@ -747,6 +902,7 @@ const TABS = [
   { id:"readings", label:"القراءات اليومية", icon:ICON.readings },
   { id:"balance",  label:"الميزان المائى", icon:ICON.balance },
   { id:"stations", label:"الشرب والصناعة", icon:ICON.stations },
+  { id:"wapor",    label:"الاستهلاك الفعلى WaPOR", icon:ICON.wapor },
   { id:"setup",    label:"إعداد الشبكة", icon:ICON.setup }
 ];
 
@@ -2495,6 +2651,1294 @@ if("serviceWorker" in navigator){
   window.IrrFB = { open:openConfig, push:()=>push(false), config:loadCfg };
 })();
 
+</script>
+
+<script>
+"use strict";
+VIEWS.wapor = function () {
+  return `
+  <section class="wapor-shell" aria-label="تحليل الاستهلاك المائى الفعلى من WaPOR">
+  <div class="panel">
+    <div class="panel-head">
+      <div class="panel-title">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.7 2.5 15.3 0 18M12 3c-2.5 2.7-2.5 15.3 0 18"/></svg>
+        شبكة الخلايا وزمامات الفروع
+      </div>
+      <div style="display:flex;gap:7px;flex-wrap:wrap">
+        <button class="dr-btn outline" id="wpFit">إعادة التوسيط</button>
+        <button class="dr-btn primary" id="wpGrid">توليد الشبكة</button>
+      </div>
+    </div>
+    <div class="panel-body">
+      <div class="wp-note g"><b>مصدر الإحداثيات:</b> ${WP.BR.length} نقطة مكانية معتمدة ومربوطة ببيانات الفروع الحالية داخل التطبيق — من فم الإسماعيلية (ك٠) حتى ترعة بورسعيد (ك١٢٦)، بإجمالى زمام ${WP.fmt(WP.totFd)} فدان.</div>
+      <div class="wp-wrap">
+        <canvas class="wp-map" id="wpMap"></canvas>
+        <div class="wp-tip" id="wpTip"></div>
+      </div>
+      <div class="wp-lgd">
+        <span class="wp-lg"><i class="wp-sw" style="background:#4ade80"></i>خلية زراعية</span>
+        <span class="wp-lg"><i class="wp-sw" style="background:#ff4d6d"></i>عمران غالب</span>
+        <span class="wp-lg"><i class="wp-sw" style="background:#ffb020"></i>حافة الزمام</span>
+        <span class="wp-lg"><i class="wp-sw" style="background:#38e8ff"></i>مجرى الترعة</span>
+        <span class="wp-lg" style="color:var(--ink-2)">اسحب للتحريك · عجلة الفأرة أو إصبعان للتكبير</span>
+      </div>
+
+      <div class="wp-note" style="margin-top:12px"><b>منطق الإسناد المكانى.</b> تُنسب كل خلية لأقرب فرع بشرطين معاً: أن تقع داخل نصف قطر زمامه المحسوب من مساحته الفعلية <span style="font-family:'IBM Plex Mono',monospace">r = √(fd×4200/π)</span>، وأن تكون على نفس البر — الأيمن أو الأيسر — فلا تُنسب خلية غرب المجرى لفرع على البر الأيمن. ولأن الدوائر تتداخل ويقصّها قيد البر، يُطبَّق بعد التوليد <b>معامل معايرة مساحى</b> لكل فرع يعيد مساحة خلاياه إلى مساحة زمامه الفعلية — بدونه تُبخَس الأحجام المطلقة عدة أضعاف.</div>
+      <div class="wp-note w"><b>حدود التصنيف.</b> ألوان الغطاء داخل الشبكة تصنيف هندسى ثابت لتسهيل المراجعة البصرية وليست طبقة غطاء أرضى رسمية. قيم AETI وPCP التى يجلبها الاتصال أدناه فعلية من WaPOR ولا تُعدَّل وفق هذا التصنيف.</div>
+
+      <div class="wp-grid wp-g3">
+        <div class="wp-fld"><label>حجم الخلية</label>
+          <select id="wpCell"><option value="1" selected>١ × ١ كم</option><option value="0.5">٠٫٥ × ٠٫٥ كم</option><option value="2">٢ × ٢ كم</option></select></div>
+        <div class="wp-fld"><label>نطاق المجرى</label>
+          <select id="wpRng"><option value="all" selected>كامل الترعة (ك٠–ك١٢٦)</option><option value="0-50">ك٠ – ك٥٠</option><option value="50-90">ك٥٠ – ك٩٠</option><option value="90-126">ك٩٠ – ك١٢٦</option></select></div>
+        <div class="wp-fld"><label>تصفية الفروع</label>
+          <select id="wpBig"><option value="0" selected>كل الفروع</option><option value="1">زمام ≥ ١٠ آلاف فدان</option></select></div>
+      </div>
+      <div class="wp-prog"><i id="wpProg"></i></div>
+      <div class="wp-grid wp-g4" style="margin-bottom:0">
+        <div class="wp-kpi"><span class="l">الخلايا المولّدة</span><span class="v" id="wpNC">—</span></div>
+        <div class="wp-kpi g"><span class="l">الفروع المغطاة</span><span class="v" id="wpNB">—</span><span class="s" id="wpNBs">—</span></div>
+        <div class="wp-kpi a"><span class="l">الزمام المشمول</span><span class="v" id="wpAF">—</span><span class="u">ألف فدان</span></div>
+        <div class="wp-kpi r"><span class="l">خارج الزمامات</span><span class="v" id="wpOut">—</span><span class="s">خلية مُهملة</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head">
+      <div class="panel-title">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12a9 9 0 1 1-9-9"/><path d="M21 3v6h-6"/></svg>
+        الاتصال المباشر ببيانات WaPOR v3
+      </div>
+      <a class="wp-link" href="https://www.fao.org/in-action/remote-sensing-for-water-productivity/wapor-data-access/en" target="_blank" rel="noopener">المصدر الرسمى FAO ↗</a>
+    </div>
+    <div class="panel-body">
+      <div class="wp-source">
+        <div class="wp-source-head">
+          <div class="wp-source-logo">FAO</div>
+          <div class="wp-source-title">
+            <b>WaPOR 3 · GISMGR API + Cloud Optimized GeoTIFF</b>
+            <span>اتصال رسمى دون مفتاح API أو وسيط · قراءة جزئية لنطاق زمامات ترعة الإسماعيلية فقط دون تنزيل ملفات الرستر كاملة</span>
+          </div>
+          <span class="wp-status-dot" id="wpApiDot"></span>
+          <span id="wpApiState" style="font-size:11px;color:var(--ink-2)">لم يُختبر الاتصال</span>
+        </div>
+        <div class="wp-status-grid">
+          <div class="wp-stat"><span>مصدر البيانات</span><b>FAO / WaPOR-3</b></div>
+          <div class="wp-stat"><span>منتج البخر-نتح</span><b id="wpStAeti">L2-AETI-M</b></div>
+          <div class="wp-stat"><span>منتج المطر</span><b id="wpStPcp">L1-PCP-M</b></div>
+          <div class="wp-stat"><span>آخر تحديث مقروء</span><b id="wpStUpdated">—</b></div>
+        </div>
+      </div>
+      <div class="wp-note g"><b>معالجة علمية للوحدات.</b> يطبّق التطبيق معامل القياس والإزاحة من بيانات وصف الرستر، ويحوّل القيم اليومية إلى إجمالى الفترة بعدد أيامها الفعلى، ثم يطابق AETI والمطر زمنيًا ومكانيًا لكل خلية. حالة المصدر: <span class="wp-bdg w" id="wpSrcChip">لم تُحمّل بيانات</span></div>
+      <div class="wp-grid wp-g3">
+        <div class="wp-fld"><label>سنة النهاية</label><select id="wpYr"></select></div>
+        <div class="wp-fld"><label>عدد السنوات</label><select id="wpNY"><option value="1">سنة — تحميل أسرع</option><option value="2">سنتان</option><option value="3">٣ سنوات — تحليل اتجاه</option></select></div>
+        <div class="wp-fld"><label>مستوى AETI</label><select id="wpLvl"><option value="L2">L2 — ١٠٠ م</option><option value="L1">L1 — ٣٠٠ م</option></select></div>
+        <div class="wp-fld"><label>الدورية الزمنية</label><select id="wpFreq"><option value="M">شهرى — موصى به وأسرع</option><option value="D">عشرى — تفصيلى وأبطأ</option></select></div>
+        <div class="wp-fld"><label>دقة القراءة المحلية</label><select id="wpSample"><option value="auto">تلقائى حسب الشبكة</option><option value="0.5">٠٫٥ كم</option><option value="1">١ كم</option><option value="2">٢ كم</option></select></div>
+        <div class="wp-fld"><label>التخزين المؤقت</label><label class="wp-check"><input type="checkbox" id="wpCache" checked><span>حفظ عينات الرسترات محليًا لتسريع إعادة التحميل</span></label></div>
+      </div>
+      <div class="wp-actions">
+        <button class="dr-btn outline" id="wpTest">اختبار الاتصال</button>
+        <button class="dr-btn primary" id="wpApi">جلب AETI وPCP الفعليين</button>
+        <button class="dr-btn outline" id="wpCancel" disabled>إلغاء</button>
+        <button class="dr-btn outline" id="wpCacheClr">مسح الذاكرة</button>
+        <button class="dr-btn outline" id="wpCsvBtn">رفع ملف CSV</button>
+        <input type="file" id="wpCsv" accept=".csv" style="display:none">
+      </div>
+      <div class="wp-loadbox" id="wpLoadBox">
+        <div class="wp-loadrow"><b id="wpLoadLabel">تجهيز الاتصال...</b><span id="wpLoadPct">0%</span></div>
+        <div class="wp-meter"><i id="wpLoadMeter"></i></div>
+        <div class="wp-quality">
+          <div><span>الفترات المكتملة</span><b id="wpQPeriods">—</b></div>
+          <div><span>التغطية المكانية</span><b id="wpQSpatial">—</b></div>
+          <div><span>دقة القراءة</span><b id="wpQGrid">—</b></div>
+        </div>
+      </div>
+      <div class="wp-log" id="wpLog"></div>
+      <div class="wp-fld" style="margin-top:12px"><label>إدخال يدوى احتياطى — AETI للفترات المتتابعة (مم)</label>
+        <textarea id="wpMan" rows="3" placeholder="12.4, 15.1, 18.9, 22.3 ..."></textarea>
+        <div class="wp-hint">يُسجّل بوضوح كمصدر بديل، وتُطبّق القيم كما أُدخلت دون توليد تباين أو قياسات وهمية. المطر يساوى صفرًا ما لم يُرفع من CSV.</div>
+        <button class="dr-btn primary" id="wpManBtn" style="margin-top:8px">تطبيق القيم اليدوية</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head"><div class="panel-title">
+      <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 17l6-6 4 4 8-8"/><path d="M21 3v6h-6"/></svg>
+      كفاءة الرى حسب نطاق المجرى</div></div>
+    <div class="panel-body">
+      <div class="wp-note"><b>لماذا ثلاثة نطاقات؟</b> الترعة تعبر ظروفاً مختلفة على ١٢٦ كم: الوادى القديم عند الفم يسوده الغمر السطحى، ثم مناطق الاستصلاح الوسطى (الشباب والصالحية والسعيدية)، ثم النطاق الشرقى نحو الإسماعيلية. كفاءة واحدة على الثلاثة تبالغ فى تقدير نطاق وتقلّل آخر.</div>
+      <div class="wp-grid wp-g3">
+        <div style="background:var(--bg-1);border:1px solid var(--line);border-radius:10px;padding:12px">
+          <div style="font-size:11.5px;font-weight:700;color:var(--green);margin-bottom:9px">ك٠–ك٥٠ · وادى قديم</div>
+          <div class="wp-fld" style="margin-bottom:8px"><label>كفاءة حقلية %</label><input type="number" id="wpE1" value="62" min="30" max="95"></div>
+          <div class="wp-fld"><label>كفاءة نقل %</label><input type="number" id="wpC1" value="78" min="40" max="99"></div>
+        </div>
+        <div style="background:var(--bg-1);border:1px solid var(--line);border-radius:10px;padding:12px">
+          <div style="font-size:11.5px;font-weight:700;color:var(--amber);margin-bottom:9px">ك٥٠–ك٩٠ · مستصلح وسط</div>
+          <div class="wp-fld" style="margin-bottom:8px"><label>كفاءة حقلية %</label><input type="number" id="wpE2" value="80" min="30" max="98"></div>
+          <div class="wp-fld"><label>كفاءة نقل %</label><input type="number" id="wpC2" value="88" min="40" max="99"></div>
+        </div>
+        <div style="background:var(--bg-1);border:1px solid var(--line);border-radius:10px;padding:12px">
+          <div style="font-size:11.5px;font-weight:700;color:var(--cyan);margin-bottom:9px">ك٩٠–ك١٢٦ · شرقى</div>
+          <div class="wp-fld" style="margin-bottom:8px"><label>كفاءة حقلية %</label><input type="number" id="wpE3" value="86" min="30" max="98"></div>
+          <div class="wp-fld"><label>كفاءة نقل %</label><input type="number" id="wpC3" value="93" min="40" max="99"></div>
+        </div>
+      </div>
+      <div class="wp-grid wp-g4">
+        <div class="wp-fld"><label>نسبة الأمطار الفعّالة %</label><input type="number" id="wpPE" value="70" min="0" max="100"></div>
+        <div class="wp-kpi g"><span class="l">الكفاءة الكلية — قديم</span><span class="v" id="wpT1">—</span><span class="u">٪</span></div>
+        <div class="wp-kpi a"><span class="l">الكفاءة الكلية — وسط</span><span class="v" id="wpT2">—</span><span class="u">٪</span></div>
+        <div class="wp-kpi"><span class="l">الكفاءة الكلية — شرقى</span><span class="v" id="wpT3">—</span><span class="u">٪</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head">
+      <div class="panel-title">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v18M3 12h18"/><circle cx="12" cy="12" r="9"/></svg>
+        المعايرة بالتصرفات المسجلة
+      </div>
+      <button class="dr-btn outline" id="wpAddRow">+ إضافة قياس</button>
+    </div>
+    <div class="panel-body">
+      <div class="wp-note g"><b>ميزة الربط بالتوأم.</b> قارن حجم WaPOR المقدر بقياس ميدانى يغطي <b>الفترة نفسها</b>. اكتب السنة مثل <span style="font-family:'IBM Plex Mono',monospace">2025</span> أو الموسم مثل <span style="font-family:'IBM Plex Mono',monospace">2025-صيفى</span> أو <span style="font-family:'IBM Plex Mono',monospace">2025-شتوى</span>؛ وسيطابق التطبيق الفترات المتاحة بدل استخدام متوسط عام غير مناظر.</div>
+      <div class="table-scroll">
+        <table class="data-table" id="wpCalTbl">
+          <thead><tr><th>الفترة</th><th>الفرع</th><th>المقاس (مليون م³)</th><th>المقدَّر</th><th>k</th><th></th></tr></thead>
+          <tbody id="wpCalB"></tbody>
+        </table>
+      </div>
+      <div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:11px">
+        <button class="dr-btn primary" id="wpCalRun">حساب معامل التصحيح</button>
+        <button class="dr-btn outline" id="wpCalClr">مسح الجدول</button>
+      </div>
+      <div class="wp-grid wp-g4" style="margin-top:13px;margin-bottom:0">
+        <div class="wp-kpi g"><span class="l">k — الوادى القديم</span><span class="v" id="wpK1">—</span><span class="s" id="wpK1n">لا قياسات</span></div>
+        <div class="wp-kpi a"><span class="l">k — المستصلح الوسط</span><span class="v" id="wpK2">—</span><span class="s" id="wpK2n">لا قياسات</span></div>
+        <div class="wp-kpi"><span class="l">k — النطاق الشرقى</span><span class="v" id="wpK3">—</span><span class="s" id="wpK3n">لا قياسات</span></div>
+        <div class="wp-kpi"><span class="l">RMSE بعد المعايرة</span><span class="v" id="wpRMSE">—</span><span class="u">مليون م³</span></div>
+        <div class="wp-kpi r"><span class="l">نطاق عدم اليقين</span><span class="v" id="wpUV">±—</span><span class="u">٪</span>
+          <div class="wp-ubar"><div class="wp-ufill" id="wpUF" style="inset-inline-start:35%;width:30%"></div></div>
+          <div class="wp-ulab"><span id="wpUL">—</span><span id="wpUH">—</span></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head"><div class="panel-title">
+      <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+      لوحة النتائج</div></div>
+    <div class="panel-body">
+      <div class="wp-grid wp-g4">
+        <div class="wp-kpi"><span class="l">إجمالى الاستهلاك</span><span class="v" id="wpOV">—</span><span class="u">مليون م³</span><span class="s" id="wpOVs">—</span></div>
+        <div class="wp-kpi g"><span class="l">الزمام المشمول</span><span class="v" id="wpOF">—</span><span class="u">ألف فدان</span></div>
+        <div class="wp-kpi a"><span class="l">نصيب الفدان</span><span class="v" id="wpOP">—</span><span class="u">م³/فدان/موسم</span></div>
+        <div class="wp-kpi r"><span class="l">اكتمال بيانات WaPOR</span><span class="v" id="wpOE">—</span><span class="u">٪</span><span class="wp-bdg" id="wpOEb">—</span></div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
+        <div class="wp-fld" style="flex:1;min-width:180px;margin:0"><label>تصفية حسب الفرع</label>
+          <select id="wpFB"><option value="all">كل الفروع</option></select></div>
+        <button class="dr-btn outline" id="wpExp" style="margin-top:16px">تصدير CSV</button>
+      </div>
+      <div class="table-scroll" style="max-height:460px">
+        <table class="data-table">
+          <thead><tr><th>الخلية</th><th>الفرع المخدوم</th><th>ك</th><th>البر</th><th>الغطاء</th><th>AETI مم</th><th>السحب</th><th>معايَر</th><th>اكتمال</th></tr></thead>
+          <tbody id="wpResB"><tr><td colspan="9"><div class="wp-empty"><b>لا نتائج بعد</b>ولّد الشبكة ثم حمّل بيانات AETI</div></td></tr></tbody>
+        </table>
+      </div>
+      <div style="display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-top:10px">
+        <span class="wp-hint" id="wpRInf" style="flex:1;margin:0">—</span>
+        <button class="dr-btn outline" id="wpMore">عرض المزيد</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head">
+      <div class="panel-title">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20V10M10 20V4M16 20v-7M22 20V8"/></svg>
+        تحليل الفروع
+      </div>
+      <div class="wp-seg"><button class="on" data-ws="vol">ترتيب بالحجم</button><button data-ws="fed">بنصيب الفدان</button></div>
+    </div>
+    <div class="panel-body">
+      <div class="table-scroll" style="max-height:420px">
+        <table class="data-table">
+          <thead><tr><th>الفرع</th><th>ك</th><th>البر</th><th>الدور</th><th>الزمام</th><th>خلايا</th><th>AETI متوسط</th><th>الاستهلاك</th><th>م³/فدان</th><th>اكتمال</th></tr></thead>
+          <tbody id="wpAgB"><tr><td colspan="10"><div class="wp-empty"><b>فى انتظار البيانات</b></div></td></tr></tbody>
+        </table>
+      </div>
+      <div style="margin-top:14px"><canvas id="wpChAg" height="150"></canvas></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head">
+      <div class="panel-title">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12l4-4 4 4 4-8 6 12"/></svg>
+        AETI والمطر الفعّال والاحتياج الإجمالى
+      </div>
+      <div class="wp-fld" style="margin:0;min-width:170px"><select id="wpChB"><option value="all">كل الفروع</option></select></div>
+    </div>
+    <div class="panel-body">
+      <canvas id="wpCh1" height="120"></canvas>
+      <div style="margin-top:16px"><canvas id="wpCh2" height="80"></canvas></div>
+      <div class="wp-note r" style="margin-top:13px"><b>قراءة الاتجاه.</b> الخطوط المعروضة مشتقة من AETI وPCP الفعليين ولا تتضمن تصرفات مولّدة. انخفاض AETI قد يعنى تغير الغطاء أو المساحة المزروعة، لذلك لا يُفسَّر كترشيد قبل المراجعة الميدانية.</div>
+    </div>
+  </div>
+  </section>
+  `;
+};
+
+/* ═════════════════════ WaPOR MODULE ENGINE ═════════════════════ */
+const WP = {
+  BR: [{"id":"fom_ism","n":"فم الإسماعيلية","t":"fom","km":0.0,"fd":0,"bk":null,"dr":null,"rf":17.551,"rb":15.895,"la":30.1109,"lo":31.2774},{"id":"kash_l","n":"ترعة كشمير اليسرى","t":"branch","km":10.5,"fd":6550,"bk":"أيسر","dr":"أ","rf":14.674,"rb":14.623,"la":30.1755,"lo":31.378},{"id":"kash_y","n":"ترعة كشمير اليمنى","t":"branch","km":12.85,"fd":10045,"bk":"أيمن","dr":"ب","rf":14.628,"rb":14.625,"la":30.185,"lo":31.399},{"id":"hgz_mnr","n":"حجز المنير","t":"hajz","km":28.0,"fd":0,"bk":null,"dr":null,"rf":12.295,"rb":12.281,"la":30.2385,"lo":31.516},{"id":"ryah_mnr","n":"رياح المنير","t":"branch","km":28.55,"fd":475,"bk":"أيسر","dr":"أ","rf":12.254,"rb":12.151,"la":30.24,"lo":31.521},{"id":"jbl_jd","n":"ترعة الجبل الجديدة","t":"branch","km":43.0,"fd":1000,"bk":"أيمن","dr":"أ","rf":11.333,"rb":11.265,"la":30.305,"lo":31.665},{"id":"qasm","n":"ترعة العدلية","t":"branch","km":46.9,"fd":14000,"bk":"أيمن","dr":"أ","rf":11.1,"rb":10.5,"la":30.322,"lo":31.705},{"id":"bhr_rml","n":"بحر الرمل الجديدة","t":"branch","km":51.7,"fd":11530,"bk":"أيسر","dr":"أ","rf":10.695,"rb":9.231,"la":30.345,"lo":31.751},{"id":"saadt","n":"ترعة السعادات","t":"branch","km":57.5,"fd":1600,"bk":"أيسر","dr":"أ","rf":10.335,"rb":8.673,"la":30.358,"lo":31.776},{"id":"kfr_ayd","n":"ترعة كفر عياد","t":"branch","km":58.5,"fd":1740,"bk":"أيسر","dr":"أ","rf":10.285,"rb":8.977,"la":30.362,"lo":31.782},{"id":"shabab","n":"ترعة الشباب الرئيسية","t":"branch","km":62.0,"fd":54000,"bk":"أيمن","dr":"مستمر","rf":9.972,"rb":9.934,"la":30.375,"lo":31.803},{"id":"jbl_q","n":"ترعة الجبل القديمة","t":"branch","km":67.0,"fd":3000,"bk":"أيمن","dr":"أ","rf":9.596,"rb":8.812,"la":30.3925,"lo":31.835},{"id":"ghwrn","n":"ترعة الغوارنة","t":"branch","km":67.1,"fd":3500,"bk":"أيسر","dr":"أ","rf":9.775,"rb":8.454,"la":30.392,"lo":31.833},{"id":"mlk_y","n":"ج الملاك اليمنى","t":"branch","km":67.5,"fd":3500,"bk":"أيمن","dr":"أ","rf":9.789,"rb":8.812,"la":30.3935,"lo":31.836},{"id":"mlk_r","n":"ترعة الملاك الرئيسية","t":"branch","km":67.5,"fd":33222,"bk":"أيمن","dr":"مستمر","rf":9.789,"rb":9.031,"la":30.3935,"lo":31.836},{"id":"mlk_l","n":"ج الملاك اليسرى","t":"branch","km":67.5,"fd":1500,"bk":"أيمن","dr":"أ","rf":9.789,"rb":8.812,"la":30.3935,"lo":31.836},{"id":"wadi_sh","n":"ترعة الوادى الشرقى","t":"branch","km":70.6,"fd":28335,"bk":"أيسر","dr":"مستمر","rf":9.64,"rb":7.709,"la":30.404,"lo":31.854},{"id":"j1","n":"ج1","t":"branch","km":71.25,"fd":4500,"bk":"أيمن","dr":"ب","rf":9.584,"rb":7.8,"la":30.42,"lo":31.88},{"id":"grb_aly","n":"فرع الغرب العالى","t":"branch","km":74.5,"fd":1000,"bk":"أيمن","dr":"ب","rf":9.4,"rb":9.2,"la":30.417,"lo":31.875},{"id":"saidya","n":"ترعة السعيدية","t":"branch","km":74.7,"fd":122507,"bk":"أيسر","dr":"مستمر","rf":9.609,"rb":7.575,"la":30.418,"lo":31.877},{"id":"salhiya","n":"ترعة الصالحية","t":"branch","km":74.7,"fd":190000,"bk":"أيسر","dr":"مستمر","rf":9.427,"rb":8.816,"la":30.418,"lo":31.877},{"id":"hgz_slh","n":"حجز الصالحية","t":"hajz","km":74.7,"fd":0,"bk":null,"dr":null,"rf":9.434,"rb":9.386,"la":30.4185,"lo":31.8775},{"id":"j2","n":"ج2","t":"branch","km":77.9,"fd":1800,"bk":"أيمن","dr":"أ","rf":9.326,"rb":7.2,"la":30.435,"lo":31.905},{"id":"j3","n":"ج3","t":"branch","km":82.1,"fd":3873,"bk":"أيمن","dr":"أ","rf":9.175,"rb":7.2,"la":30.445,"lo":31.925},{"id":"j4","n":"ج4","t":"branch","km":89.0,"fd":1900,"bk":"أيمن","dr":"ج","rf":8.606,"rb":7.2,"la":30.463,"lo":31.958},{"id":"snduq","n":"ترعة الصندوق","t":"branch","km":93.7,"fd":9000,"bk":"أيمن","dr":null,"rf":8.406,"rb":6.76,"la":30.476,"lo":31.981},{"id":"myri","n":"ترعة الميرى","t":"branch","km":98.85,"fd":1358,"bk":"أيمن","dr":"ب","rf":7.2,"rb":6.95,"la":30.491,"lo":32.005},{"id":"ryah_mhs","n":"رياح المحسمة","t":"branch","km":101.74,"fd":4605,"bk":"أيمن","dr":"ج","rf":6.85,"rb":6.5,"la":30.501,"lo":32.027},{"id":"abu_s104","n":"ترعة أبو سلطان","t":"branch","km":104.0,"fd":1500,"bk":"أيمن","dr":"ج","rf":7.2,"rb":6.9,"la":30.5085,"lo":32.041},{"id":"mnayf","n":"ترعة المنايف الرئيسية","t":"branch","km":111.0,"fd":30993,"bk":"أيمن","dr":null,"rf":7.895,"rb":7.65,"la":30.531,"lo":32.089},{"id":"abu_swr","n":"ترعة أبو صوير","t":"branch","km":115.37,"fd":2040,"bk":"أيمن","dr":"ب","rf":6.8,"rb":6.3,"la":30.547,"lo":32.123},{"id":"suez","n":"ترعة السويس","t":"branch","km":123.175,"fd":150549,"bk":"أيمن","dr":null,"rf":7.363,"rb":7.091,"la":30.578,"lo":32.188},{"id":"borsaid","n":"ترعة بورسعيد","t":"branch","km":126.0,"fd":37982,"bk":"أيسر","dr":"مستمر","rf":7.2,"rb":6.85,"la":30.585,"lo":32.205}],
+  FEDDAN: 4200.83,
+  cells: [], series: {}, periods: [], periodsPerYear: 12, k: {z1:null,z2:null,z3:null},
+  unc: 25, years: [], shown: 200, sortBy: 'vol', source: 'none',
+  quality: {coverage:0,spatial:0,available:0,expected:0,grid:'—',updated:null},
+  config: {year:null,nYears:1,level:'L2',freq:'M',sample:'auto',cache:true},
+  eff: {e1:62,c1:78,e2:80,c2:88,e3:86,c3:93,pe:70},
+  apiStatus: {text:'لم يُختبر الاتصال',state:''},
+  API_BASE: 'https://data.apps.fao.org/gismgr/api/v2/catalog/workspaces/WAPOR-3',
+  DB_NAME: 'ismailia-wapor-direct-v9', DB_STORE: 'sampled-cogs',
+  abort: null, running: false, db: null, geoTiffPromise: null, logs: [],
+  view: null, charts: {},
+  fmt(n){ return (n||0).toLocaleString('ar-EG'); },
+  get SERVE(){ return WP.BR.filter(b=>b.fd>0); },
+  get PATH(){ return WP.BR.slice().sort((a,b)=>a.km-b.km).map(b=>[b.la,b.lo]); },
+  get totFd(){ return WP.BR.reduce((a,b)=>a+b.fd,0); }
+};
+
+
+/* مزامنة أسماء الفروع والزمامات مع الحالة الحية للتطبيق دون المساس ببياناته. */
+WP.syncBranchesFromApp = function(){
+  if(typeof State==='undefined' || !Array.isArray(State.branches)) return;
+  const live=new Map(State.branches.map(b=>[b.id,b]));
+  WP.BR=WP.BR.map(p=>{
+    const b=live.get(p.id); if(!b) return p;
+    return Object.assign({},p,{
+      n:b.name||p.n,
+      t:b.admin||p.t,
+      km:Number.isFinite(+b.km)?+b.km:p.km,
+      fd:Math.max(0,Number.isFinite(+b.zimaam)?+b.zimaam:p.fd),
+      dr:b.dour||p.dr,
+      rf:Number.isFinite(+b.refFront)?+b.refFront:p.rf,
+      rb:Number.isFinite(+b.refBack)?+b.refBack:p.rb
+    });
+  });
+};
+
+WP.zoneOf = km => km < 50 ? 'z1' : km < 90 ? 'z2' : 'z3';
+WP.zoneName = z => z==='z1' ? 'قديم' : z==='z2' ? 'وسط' : 'شرقى';
+WP.radiusOf = fd => Math.sqrt(fd * WP.FEDDAN / Math.PI);
+
+WP.distM = function(la1,lo1,la2,lo2){
+  const R=6371000,p=Math.PI/180;
+  const dla=(la2-la1)*p, dlo=(lo2-lo1)*p;
+  const a=Math.sin(dla/2)**2 + Math.cos(la1*p)*Math.cos(la2*p)*Math.sin(dlo/2)**2;
+  return 2*R*Math.asin(Math.sqrt(a));
+};
+/* البر: حاصل الضرب الاتجاهى بين متجه المجرى ومتجه الخلية */
+WP.sideOf = function(la,lo){
+  const P=WP.PATH; let best=Infinity,bi=0;
+  for(let i=0;i<P.length;i++){ const d=WP.distM(la,lo,P[i][0],P[i][1]); if(d<best){best=d;bi=i} }
+  const j=Math.min(bi+1,P.length-1), i2=Math.max(bi-1,0);
+  const ax=P[i2][1],ay=P[i2][0],bx=P[j][1],by=P[j][0];
+  return ((bx-ax)*(la-ay)-(by-ay)*(lo-ax)) > 0 ? 'أيسر' : 'أيمن';
+};
+WP.distToCanal = function(la,lo){
+  const P=WP.PATH; let best=Infinity;
+  for(const p of P){ const d=WP.distM(la,lo,p[0],p[1]); if(d<best)best=d }
+  return best;
+};
+WP.log = function(m,c){
+  WP.logs.push({m,c:c||''});
+  if(WP.logs.length>180) WP.logs.splice(0,WP.logs.length-180);
+  const l=document.getElementById('wpLog'); if(!l)return;
+  const d=document.createElement('div'); if(c)d.className=c; d.textContent='› '+m;
+  l.appendChild(d); l.scrollTop=l.scrollHeight;
+};
+WP.renderLog = function(){
+  const l=document.getElementById('wpLog'); if(!l)return;
+  l.innerHTML='';
+  (WP.logs.length?WP.logs:[{m:'جاهز.',c:''}]).forEach(x=>{
+    const d=document.createElement('div'); if(x.c)d.className=x.c; d.textContent='› '+x.m; l.appendChild(d);
+  });
+  l.scrollTop=l.scrollHeight;
+};
+
+/* ───────── الخريطة: رسم canvas بالإحداثيات الحقيقية ───────── */
+WP.mapInit = function(){
+  const cv=document.getElementById('wpMap'); if(!cv)return;
+  const P=WP.PATH;
+  const la=P.map(p=>p[0]), lo=P.map(p=>p[1]);
+  WP.view={la0:Math.min(...la)-0.09, la1:Math.max(...la)+0.09,
+           lo0:Math.min(...lo)-0.09, lo1:Math.max(...lo)+0.09, z:1, ox:0, oy:0};
+  WP.mapBind(cv); WP.mapDraw();
+};
+WP.mapFit = function(){
+  if(!WP.view)return;
+  const src = WP.cells.length ? WP.cells.map(c=>[c.la,c.lo]) : WP.PATH;
+  const la=src.map(p=>p[0]), lo=src.map(p=>p[1]);
+  WP.view.la0=Math.min(...la)-0.05; WP.view.la1=Math.max(...la)+0.05;
+  WP.view.lo0=Math.min(...lo)-0.05; WP.view.lo1=Math.max(...lo)+0.05;
+  WP.view.z=1; WP.view.ox=0; WP.view.oy=0;
+  WP.mapDraw();
+};
+WP.proj = function(la,lo,W,H){
+  const v=WP.view;
+  const x=(lo-v.lo0)/(v.lo1-v.lo0)*W, y=(1-(la-v.la0)/(v.la1-v.la0))*H;
+  return [ (x-W/2)*v.z + W/2 + v.ox, (y-H/2)*v.z + H/2 + v.oy ];
+};
+WP.mapDraw = function(){
+  const cv=document.getElementById('wpMap'); if(!cv||!WP.view)return;
+  const r=cv.getBoundingClientRect(), dpr=window.devicePixelRatio||1;
+  cv.width=r.width*dpr; cv.height=r.height*dpr;
+  const x=cv.getContext('2d'); x.scale(dpr,dpr);
+  const W=r.width,H=r.height;
+  x.clearRect(0,0,W,H);
+  const cs=getComputedStyle(document.documentElement);
+  const C={bg:cs.getPropertyValue('--bg-0').trim()||'#06090f',
+           line:cs.getPropertyValue('--line').trim()||'#1e2a44',
+           cyan:cs.getPropertyValue('--cyan').trim()||'#38e8ff',
+           ink:cs.getPropertyValue('--ink-1').trim()||'#a8b3c7',
+           ink2:cs.getPropertyValue('--ink-2').trim()||'#6b7893'};
+  x.fillStyle=C.bg; x.fillRect(0,0,W,H);
+  /* شبكة خلفية */
+  x.strokeStyle=C.line; x.lineWidth=.5; x.globalAlpha=.5;
+  for(let i=1;i<8;i++){ const gy=H*i/8; x.beginPath();x.moveTo(0,gy);x.lineTo(W,gy);x.stroke(); }
+  for(let i=1;i<10;i++){ const gx=W*i/10; x.beginPath();x.moveTo(gx,0);x.lineTo(gx,H);x.stroke(); }
+  x.globalAlpha=1;
+  /* الخلايا */
+  const COL={crop:'#4ade80',urban:'#ff4d6d',edge:'#ffb020'};
+  if(WP.cells.length){
+    const km=WP.cells[0].km2? Math.sqrt(WP.cells[0].km2):1;
+    const dLa=km/111, dLo=km/(111*Math.cos(30.4*Math.PI/180));
+    for(const c of WP.cells){
+      const [x1,y1]=WP.proj(c.la+dLa/2,c.lo-dLo/2,W,H);
+      const [x2,y2]=WP.proj(c.la-dLa/2,c.lo+dLo/2,W,H);
+      const w=Math.max(1.2,x2-x1), h=Math.max(1.2,y2-y1);
+      if(x2<-20||x1>W+20||y2<-20||y1>H+20) continue;
+      x.fillStyle=COL[c.cov]||'#38e8ff'; x.globalAlpha=.42;
+      x.fillRect(x1,y1,w,h);
+    }
+    x.globalAlpha=1;
+  }
+  /* المجرى */
+  const P=WP.PATH;
+  x.strokeStyle=C.cyan; x.globalAlpha=.16; x.lineWidth=9; x.lineJoin='round'; x.lineCap='round';
+  x.beginPath(); P.forEach((p,i)=>{const[a,b]=WP.proj(p[0],p[1],W,H); i?x.lineTo(a,b):x.moveTo(a,b)}); x.stroke();
+  x.globalAlpha=1; x.lineWidth=2.6;
+  x.beginPath(); P.forEach((p,i)=>{const[a,b]=WP.proj(p[0],p[1],W,H); i?x.lineTo(a,b):x.moveTo(a,b)}); x.stroke();
+  /* المآخذ */
+  WP._pts=[];
+  for(const b of WP.BR){
+    const [a,c]=WP.proj(b.la,b.lo,W,H);
+    if(a<-30||a>W+30||c<-30||c>H+30) continue;
+    const big=b.fd>=20000, rr=big?6:b.fd>0?4.2:3.2;
+    x.beginPath(); x.arc(a,c,rr,0,7);
+    x.fillStyle = b.t==='hajz' ? '#d4a017' : b.t==='fom' ? '#ffffff' : big ? '#4ade80' : C.cyan;
+    x.fill(); x.strokeStyle=C.bg; x.lineWidth=1.4; x.stroke();
+    WP._pts.push({x:a,y:c,b});
+    if(big && WP.view.z>0.9){
+      x.fillStyle=C.ink; x.font='600 10px Cairo'; x.textAlign='center';
+      x.fillText(b.n, a, c-10);
+    }
+  }
+  /* مقياس */
+  x.fillStyle=C.ink2; x.font='9px "IBM Plex Mono"'; x.textAlign='left';
+  x.fillText('ك٠ ← ك١٢٦ · '+WP.BR.length+' نقطة', 8, H-8);
+};
+WP.mapBind = function(cv){
+  if(cv._wpBound) return; cv._wpBound=true;
+  let drag=false,px=0,py=0,pd=0;
+  const tip=document.getElementById('wpTip');
+  cv.addEventListener('mousedown',e=>{drag=true;px=e.clientX;py=e.clientY});
+  window.addEventListener('mouseup',()=>drag=false);
+  cv.addEventListener('mousemove',e=>{
+    if(drag){ WP.view.ox+=e.clientX-px; WP.view.oy+=e.clientY-py; px=e.clientX;py=e.clientY; WP.mapDraw(); return }
+    if(!tip||!WP._pts) return;
+    const r=cv.getBoundingClientRect(), mx=e.clientX-r.left, my=e.clientY-r.top;
+    let hit=null,bd=13;
+    for(const p of WP._pts){ const d=Math.hypot(p.x-mx,p.y-my); if(d<bd){bd=d;hit=p} }
+    if(hit){
+      const b=hit.b;
+      tip.innerHTML='<b>'+b.n+'</b><br>ك '+b.km+' · '+(b.bk||'—')+' · دور '+(b.dr||'—')+
+        '<br>الزمام: '+(b.fd?WP.fmt(b.fd)+' فدان':'—')+
+        '<br><span style="font-family:\'IBM Plex Mono\',monospace;font-size:10px;opacity:.75">'+b.la+', '+b.lo+'</span>';
+      tip.style.display='block';
+      tip.style.left=Math.min(mx+14, r.width-240)+'px'; tip.style.top=(my+14)+'px';
+    } else tip.style.display='none';
+  });
+  cv.addEventListener('mouseleave',()=>{drag=false; if(tip)tip.style.display='none'});
+  cv.addEventListener('wheel',e=>{
+    e.preventDefault();
+    const f=e.deltaY<0?1.14:1/1.14;
+    WP.view.z=Math.max(.35,Math.min(28,WP.view.z*f));
+    WP.mapDraw();
+  },{passive:false});
+  cv.addEventListener('touchstart',e=>{
+    if(e.touches.length===1){drag=true;px=e.touches[0].clientX;py=e.touches[0].clientY}
+    else if(e.touches.length===2){pd=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY)}
+  },{passive:true});
+  cv.addEventListener('touchmove',e=>{
+    if(e.touches.length===1&&drag){
+      WP.view.ox+=e.touches[0].clientX-px; WP.view.oy+=e.touches[0].clientY-py;
+      px=e.touches[0].clientX;py=e.touches[0].clientY; WP.mapDraw();
+    } else if(e.touches.length===2){
+      const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
+      if(pd){ WP.view.z=Math.max(.35,Math.min(28,WP.view.z*(d/pd))); WP.mapDraw() }
+      pd=d;
+    }
+  },{passive:true});
+  cv.addEventListener('touchend',()=>{drag=false;pd=0},{passive:true});
+};
+
+/* ───────── توليد الشبكة ───────── */
+WP.hash01 = function(la,lo,salt){
+  const x=Math.sin(la*127.1+lo*311.7+(salt||0)*74.7)*43758.5453123;
+  return x-Math.floor(x);
+};
+WP.buildGrid = function(){
+  const km=parseFloat(document.getElementById('wpCell').value);
+  const rng=document.getElementById('wpRng').value;
+  const big=document.getElementById('wpBig').value==='1';
+  const pr=document.getElementById('wpProg');
+  let pool=WP.SERVE.slice();
+  if(rng!=='all'){ const a=rng.split('-').map(Number); pool=pool.filter(x=>x.km>=a[0]&&x.km<=a[1]) }
+  if(big) pool=pool.filter(x=>x.fd>=10000);
+  if(!pool.length){ WP.log('لا توجد فروع فى النطاق المحدد.','e'); return }
+
+  WP.cells=[];
+  let la0=90,la1=-90,lo0=180,lo1=-180;
+  pool.forEach(b=>{
+    const r=WP.radiusOf(b.fd), dLa=r/111000, dLo=r/(111000*Math.cos(b.la*Math.PI/180));
+    la0=Math.min(la0,b.la-dLa); la1=Math.max(la1,b.la+dLa);
+    lo0=Math.min(lo0,b.lo-dLo); lo1=Math.max(lo1,b.lo+dLo);
+  });
+  const dLat=km/111, dLng=km/(111*Math.cos(30.4*Math.PI/180));
+  let id=1,out=0;
+  for(let la=la0;la<la1;la+=dLat){
+    for(let lo=lo0;lo<lo1;lo+=dLng){
+      const cLa=la+dLat/2, cLo=lo+dLng/2;
+      const side=WP.sideOf(cLa,cLo);
+      let bb=null,bd=Infinity;
+      for(const b of pool){
+        if(b.bk && b.bk!==side) continue;
+        const d=WP.distM(cLa,cLo,b.la,b.lo);
+        if(d<=WP.radiusOf(b.fd) && d<bd){ bd=d; bb=b }
+      }
+      if(!bb){ out++; continue }
+      const rel=bd/WP.radiusOf(bb.fd);
+      const near=WP.distToCanal(cLa,cLo);
+      const h=WP.hash01(cLa,cLo,bb.km);
+      let cov;
+      if(near<900 && h<0.40) cov='urban';
+      else if(rel>0.82) cov='edge';
+      else cov = h<0.11 ? 'urban' : 'crop';
+      WP.cells.push({id:'W'+String(id++).padStart(4,'0'), la:cLa, lo:cLo, km2:km*km,
+        b:bb.id, bn:bb.n, bkm:bb.km, side, cov, rel:+rel.toFixed(3), z:WP.zoneOf(bb.km)});
+    }
+  }
+  if(pr){ pr.style.width='100%'; setTimeout(()=>pr.style.width='0%',600) }
+  /* معايرة المساحة: الخلايا المنسوبة لا تغطى كامل الزمام بسبب تداخل الدوائر
+     وقيد البر، فيُحسب معامل مساحى لكل فرع = مساحته الفعلية ÷ مساحة خلاياه.
+     بدونه تُبخَس الأحجام المطلقة بمقدار ٢-٦ أضعاف. */
+  WP.scale={};
+  {
+    const acc={};
+    WP.cells.forEach(c=>{ acc[c.b]=(acc[c.b]||0)+c.km2 });
+    pool.forEach(b=>{
+      const real=b.fd*WP.FEDDAN/1e6;          // كم² فعلية من الزمام
+      WP.scale[b.id] = (acc[b.id]&&real) ? real/acc[b.id] : 1;
+    });
+  }
+  const bs=new Set(WP.cells.map(c=>c.b));
+  const fd=pool.filter(b=>bs.has(b.id)).reduce((a,b)=>a+b.fd,0);
+  document.getElementById('wpNC').textContent=WP.fmt(WP.cells.length);
+  document.getElementById('wpNB').textContent=bs.size;
+  document.getElementById('wpNBs').textContent='من '+pool.length+' فرع فى النطاق';
+  document.getElementById('wpAF').textContent=(fd/1000).toFixed(0);
+  document.getElementById('wpOut').textContent=WP.fmt(out);
+  WP.series={}; WP.periods=[]; WP.years=[]; WP.source='none';
+  WP.quality={coverage:0,spatial:0,available:0,expected:0,grid:'—',updated:null};
+  WP.fillSelects();
+  WP.mapFit();
+  if(WP.setSourceChip){WP.setSourceChip('none');WP.setLoad(false,'',0)}
+  ['wpOV','wpOF','wpOP','wpOE'].forEach(i=>{const e=document.getElementById(i);if(e)e.textContent='—'});
+  const os=document.getElementById('wpOVs');if(os)os.textContent='—';
+  WP.renderRes();WP.renderAg();['s1','s2','ag'].forEach(k=>WP.killChart(k));
+  WP.log('تم توليد '+WP.cells.length+' خلية على '+bs.size+' فرع · '+out+' خلية خارج الزمامات.','s');
+};
+WP.fillSelects = function(){
+  const ids=[...new Set(WP.cells.map(c=>c.b))];
+  const html='<option value="all">كل الفروع</option>'+ids.map(id=>{
+    const b=WP.BR.find(x=>x.id===id); return '<option value="'+id+'">'+(b?b.n:id)+'</option>'}).join('');
+  ['wpFB','wpChB'].forEach(i=>{ const e=document.getElementById(i); if(e)e.innerHTML=html });
+};
+
+/* ───────── السلاسل والحساب ───────── */
+WP.genSeries = function(base){
+  WP.syncConfigFromControls();
+  WP.years=WP.selectedYears();
+  WP.periods=WP.expectedPeriods(WP.years,WP.config.freq);
+  WP.periodsPerYear=WP.config.freq==='D'?36:12;
+  WP.series={};
+  WP.cells.forEach(c=>{
+    WP.series[c.id]=WP.periods.map((p,i)=>({...p,aeti:+base[i%base.length],pcp:0,miss:false}));
+  });
+  WP.source='manual';
+  WP.quality={coverage:100,spatial:100,available:WP.periods.length,expected:WP.periods.length,grid:'إدخال يدوى',updated:null};
+  WP.setSourceChip('manual'); WP.setApiState('مصدر بديل: إدخال يدوى','');
+  WP.compute();
+};
+WP.effOf = function(z){
+  const i = z==='z1'?1 : z==='z2'?2 : 3;
+  const f=document.getElementById('wpE'+i), c=document.getElementById('wpC'+i);
+  const fv=f?+f.value:WP.eff['e'+i],cv=c?+c.value:WP.eff['c'+i];
+  return Math.max(.15,(fv/100)*(cv/100));
+};
+WP.refreshEff = function(){
+  [1,2,3].forEach(i=>{ const e=document.getElementById('wpT'+i);
+    if(e) e.textContent=(WP.effOf('z'+i)*100).toFixed(0) });
+};
+WP.compute = function(){
+  WP.refreshEff();
+  const peEl=document.getElementById('wpPE'); const pe=(peEl?+peEl.value:WP.eff.pe)/100;
+  WP.cells.forEach(c=>{
+    const s=WP.series[c.id];
+    if(!s){ c.aeti=c.pcp=c.net=c.raw=c.cal=null; c.coverage=0; return }
+    let a=0,p=0,paired=0;
+    for(const x of s){
+      if(Number.isFinite(x.aeti)&&Number.isFinite(x.pcp)){ a+=x.aeti; p+=x.pcp; paired++ }
+    }
+    const net=Math.max(0,a-p*pe);
+    c.aeti=a; c.pcp=p; c.net=net;
+    c.coverage=WP.periods.length?paired/WP.periods.length*100:0;
+    const sc=(WP.scale&&WP.scale[c.b])||1;
+    c.km2e=c.km2*sc;                          // المساحة المكافئة بعد المعايرة
+    c.raw=c.cov!=='urban'&&paired?(net/1000)*c.km2e/WP.effOf(c.z):0;
+    c.cal=c.raw*(WP.k[c.z]||1);
+  });
+  WP.shown=200;
+  WP.renderRes(); WP.renderAg(); WP.updKPI(); WP.mapDraw(); WP.drawSeries();
+};
+WP.updKPI = function(){
+  const cs=WP.cells.filter(c=>c.cal!=null); if(!cs.length)return;
+  const tot=cs.reduce((a,c)=>a+c.cal,0);
+  const bs=new Set(cs.map(c=>c.b));
+  const fd=WP.BR.filter(b=>bs.has(b.id)).reduce((a,b)=>a+b.fd,0);
+  const g=i=>document.getElementById(i)||{style:{}};
+  g('wpOV').textContent=WP.fmt(+tot.toFixed(0));
+  g('wpOVs').textContent=WP.years[0]+'–'+WP.years[WP.years.length-1]+' · '+WP.fmt(cs.length)+' خلية';
+  g('wpOF').textContent=(fd/1000).toFixed(0);
+  g('wpOP').textContent=fd&&WP.years.length?WP.fmt(Math.round(tot*1e6/fd/WP.years.length)):'—';
+  const de=Number.isFinite(WP.quality.coverage)?WP.quality.coverage:
+    cs.reduce((a,c)=>a+(c.coverage||0),0)/(cs.length||1);
+  g('wpOE').textContent=de.toFixed(0);
+  const b=g('wpOEb');
+  b.textContent = de>=95?'مكتمل' : de>=80?'فجوات محدودة' : 'غير مكتمل';
+  b.className='wp-bdg '+(de>=95?'ok':de>=80?'w':'b');
+};
+WP.renderRes = function(){
+  const fEl=document.getElementById('wpFB'); const f=fEl?fEl.value:'all';
+  const rows=WP.cells.filter(c=>c.cal!=null&&(f==='all'||c.b===f));
+  const tb=document.getElementById('wpResB'); if(!tb)return;
+  if(!rows.length){
+    tb.innerHTML='<tr><td colspan="9"><div class="wp-empty"><b>لا نتائج</b>حمّل بيانات AETI من تبويب المصدر</div></td></tr>';
+    const ri=document.getElementById('wpRInf'); if(ri)ri.textContent='—'; return;
+  }
+  const sl=rows.slice(0,WP.shown);
+  const nm={crop:'زراعى',urban:'عمران',edge:'حافة'}, cl={crop:'wp-t-c',urban:'wp-t-u',edge:'wp-t-e'};
+  tb.innerHTML=sl.map(c=>'<tr><td style="font-family:\'IBM Plex Mono\',monospace">'+c.id+'</td><td>'+c.bn+'</td><td>'+c.bkm+'</td><td>'+c.side+
+    '</td><td><span class="wp-tag '+cl[c.cov]+'">'+nm[c.cov]+'</span></td><td>'+c.aeti.toFixed(0)+
+    '</td><td>'+c.raw.toFixed(3)+'</td><td>'+c.cal.toFixed(3)+'</td><td><span class="wp-bdg '+(c.coverage>=95?'ok':c.coverage>=80?'w':'b')+'">'+c.coverage.toFixed(0)+'٪</span></td></tr>').join('');
+  const ri=document.getElementById('wpRInf');
+  if(ri) ri.textContent='عرض '+WP.fmt(sl.length)+' من '+WP.fmt(rows.length)+' خلية';
+  const mb=document.getElementById('wpMore');
+  if(mb) mb.style.display = sl.length<rows.length ? '' : 'none';
+};
+WP.renderAg = function(){
+  const g={}; WP.cells.filter(c=>c.cal!=null).forEach(c=>{(g[c.b]=g[c.b]||[]).push(c)});
+  const tb=document.getElementById('wpAgB'); if(!tb)return;
+  const ks=Object.keys(g);
+  if(!ks.length){ tb.innerHTML='<tr><td colspan="10"><div class="wp-empty"><b>فى انتظار البيانات</b></div></td></tr>'; return }
+  let rows=ks.map(k=>{
+    const cs=g[k], b=WP.BR.find(x=>x.id===k);
+    const tot=cs.reduce((a,c)=>a+c.cal,0);
+    const aeti=cs.reduce((a,c)=>a+c.aeti,0)/cs.length;
+    const coverage=cs.reduce((a,c)=>a+(c.coverage||0),0)/cs.length;
+    return {id:k,n:b.n,km:b.km,bk:b.bk,dr:b.dr,fd:b.fd,cells:cs.length,aeti,tot,
+            pf:b.fd&&WP.years.length?tot*1e6/b.fd/WP.years.length:0,coverage};
+  });
+  rows.sort((a,b)=> WP.sortBy==='vol' ? b.tot-a.tot : b.pf-a.pf);
+  WP.agRows=rows;
+  tb.innerHTML=rows.map(r=>'<tr><td><b>'+r.n+'</b></td><td>'+r.km+'</td><td>'+(r.bk||'—')+
+    '</td><td><span class="wp-tag '+(r.dr==='مستمر'?'wp-t-c':'wp-t-i')+'">'+(r.dr||'—')+'</span></td><td>'+WP.fmt(r.fd)+
+    '</td><td>'+r.cells+'</td><td>'+r.aeti.toFixed(0)+'</td><td>'+r.tot.toFixed(1)+
+    '</td><td>'+(r.pf?WP.fmt(Math.round(r.pf)):'—')+'</td><td><span class="wp-bdg '+(r.coverage>=95?'ok':r.coverage>=80?'w':'b')+'">'+r.coverage.toFixed(0)+'٪</span></td></tr>').join('');
+  WP.drawAg();
+};
+
+/* ───────── الرسوم عبر Chart.js ───────── */
+WP.killChart = function(k){ try{ WP.charts[k] && WP.charts[k].destroy() }catch(e){} WP.charts[k]=null };
+WP.cssv = n => getComputedStyle(document.querySelector('.wapor-shell') || document.documentElement).getPropertyValue(n).trim();
+WP.drawAg = function(){
+  const cv=document.getElementById('wpChAg');
+  if(!cv || !WP.agRows || !WP.agRows.length || typeof Chart==='undefined') return;
+  WP.killChart('ag');
+  const r=WP.agRows.slice(0,14);
+  const grid=WP.cssv('--line')||'#1e2a44', ink=WP.cssv('--ink-1')||'#a8b3c7';
+  WP.charts.ag=new Chart(cv,{type:'bar',data:{labels:r.map(x=>x.n),
+    datasets:[{label:WP.sortBy==='vol'?'الاستهلاك (مليون م³)':'نصيب الفدان (م³)',
+      data:r.map(x=>WP.sortBy==='vol'?+x.tot.toFixed(1):Math.round(x.pf)),
+      backgroundColor:WP.cssv('--cyan-soft')||'rgba(56,232,255,.12)',
+      borderColor:WP.cssv('--cyan')||'#38e8ff',borderWidth:1.5,borderRadius:5}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:ink,font:{family:'Cairo',size:11}}}},
+      scales:{x:{grid:{color:grid},ticks:{color:ink,font:{family:'IBM Plex Mono',size:10}}},
+              y:{grid:{display:false},ticks:{color:ink,font:{family:'Cairo',size:10}}}}}});
+};
+WP.drawSeries = function(){
+  if(typeof Chart==='undefined') return;
+  const c1=document.getElementById('wpCh1'), c2=document.getElementById('wpCh2');
+  if(!c1||!c2) return;
+  const fEl=document.getElementById('wpChB'); const f=fEl?fEl.value:'all';
+  const cs=WP.cells.filter(c=>c.cal!=null&&c.cov!=='urban'&&(f==='all'||c.b===f));
+  if(!cs.length) return;
+  const n=WP.periods.length;
+  if(!n) return;
+  const aeti=new Array(n).fill(0), rain=new Array(n).fill(0), demand=new Array(n).fill(0), count=new Array(n).fill(0);
+  const peEl=document.getElementById('wpPE'), pe=(peEl?+peEl.value:WP.eff.pe)/100;
+  cs.forEach(c=>{
+    const s=WP.series[c.id]; if(!s)return;
+    const k=WP.k[c.z]||1, eff=WP.effOf(c.z), ke=c.km2e||c.km2;
+    for(let i=0;i<n&&i<s.length;i++){
+      const av=s[i].aeti,pv=s[i].pcp;
+      if(!Number.isFinite(av)||!Number.isFinite(pv)) continue;
+      aeti[i]+=av*ke/1000;
+      rain[i]+=pv*pe*ke/1000;
+      demand[i]+=Math.max(0,av-pv*pe)*ke/1000/eff*k;
+      count[i]++;
+    }
+  });
+  [aeti,rain,demand].forEach(arr=>arr.forEach((v,i)=>{arr[i]=count[i]?+v.toFixed(3):null}));
+  const labs=WP.periods.map(p=>p.label||p.key);
+  const grid=WP.cssv('--line')||'#1e2a44', ink=WP.cssv('--ink-1')||'#a8b3c7';
+  WP.killChart('s1');
+  WP.charts.s1=new Chart(c1,{type:'line',data:{labels:labs,datasets:[
+    {label:'AETI الفعلى',data:aeti,borderColor:WP.cssv('--cyan')||'#38e8ff',
+     backgroundColor:'rgba(56,232,255,.06)',borderWidth:1.8,pointRadius:0,tension:.25,spanGaps:true},
+    {label:'المطر الفعّال',data:rain,borderColor:WP.cssv('--green')||'#4ade80',
+     borderWidth:1.6,pointRadius:0,tension:.25,spanGaps:true},
+    {label:'الاحتياج الإجمالى المعايَر',data:demand,borderColor:WP.cssv('--red')||'#ff4d6d',
+     backgroundColor:'rgba(255,77,109,.06)',borderWidth:2,pointRadius:0,tension:.25,fill:true,spanGaps:true}]},
+    options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+      plugins:{legend:{labels:{color:ink,font:{family:'Cairo',size:11},boxWidth:14}}},
+      scales:{x:{grid:{color:grid},ticks:{color:ink,font:{family:'IBM Plex Mono',size:9},maxRotation:0,autoSkip:true,maxTicksLimit:14}},
+              y:{grid:{color:grid},ticks:{color:ink,font:{family:'IBM Plex Mono',size:10}},title:{display:true,text:'مليون م³',color:ink,font:{family:'Cairo',size:10}}}}}});
+  const yr=WP.years.map(y=>+demand.reduce((sum,v,i)=>sum+(WP.periods[i]?.yr===y&&Number.isFinite(v)?v:0),0).toFixed(2));
+  WP.killChart('s2');
+  WP.charts.s2=new Chart(c2,{type:'bar',data:{labels:WP.years,
+    datasets:[{label:'الاحتياج الإجمالى السنوى (مليون م³)',data:yr,
+      backgroundColor:'rgba(56,232,255,.18)',borderColor:WP.cssv('--cyan')||'#38e8ff',borderWidth:1.5,borderRadius:6}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:ink,font:{family:'Cairo',size:11}}}},
+      scales:{x:{grid:{display:false},ticks:{color:ink,font:{family:'IBM Plex Mono',size:11}}},
+              y:{grid:{color:grid},ticks:{color:ink,font:{family:'IBM Plex Mono',size:10}}}}}});
+};
+
+/* ───────── المعايرة ───────── */
+WP.addCalRow = function(){
+  const tb=document.getElementById('wpCalB'); if(!tb)return;
+  const tr=document.createElement('tr');
+  const opts=WP.SERVE.map(b=>'<option value="'+b.id+'">'+b.n+' (ك'+b.km+')</option>').join('');
+  const yr=WP.years[WP.years.length-1]||WP.config.year||new Date().getUTCFullYear()-1;
+  tr.innerHTML='<td><input class="wpcp" value="'+yr+'" placeholder="'+yr+'-صيفى" style="width:105px;padding:5px 8px;border:1px solid var(--line-hi);border-radius:6px;background:var(--bg-1);color:var(--ink-0);font-family:Cairo;font-size:11px"></td>'+
+    '<td><select class="wpcb" style="min-width:165px;padding:5px 8px;border:1px solid var(--line-hi);border-radius:6px;background:var(--bg-1);color:var(--ink-0);font-family:Cairo;font-size:11px">'+opts+'</select></td>'+
+    '<td><input type="number" step="0.01" class="wpcq" placeholder="0.00" style="width:90px;padding:5px 8px;border:1px solid var(--line-hi);border-radius:6px;background:var(--bg-1);color:var(--ink-0);font-family:\'IBM Plex Mono\',monospace;font-size:11px"></td>'+
+    '<td class="wpce" style="font-family:\'IBM Plex Mono\',monospace">—</td><td class="wpck" style="font-family:\'IBM Plex Mono\',monospace">—</td>'+
+    '<td><button class="dr-btn outline wpdel">حذف</button></td>';
+  tr.querySelector('.wpdel').onclick=()=>tr.remove();
+  tb.appendChild(tr);
+};
+WP.periodMatches = function(label,p){
+  const txt=(label||'').trim();
+  const ym=txt.match(/20\d{2}/), year=ym?+ym[0]:null;
+  if(year&&p.yr!==year) return false;
+  const month=p.month||(p.startDate?+String(p.startDate).slice(5,7):null);
+  if(/صيف|summer/i.test(txt)&&month) return month>=4&&month<=9;
+  if(/شتا|winter/i.test(txt)&&month) return month>=10||month<=3;
+  return true;
+};
+WP.estimateCellForPeriod = function(c,label){
+  if(c.cov==='urban') return 0;
+  const s=(WP.series[c.id]||[]).filter(p=>WP.periodMatches(label,p)&&Number.isFinite(p.aeti)&&Number.isFinite(p.pcp));
+  if(!s.length) return 0;
+  const peEl=document.getElementById('wpPE'),pe=(peEl?+peEl.value:WP.eff.pe)/100;
+  const a=s.reduce((v,p)=>v+p.aeti,0),r=s.reduce((v,p)=>v+p.pcp,0);
+  const ke=c.km2e||c.km2;
+  return Math.max(0,a-r*pe)*ke/1000/WP.effOf(c.z);
+};
+WP.runCal = function(){
+  const rows=[...document.querySelectorAll('#wpCalB tr')];
+  if(!rows.length){ alert('أضف صفاً واحداً على الأقل.'); return }
+  if(!WP.cells.length || WP.cells[0].raw==null){ alert('ولّد الشبكة وحمّل بيانات AETI أولاً.'); return }
+  const kz={z1:[],z2:[],z3:[]}, pairs=[];
+  rows.forEach(tr=>{
+    const bid=tr.querySelector('.wpcb').value;
+    const period=tr.querySelector('.wpcp').value;
+    const q=parseFloat(tr.querySelector('.wpcq').value);
+    const b=WP.BR.find(x=>x.id===bid);
+    const pool=WP.cells.filter(c=>c.b===bid&&WP.series[c.id]);
+    const est=pool.reduce((a,c)=>a+WP.estimateCellForPeriod(c,period),0);
+    tr.querySelector('.wpce').textContent=est?est.toFixed(2):'—';
+    if(q>0&&est>0){ const z=WP.zoneOf(b.km),k=q/est; kz[z].push(k); pairs.push({q,est,z});
+      tr.querySelector('.wpck').textContent=k.toFixed(3) }
+    else tr.querySelector('.wpck').textContent='—';
+  });
+  const all=[...kz.z1,...kz.z2,...kz.z3];
+  if(!all.length){ alert('أدخل قيم تصرف صحيحة أكبر من صفر.'); return }
+  const avg=a=>a.reduce((x,y)=>x+y,0)/a.length;
+  ['z1','z2','z3'].forEach((z,i)=>{
+    if(kz[z].length){
+      WP.k[z]=avg(kz[z]);
+      document.getElementById('wpK'+(i+1)).textContent=WP.k[z].toFixed(3);
+      document.getElementById('wpK'+(i+1)+'n').textContent='من '+kz[z].length+' قياس';
+    }
+  });
+  const m=avg(all), sd=Math.sqrt(all.reduce((a,k)=>a+(k-m)**2,0)/all.length);
+  WP.unc=Math.min(45,Math.max(8,Math.round(sd/m*100+12)));
+  const residuals=pairs.map(x=>x.q-x.est*(WP.k[x.z]||1));
+  const rmse=Math.sqrt(residuals.reduce((a,e)=>a+e*e,0)/residuals.length);
+  document.getElementById('wpRMSE').textContent=rmse.toFixed(2);
+  document.getElementById('wpUV').textContent='±'+WP.unc;
+  const uf=document.getElementById('wpUF');
+  uf.style.insetInlineStart=(50-WP.unc/2)+'%'; uf.style.width=WP.unc+'%';
+  document.getElementById('wpUL').textContent='−'+WP.unc+'%';
+  document.getElementById('wpUH').textContent='+'+WP.unc+'%';
+  WP.compute();
+  WP.log('k: قديم='+(WP.k.z1?WP.k.z1.toFixed(3):'—')+' وسط='+(WP.k.z2?WP.k.z2.toFixed(3):'—')+
+    ' شرقى='+(WP.k.z3?WP.k.z3.toFixed(3):'—')+' · عدم يقين ±'+WP.unc+'%','s');
+};
+
+/* ───────── WaPOR v3 — اتصال رسمى مباشر ───────── */
+WP.setApiState = function(text,state){
+  WP.apiStatus={text:text||'',state:state||''};
+  const t=document.getElementById('wpApiState'),d=document.getElementById('wpApiDot');
+  if(t)t.textContent=WP.apiStatus.text;
+  if(d)d.className='wp-status-dot'+(WP.apiStatus.state?' '+WP.apiStatus.state:'');
+};
+WP.setSourceChip = function(kind){
+  const cfg={
+    wapor:['WaPOR فعلى','wp-bdg ok'],csv:['مصدر CSV','wp-bdg'],
+    manual:['إدخال يدوى','wp-bdg w'],loading:['جارٍ جلب WaPOR','wp-bdg w'],
+    none:['لم تُحمّل بيانات','wp-bdg w']
+  }[kind||WP.source]||['لم تُحمّل بيانات','wp-bdg w'];
+  const c=document.getElementById('wpSrcChip'); if(c){c.textContent=cfg[0];c.className=cfg[1]}
+};
+WP.setLoad = function(show,label,pct){
+  const box=document.getElementById('wpLoadBox'),lab=document.getElementById('wpLoadLabel');
+  const val=document.getElementById('wpLoadPct'),meter=document.getElementById('wpLoadMeter');
+  if(box)box.classList.toggle('on',!!show);
+  if(lab&&label)lab.textContent=label;
+  if(val)val.textContent=Math.round(pct||0)+'%';
+  if(meter)meter.style.width=Math.max(0,Math.min(100,pct||0))+'%';
+};
+WP.lockDataControls = function(locked){
+  ['wpYr','wpNY','wpLvl','wpFreq','wpSample','wpCache','wpGrid','wpCell','wpRng','wpBig'].forEach(id=>{
+    const e=document.getElementById(id);if(e)e.disabled=locked;
+  });
+};
+WP.initDataControls = function(){
+  const now=new Date().getUTCFullYear(),lastFull=now-1;
+  if(!WP.config.year)WP.config.year=lastFull;
+  const y=document.getElementById('wpYr');
+  if(y){
+    y.innerHTML='';
+    for(let yr=now;yr>=2018;yr--){
+      const o=document.createElement('option');o.value=yr;o.textContent=yr;o.selected=yr===WP.config.year;y.appendChild(o);
+    }
+  }
+  const vals={wpNY:WP.config.nYears,wpLvl:WP.config.level,wpFreq:WP.config.freq,wpSample:WP.config.sample};
+  Object.keys(vals).forEach(id=>{const e=document.getElementById(id);if(e)e.value=String(vals[id])});
+  const cache=document.getElementById('wpCache');if(cache)cache.checked=WP.config.cache;
+  WP.updateProductLabels();
+};
+WP.syncConfigFromControls = function(){
+  const g=(id,fallback)=>document.getElementById(id)?.value??fallback;
+  WP.config.year=+g('wpYr',WP.config.year||new Date().getUTCFullYear()-1);
+  WP.config.nYears=+g('wpNY',WP.config.nYears||1);
+  WP.config.level=g('wpLvl',WP.config.level||'L2');
+  WP.config.freq=g('wpFreq',WP.config.freq||'M');
+  WP.config.sample=g('wpSample',WP.config.sample||'auto');
+  const cache=document.getElementById('wpCache');if(cache)WP.config.cache=cache.checked;
+};
+WP.productCodes = function(){
+  WP.syncConfigFromControls();
+  return {aeti:WP.config.level+'-AETI-'+WP.config.freq,pcp:'L1-PCP-'+WP.config.freq,
+          freq:WP.config.freq,level:WP.config.level};
+};
+WP.updateProductLabels = function(){
+  const p=WP.productCodes(),a=document.getElementById('wpStAeti'),r=document.getElementById('wpStPcp');
+  if(a)a.textContent=p.aeti;if(r)r.textContent=p.pcp;
+};
+WP.selectedYears = function(){
+  const out=[];for(let i=0;i<WP.config.nYears;i++)out.push(WP.config.year-WP.config.nYears+1+i);return out;
+};
+WP.expectedPeriods = function(years,freq){
+  const out=[];
+  years.forEach(yr=>{
+    for(let m=1;m<=12;m++){
+      const mm=String(m).padStart(2,'0'),dim=new Date(Date.UTC(yr,m,0)).getUTCDate();
+      if(freq==='M')out.push({key:yr+'-'+mm,yr,month:m,slot:m-1,startDate:yr+'-'+mm+'-01',
+        endDate:yr+'-'+mm+'-'+dim,days:dim,label:mm+'/'+yr});
+      else [[1,10],[11,20],[21,dim]].forEach((d,di)=>out.push({
+        key:yr+'-'+mm+'-D'+(di+1),yr,month:m,dekad:di+1,slot:(m-1)*3+di,
+        startDate:yr+'-'+mm+'-'+String(d[0]).padStart(2,'0'),
+        endDate:yr+'-'+mm+'-'+String(d[1]).padStart(2,'0'),
+        days:d[1]-d[0]+1,label:'D'+(di+1)+' '+mm+'/'+yr
+      }));
+    }
+  });
+  return out;
+};
+WP.ensureGeoTIFF = function(){
+  if(window.GeoTIFF?.fromUrl)return Promise.resolve(window.GeoTIFF);
+  if(WP.geoTiffPromise)return WP.geoTiffPromise;
+  WP.geoTiffPromise=new Promise((resolve,reject)=>{
+    const s=document.createElement('script');
+    s.src='https://unpkg.com/geotiff@3.0.5/dist-browser/geotiff.js';
+    s.async=true;s.dataset.waporGeotiff='1';
+    s.onload=()=>window.GeoTIFF?.fromUrl?resolve(window.GeoTIFF):reject(new Error('مكتبة GeoTIFF لم تبدأ بصورة صحيحة'));
+    s.onerror=()=>reject(new Error('تعذر تحميل مكتبة قراءة GeoTIFF'));
+    document.head.appendChild(s);
+  }).catch(e=>{WP.geoTiffPromise=null;throw e});
+  return WP.geoTiffPromise;
+};
+WP.delay = ms=>new Promise(resolve=>setTimeout(resolve,ms));
+WP.fetchJSON = async function(url,opt){
+  const signal=opt?.signal,retries=opt?.retries??2;let last;
+  for(let i=0;i<=retries;i++){
+    try{
+      const r=await fetch(url,{headers:{Accept:'application/json'},signal});
+      const txt=await r.text();
+      if(!r.ok)throw new Error('HTTP '+r.status+': '+txt.slice(0,120));
+      const j=JSON.parse(txt);
+      if(j.status&&j.status>=400)throw new Error(j.message||'API '+j.status);
+      return j.response??j;
+    }catch(e){
+      last=e;if(e.name==='AbortError'||i===retries)throw e;await WP.delay(700*(i+1));
+    }
+  }
+  throw last;
+};
+WP.collectRasters = async function(mapset,signal){
+  let url=WP.API_BASE+'/mapsets/'+encodeURIComponent(mapset)+'/rasters?size=100',items=[];
+  for(let page=0;url&&page<30;page++){
+    const data=await WP.fetchJSON(url,{signal});items.push(...(data.items||[]));
+    const next=(data.links||[]).find(x=>x.rel==='next')?.href;
+    if(next){const u=new URL(next);u.searchParams.set('size','100');url=u.href}else url=null;
+  }
+  return items;
+};
+WP.memberOf = meta=>meta?.dimensions?.find(x=>x.type==='TIME')?.member||meta?.dimensions?.[0]?.member||{};
+WP.periodKey = function(meta){
+  const m=WP.memberOf(meta),code=String(m.code||'');
+  if(code)return code;
+  const start=String(m.startDate||''),year=m.year||start.slice(0,4),month=m.month||+start.slice(5,7);
+  if(!year||!month)return String(meta.code||'').split('.').pop();
+  const mm=String(month).padStart(2,'0'),day=+start.slice(8,10)||1;
+  return WP.config.freq==='D'?year+'-'+mm+'-D'+(day<=10?1:day<=20?2:3):year+'-'+mm;
+};
+WP.cacheOpen = function(){
+  if(WP.db)return Promise.resolve(WP.db);
+  if(!('indexedDB'in window))return Promise.resolve(null);
+  return new Promise(resolve=>{
+    const r=indexedDB.open(WP.DB_NAME,1);
+    r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains(WP.DB_STORE))r.result.createObjectStore(WP.DB_STORE,{keyPath:'key'})};
+    r.onsuccess=()=>{WP.db=r.result;resolve(WP.db)};r.onerror=()=>resolve(null);
+  });
+};
+WP.cacheGet = async function(key){
+  if(!WP.config.cache)return null;
+  const db=await WP.cacheOpen();if(!db)return null;
+  return new Promise(resolve=>{
+    const r=db.transaction(WP.DB_STORE,'readonly').objectStore(WP.DB_STORE).get(key);
+    r.onsuccess=()=>resolve(r.result||null);r.onerror=()=>resolve(null);
+  });
+};
+WP.cachePut = async function(value){
+  if(!WP.config.cache)return;
+  const db=await WP.cacheOpen();if(!db)return;
+  return new Promise(resolve=>{
+    const r=db.transaction(WP.DB_STORE,'readwrite').objectStore(WP.DB_STORE).put(value);
+    r.onsuccess=resolve;r.onerror=resolve;
+  });
+};
+WP.clearCache = async function(){
+  const db=await WP.cacheOpen();
+  if(!db){WP.log('لا توجد ذاكرة محلية متاحة.','w');return}
+  await new Promise(resolve=>{
+    const r=db.transaction(WP.DB_STORE,'readwrite').objectStore(WP.DB_STORE).clear();
+    r.onsuccess=resolve;r.onerror=resolve;
+  });
+  WP.log('مُسحت عينات WaPOR المحفوظة محليًا.','s');
+};
+WP.analysisKm = function(){
+  const v=WP.config.sample;
+  if(v!=='auto')return +v;
+  const km=WP.cells[0]?.km2?Math.sqrt(WP.cells[0].km2):1;
+  return Math.max(.5,Math.min(2,km));
+};
+WP.bounds = function(){
+  const src=WP.cells.length?WP.cells:WP.PATH.map((p,i)=>({la:p[0],lo:p[1],km2:1,id:'P'+i}));
+  const km=WP.cells[0]?.km2?Math.sqrt(WP.cells[0].km2):1;
+  const dLa=km/222+.004,dLo=km/(222*Math.cos(30.4*Math.PI/180))+.004;
+  return {left:Math.min(...src.map(c=>c.lo))-dLo,right:Math.max(...src.map(c=>c.lo))+dLo,
+          bottom:Math.min(...src.map(c=>c.la))-dLa,top:Math.max(...src.map(c=>c.la))+dLa};
+};
+WP.chooseOverview = function(meta){
+  const base=Math.abs(meta.affineTransform?.[1]||0.0009765625),target=WP.analysisKm()/111;
+  return Math.max(0,Math.min(10,Math.round(Math.log2(Math.max(1,target/base)))));
+};
+WP.readCogGrid = async function(meta,signal){
+  const wanted=WP.chooseOverview(meta),b=WP.bounds();
+  const bb=[b.left,b.bottom,b.right,b.top].map(x=>x.toFixed(5)).join(',');
+  const key='v9|'+meta.code+'|'+(meta.updated||meta.created||'')+'|ov'+wanted+'|'+bb;
+  const cached=await WP.cacheGet(key);
+  if(cached){
+    cached.values=cached.values instanceof Float32Array?cached.values:new Float32Array(cached.values);
+    return {...cached,cached:true};
+  }
+  await WP.ensureGeoTIFF();
+  const tiff=await GeoTIFF.fromUrl(meta.downloadUrl,{blockSize:524288,cacheSize:100});
+  let image=null,level=wanted,last;
+  for(let i=wanted;i>=0&&!image;i--){try{image=await tiff.getImage(i);level=i}catch(e){last=e}}
+  if(!image)throw last||new Error('لا يمكن قراءة مستويات الرستر');
+  if(signal?.aborted)throw new DOMException('Aborted','AbortError');
+  const ext=meta.extent?.wgs84||meta.extent?.srs||[-180,-60,180,60];
+  const width=image.getWidth(),height=image.getHeight();
+  const factorX=(meta.width||width)/width,factorY=(meta.height||height)/height;
+  const resX=Math.abs(meta.affineTransform?.[1]||0.0009765625)*factorX;
+  const resY=Math.abs(meta.affineTransform?.[5]||meta.affineTransform?.[1]||0.0009765625)*factorY;
+  const x0=Math.max(0,Math.floor((b.left-ext[0])/resX)),x1=Math.min(width,Math.ceil((b.right-ext[0])/resX));
+  const y0=Math.max(0,Math.floor((ext[3]-b.top)/resY)),y1=Math.min(height,Math.ceil((ext[3]-b.bottom)/resY));
+  if(x1<=x0||y1<=y0)throw new Error('نطاق الإسماعيلية خارج مدى الرستر');
+  const raw=await image.readRasters({window:[x0,y0,x1,y1],samples:[0],interleave:true,signal});
+  const scale=Number.isFinite(+meta.scale)?+meta.scale:1,offset=Number.isFinite(+meta.offset)?+meta.offset:0;
+  const nodata=Number.isFinite(+meta.noDataValue)?+meta.noDataValue:-9999;
+  const member=WP.memberOf(meta),days=+member.numberOfDays||1,perDay=/\/day$/i.test(meta.measureUnit||'');
+  const values=new Float32Array(raw.length);let valid=0;
+  for(let i=0;i<raw.length;i++){
+    const rv=raw[i];
+    if(!Number.isFinite(rv)||rv===nodata||rv<=-9990)values[i]=NaN;
+    else{values[i]=(rv*scale+offset)*(perDay?days:1);valid++}
+  }
+  const grid={key,code:meta.code,values,width:x1-x0,height:y1-y0,left:ext[0]+x0*resX,
+    top:ext[3]-y0*resY,resX,resY,level,spatial:raw.length?valid/raw.length*100:0,
+    cached:false,savedAt:Date.now()};
+  await WP.cachePut(grid);return grid;
+};
+WP.applyGrid = function(grid,periodIndex,field,series){
+  let valid=0;
+  WP.cells.forEach(c=>{
+    const x=Math.floor((c.lo-grid.left)/grid.resX),y=Math.floor((grid.top-c.la)/grid.resY);
+    const v=x>=0&&x<grid.width&&y>=0&&y<grid.height?grid.values[y*grid.width+x]:NaN;
+    series[c.id][periodIndex][field]=Number.isFinite(v)?+v.toFixed(3):null;
+    if(Number.isFinite(v))valid++;
+  });
+  return valid;
+};
+WP.runPool = async function(tasks,limit,handler){
+  let cursor=0;
+  await Promise.all(Array.from({length:Math.min(limit,tasks.length)},async()=>{
+    while(cursor<tasks.length){const i=cursor++,task=tasks[i];await handler(task,i)}
+  }));
+};
+WP.testConnection = async function(){
+  if(WP.running)return;
+  const b=document.getElementById('wpTest');if(b){b.disabled=true;b.innerHTML='<span class="wp-spin"></span> اختبار...'}
+  WP.setApiState('جارٍ اختبار الفهرس والقراءة الجزئية','busy');
+  try{
+    const {aeti}=WP.productCodes();
+    await WP.ensureGeoTIFF();
+    const data=await WP.fetchJSON(WP.API_BASE+'/mapsets/'+encodeURIComponent(aeti)+'/rasters?size=1');
+    const meta=data.items?.[0];if(!meta?.downloadUrl)throw new Error('لم يُرجع الفهرس رابط رستر');
+    const r=await fetch(meta.downloadUrl,{headers:{Range:'bytes=0-16383'}});
+    if(!(r.ok||r.status===206))throw new Error('تعذر اختبار COG: HTTP '+r.status);
+    await r.arrayBuffer();
+    WP.setApiState('الاتصال الرسمى يعمل','ok');
+    const u=document.getElementById('wpStUpdated');if(u)u.textContent=(meta.updated||meta.created||'—').slice(0,10);
+    WP.log('نجح الاختبار: '+aeti+' · API + COG Range.','s');
+  }catch(e){
+    WP.setApiState('فشل الاتصال','bad');WP.log('فشل اختبار WaPOR: '+e.message,'e');
+  }finally{if(b){b.disabled=false;b.textContent='اختبار الاتصال'}}
+};
+WP.tryApi = async function(){
+  if(WP.running)return;
+  if(!WP.cells.length)WP.buildGrid();
+  if(!WP.cells.length){WP.log('تعذر إنشاء شبكة التحليل.','e');return}
+  WP.syncConfigFromControls();
+  const b=document.getElementById('wpApi'),cancel=document.getElementById('wpCancel');
+  const {aeti,pcp,freq}=WP.productCodes(),years=WP.selectedYears();
+  WP.running=true;WP.abort=new AbortController();
+  if(b){b.disabled=true;b.innerHTML='<span class="wp-spin"></span> جارٍ الجلب...'}
+  if(cancel)cancel.disabled=false;
+  WP.lockDataControls(true);WP.setSourceChip('loading');WP.setApiState('قراءة فهرس WaPOR','busy');
+  WP.setLoad(true,'قراءة فهرس الرسترات...',2);
+  WP.log('بدء اتصال رسمى: '+aeti+' + '+pcp+' · '+years[0]+'–'+years[years.length-1]+'.');
+  if(freq==='D')WP.log('الدورية العشرية تتضمن رسترات أكثر وقد تستغرق عدة دقائق.','w');
+  try{
+    const results=await Promise.all([
+      WP.collectRasters(aeti,WP.abort.signal),WP.collectRasters(pcp,WP.abort.signal),WP.ensureGeoTIFF()
+    ]);
+    const aetiAll=results[0],pcpAll=results[1],ys=new Set(years);
+    const aetiList=aetiAll.filter(x=>ys.has(+WP.memberOf(x).year));
+    const pcpList=pcpAll.filter(x=>ys.has(+WP.memberOf(x).year));
+    const aetiMap=new Map(aetiList.map(x=>[WP.periodKey(x),x]));
+    const pcpMap=new Map(pcpList.map(x=>[WP.periodKey(x),x]));
+    const periods=WP.expectedPeriods(years,freq),nextSeries={};
+    WP.cells.forEach(c=>nextSeries[c.id]=periods.map(p=>({...p,aeti:null,pcp:null,miss:true})));
+    const tasks=[];
+    periods.forEach((p,i)=>{
+      const a=aetiMap.get(p.key),r=pcpMap.get(p.key);
+      if(a)tasks.push({field:'aeti',meta:a,pi:i});
+      if(r)tasks.push({field:'pcp',meta:r,pi:i});
+    });
+    if(!tasks.some(x=>x.field==='aeti'))throw new Error('لا توجد رسترات '+aeti+' للسنوات المختارة');
+    WP.log('الفهرس: '+aetiList.length+' AETI · '+pcpList.length+' PCP · '+tasks.length+' مهمة.','s');
+    WP.setApiState('قراءة COG لنطاق الإسماعيلية','busy');
+    let done=0,failed=0,cacheHits=0;const spatial=[],gridKm=[],errors=[];
+    await WP.runPool(tasks,3,async task=>{
+      if(WP.abort.signal.aborted)throw new DOMException('Aborted','AbortError');
+      try{
+        const grid=await WP.readCogGrid(task.meta,WP.abort.signal);
+        WP.applyGrid(grid,task.pi,task.field,nextSeries);
+        spatial.push(grid.spatial);gridKm.push({field:task.field,km:Math.max(grid.resX,grid.resY)*111});
+        if(grid.cached)cacheHits++;
+      }catch(e){
+        if(e.name==='AbortError')throw e;
+        failed++;errors.push(task.meta.code+': '+e.message);
+      }finally{
+        done++;WP.setLoad(true,'قراءة '+task.meta.code+' · '+done+'/'+tasks.length,8+done/Math.max(1,tasks.length)*86);
+      }
+    });
+    const expectedPairs=WP.cells.length*periods.length;
+    let validPairs=0,validAeti=0,periodsComplete=0;
+    periods.forEach((p,pi)=>{
+      let periodOk=0;
+      WP.cells.forEach(c=>{
+        const x=nextSeries[c.id][pi];
+        if(Number.isFinite(x.aeti)){validAeti++;if(Number.isFinite(x.pcp)){validPairs++;periodOk++}}
+        x.miss=!Number.isFinite(x.aeti)||!Number.isFinite(x.pcp);
+      });
+      if(periodOk>=WP.cells.length*.8)periodsComplete++;
+    });
+    if(!validAeti)throw new Error('لم تُقرأ أى قيمة مكانية من رسترات AETI');
+    const aetiCoverage=expectedPairs?validAeti/expectedPairs*100:0;
+    if(aetiCoverage<20)throw new Error('تغطية AETI المقروءة منخفضة جدًا ('+aetiCoverage.toFixed(1)+'٪)؛ تم الاحتفاظ بالبيانات السابقة');
+    const coverage=expectedPairs?validPairs/expectedPairs*100:0;
+    if(coverage<20)throw new Error('التغطية المشتركة بين AETI وPCP منخفضة جدًا ('+coverage.toFixed(1)+'٪)؛ تم الاحتفاظ بالبيانات السابقة');
+    const spatialAvg=spatial.length?spatial.reduce((a,v)=>a+v,0)/spatial.length:0;
+    const gridOf=field=>{
+      const a=gridKm.filter(x=>x.field===field).map(x=>x.km);
+      return a.length?a.reduce((s,v)=>s+v,0)/a.length:WP.analysisKm();
+    };
+    const fmtGrid=v=>v.toFixed(v<1?2:1);
+    const gridLabel='AETI '+fmtGrid(gridOf('aeti'))+' كم · PCP '+fmtGrid(gridOf('pcp'))+' كم';
+    const updated=[...aetiList,...pcpList].map(x=>x.updated||x.created).filter(Boolean).sort().pop()||null;
+    WP.years=years;WP.periods=periods;WP.periodsPerYear=freq==='D'?36:12;
+    WP.series=nextSeries;WP.source='wapor';
+    WP.quality={coverage,spatial:spatialAvg,available:periodsComplete,expected:periods.length,grid:gridLabel,updated};
+    const qp=document.getElementById('wpQPeriods'),qs=document.getElementById('wpQSpatial'),qg=document.getElementById('wpQGrid');
+    if(qp)qp.textContent=periodsComplete+'/'+periods.length;if(qs)qs.textContent=spatialAvg.toFixed(0)+'٪';if(qg)qg.textContent=gridLabel;
+    const up=document.getElementById('wpStUpdated');if(up)up.textContent=updated?updated.slice(0,10):'—';
+    WP.setLoad(true,'اكتملت القراءة والمعالجة',100);
+    WP.setApiState(coverage>=80?'الاتصال والبيانات جاهزان':'الاتصال يعمل مع فجوات',coverage>=80?'ok':'busy');
+    WP.setSourceChip('wapor');WP.compute();
+    WP.log('اكتمل WaPOR: '+coverage.toFixed(1)+'٪ · ذاكرة '+cacheHits+' · أخطاء '+failed+'.',coverage>=80?'s':'w');
+    if(errors.length)WP.log('أول خطأ: '+errors[0],'e');
+  }catch(e){
+    if(e.name==='AbortError'){
+      WP.log('أُلغي جلب WaPOR بواسطة المستخدم.','w');WP.setApiState('تم إلغاء العملية','');
+    }else{
+      WP.log('تعذّر جلب WaPOR: '+e.message,'e');WP.setApiState('فشل الجلب','bad');
+    }
+    WP.setSourceChip(WP.source||'none');
+  }finally{
+    WP.running=false;WP.abort=null;
+    if(b){b.disabled=false;b.textContent='جلب AETI وPCP الفعليين'}
+    if(cancel)cancel.disabled=true;
+    WP.lockDataControls(false);
+  }
+};
+
+/* ───────── التصدير ───────── */
+WP.parseCsvLine = function(line){
+  const out=[];let cur='',quote=false;
+  for(let i=0;i<line.length;i++){
+    const ch=line[i];
+    if(ch==='"'&&line[i+1]==='"'&&quote){cur+='"';i++}
+    else if(ch==='"')quote=!quote;
+    else if(ch===','&&!quote){out.push(cur.trim());cur=''}
+    else cur+=ch;
+  }
+  out.push(cur.trim());return out;
+};
+WP.importCsvText = function(text){
+  const ls=text.trim().split(/\r?\n/);
+  if(ls.length<2)throw new Error('ملف CSV لا يحتوى بيانات');
+  const hd=WP.parseCsvLine(ls[0]).map(s=>s.trim().toLowerCase());
+  const iC=hd.indexOf('cell_id'),iA=hd.indexOf('aeti_mm'),iP=hd.indexOf('pcp_mm');
+  if(iC<0||iA<0)throw new Error('الأعمدة cell_id و aeti_mm مطلوبة');
+  const m={};let records=0;
+  ls.slice(1).forEach(line=>{
+    if(!line.trim())return;
+    const p=WP.parseCsvLine(line),id=(p[iC]||'').trim();if(!id)return;
+    const av=Number(p[iA]),pv=iP>=0?Number(p[iP]):0;
+    (m[id]=m[id]||[]).push({aeti:Number.isFinite(av)?av:null,pcp:Number.isFinite(pv)?pv:null});records++;
+  });
+  const maxP=Math.max(1,...Object.values(m).map(a=>a.length));
+  WP.syncConfigFromControls();
+  const yr=WP.config.year;
+  WP.periods=Array.from({length:maxP},(_,i)=>({key:'csv-'+(i+1),yr,slot:i,startDate:'CSV-'+(i+1),
+    endDate:'CSV-'+(i+1),days:0,label:'CSV '+(i+1)}));
+  WP.years=[yr];WP.periodsPerYear=maxP;WP.series={};
+  let validPairs=0,matched=0;
+  WP.cells.forEach(c=>{
+    const arr=m[c.id]||[];if(arr.length)matched++;
+    WP.series[c.id]=WP.periods.map((p,i)=>{
+      const a=arr[i]?.aeti??null,r=arr[i]?.pcp??null;
+      if(Number.isFinite(a)&&Number.isFinite(r))validPairs++;
+      return {...p,aeti:a,pcp:r,miss:!Number.isFinite(a)||!Number.isFinite(r)};
+    });
+  });
+  const expected=WP.cells.length*maxP,coverage=expected?validPairs/expected*100:0;
+  WP.source='csv';WP.quality={coverage,spatial:WP.cells.length?matched/WP.cells.length*100:0,
+    available:maxP,expected:maxP,grid:'CSV',updated:null};
+  WP.setSourceChip('csv');WP.setApiState('مصدر بديل: CSV','');
+  WP.log('استُورد '+records+' سجلًا لـ '+Object.keys(m).length+' خلية.','s');WP.compute();
+};
+WP.exportCsv = function(){
+  const rows=WP.cells.filter(c=>c.cal!=null);
+  if(!rows.length){ alert('لا توجد نتائج للتصدير.'); return }
+  const from=WP.periods[0]?.startDate||'',to=WP.periods[WP.periods.length-1]?.endDate||'';
+  const csv='cell_id,lat,lon,branch_id,branch_name,branch_km,bank,zone,cover,km2,km2_effective,aeti_mm,pcp_mm,raw_mcm,calibrated_mcm,data_coverage_pct,unc_pct,source,period_from,period_to\n'+
+    rows.map(c=>[c.id,c.la.toFixed(5),c.lo.toFixed(5),c.b,c.bn,c.bkm,c.side,c.z,c.cov,c.km2,(c.km2e||c.km2).toFixed(3),
+      c.aeti.toFixed(1),c.pcp.toFixed(1),c.raw.toFixed(4),c.cal.toFixed(4),c.coverage.toFixed(1),WP.unc,WP.source,from,to].join(',')).join('\n');
+  const a=document.createElement('a');
+  const url=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}));
+  a.href=url;a.download='ismailia_wapor_direct_v9_'+Date.now()+'.csv';a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),1500);
+};
+
+/* ───────── handler التبويب ───────── */
+AFTER.wapor = function(){
+  WP.syncBranchesFromApp();
+  const $=i=>document.getElementById(i);
+  WP.initDataControls();
+  [1,2,3].forEach(i=>{
+    $('wpE'+i).value=WP.eff['e'+i];$('wpC'+i).value=WP.eff['c'+i];
+  });
+  $('wpPE').value=WP.eff.pe;
+  WP.renderLog();
+  WP.mapInit();
+  WP.refreshEff();
+  if(!document.querySelectorAll('#wpCalB tr').length){ WP.addCalRow(); WP.addCalRow(); }
+
+  $('wpGrid').onclick = ()=>WP.buildGrid();
+  $('wpFit').onclick  = ()=>WP.mapFit();
+  $('wpApi').onclick  = ()=>WP.tryApi();
+  $('wpTest').onclick = ()=>WP.testConnection();
+  $('wpCancel').onclick = ()=>WP.abort?.abort();
+  $('wpCacheClr').onclick = ()=>WP.clearCache();
+  ['wpYr','wpNY','wpLvl','wpFreq','wpSample'].forEach(i=>{
+    $(i).onchange=()=>{WP.syncConfigFromControls();WP.updateProductLabels()};
+  });
+  $('wpCache').onchange=()=>WP.syncConfigFromControls();
+  $('wpManBtn').onclick = ()=>{
+    const v=$('wpMan').value.split(/[,\s\n]+/).map(parseFloat).filter(x=>!isNaN(x));
+    if(v.length<3){ alert('أدخل ٣ قيم على الأقل.'); return }
+    if(!WP.cells.length) WP.buildGrid();
+    WP.genSeries(v); WP.log('طُبّقت '+v.length+' قيمة يدوية كما هى على '+WP.cells.length+' خلية.','s');
+  };
+  $('wpCsvBtn').onclick = ()=>$('wpCsv').click();
+  $('wpCsv').onchange = e=>{
+    const f=e.target.files[0]; if(!f)return;
+    if(!WP.cells.length)WP.buildGrid();
+    const rd=new FileReader();
+    rd.onload=ev=>{
+      try{WP.importCsvText(ev.target.result)}
+      catch(err){WP.log('خطأ فى CSV: '+err.message,'e')}
+    };
+    rd.readAsText(f);
+  };
+  $('wpAddRow').onclick = ()=>WP.addCalRow();
+  $('wpCalRun').onclick = ()=>WP.runCal();
+  $('wpCalClr').onclick = ()=>{
+    $('wpCalB').innerHTML=''; WP.k={z1:null,z2:null,z3:null};
+    [1,2,3].forEach(i=>{ $('wpK'+i).textContent='—'; $('wpK'+i+'n').textContent='لا قياسات' });
+    $('wpRMSE').textContent='—';$('wpUV').textContent='±—'; WP.addCalRow(); WP.compute();
+  };
+  $('wpFB').onchange = ()=>{ WP.shown=200; WP.renderRes() };
+  $('wpChB').onchange = ()=>WP.drawSeries();
+  $('wpMore').onclick = ()=>{ WP.shown+=300; WP.renderRes() };
+  $('wpExp').onclick  = ()=>WP.exportCsv();
+  ['wpE1','wpC1','wpE2','wpC2','wpE3','wpC3','wpPE'].forEach(i=>{
+    const e=$(i); if(e) e.onchange=()=>{
+      [1,2,3].forEach(n=>{WP.eff['e'+n]=+$('wpE'+n).value;WP.eff['c'+n]=+$('wpC'+n).value});
+      WP.eff.pe=+$('wpPE').value;WP.compute();
+    };
+  });
+  document.querySelectorAll('.wp-seg button').forEach(b=>{
+    b.onclick=()=>{
+      document.querySelectorAll('.wp-seg button').forEach(x=>x.classList.remove('on'));
+      b.classList.add('on'); WP.sortBy=b.dataset.ws; WP.renderAg();
+    };
+  });
+  WP.updateProductLabels();
+  WP.setApiState(WP.apiStatus.text,WP.apiStatus.state);
+  WP.setSourceChip(WP.running?'loading':WP.source);
+  const up=$('wpStUpdated');if(up)up.textContent=WP.quality.updated?String(WP.quality.updated).slice(0,10):'—';
+  if(WP.quality.expected){
+    WP.setLoad(true,WP.source==='wapor'?'آخر تحميل مكتمل':'جودة المصدر البديل',100);
+    $('wpQPeriods').textContent=WP.quality.available+'/'+WP.quality.expected;
+    $('wpQSpatial').textContent=WP.quality.spatial.toFixed(0)+'٪';
+    $('wpQGrid').textContent=WP.quality.grid;
+  }
+  if(WP.running){
+    WP.lockDataControls(true);$('wpApi').disabled=true;$('wpApi').innerHTML='<span class="wp-spin"></span> جارٍ الجلب...';
+    $('wpCancel').disabled=false;WP.setLoad(true,'عملية WaPOR مستمرة...',5);
+  }
+  /* استعادة الحالة عند العودة للتبويب */
+  if(WP.cells.length){
+    WP.fillSelects(); WP.renderRes(); WP.renderAg(); WP.updKPI();
+    const bs=new Set(WP.cells.map(c=>c.b));
+    const fd=WP.BR.filter(b=>bs.has(b.id)).reduce((a,b)=>a+b.fd,0);
+    $('wpNC').textContent=WP.fmt(WP.cells.length);
+    $('wpNB').textContent=bs.size;
+    $('wpAF').textContent=(fd/1000).toFixed(0);
+    WP.mapFit(); WP.drawSeries();
+    if(WP.k.z1||WP.k.z2||WP.k.z3){
+      [1,2,3].forEach(i=>{ const z='z'+i;
+        if(WP.k[z]){ $('wpK'+i).textContent=WP.k[z].toFixed(3); $('wpK'+i+'n').textContent='محفوظ' } });
+      $('wpUV').textContent='±'+WP.unc;
+    }
+  } else {
+    setTimeout(()=>{ WP.buildGrid(); WP.log('اختر مصدر البيانات لبدء الحساب.') },120);
+  }
+  if(!WP._resizeBound){
+    WP._resizeBound=true;
+    window.addEventListener('resize',()=>{ if(State.tab==='wapor') WP.mapDraw() });
+  }
+};
 </script>
 </body>
 </html>
