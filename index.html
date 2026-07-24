@@ -5401,5 +5401,441 @@ AFTER.weeds = function(){
   }
 };
 </script>
+
+<style>
+.mn-tools{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
+.mn-f{display:flex;flex-direction:column;gap:4px;min-width:110px}
+.mn-f label{font-size:.72rem;color:var(--ink-2,#6b5a45);font-weight:700}
+.mn-f input,.mn-f select{padding:7px 9px;border:1px solid var(--line,#d9cbb2);border-radius:9px;background:var(--paper-1,#fdf8ee);font:inherit;font-size:.82rem}
+.mn-tbl{width:100%;border-collapse:collapse;font-size:.78rem;min-width:820px}
+.mn-tbl th,.mn-tbl td{padding:7px 8px;border-bottom:1px solid var(--line,#e4d8c2);text-align:center;white-space:nowrap}
+.mn-tbl th{background:var(--paper-2,#f2e8d5);font-weight:800;font-size:.74rem}
+.mn-tbl td.nm{text-align:right;white-space:normal;min-width:150px;font-weight:700}
+.mn-pill{display:inline-block;padding:2px 9px;border-radius:999px;font-size:.7rem;font-weight:800}
+.mn-ok{background:#e7f6ec;color:#1d7a44}
+.mn-note{background:#eef2fb;color:#33518f}
+.mn-warn{background:#fdf1dc;color:#9a6712}
+.mn-bad{background:#fbe7e7;color:#a32626}
+.mn-na{background:#eeeae2;color:#7a6c58}
+.mn-why{font-size:.72rem;color:#8a7a63}
+.mn-pick{margin-top:12px;border-top:1px dashed var(--line,#d9cbb2);padding-top:10px;font-size:.8rem}
+.mn-pick summary{cursor:pointer;font-weight:800}
+.mn-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:6px;margin:8px 0}
+.mn-grid label{display:flex;align-items:center;gap:6px;font-size:.78rem}
+.mn-meth{font-size:.8rem;line-height:1.85}
+.mn-meth code{background:var(--paper-2,#f2e8d5);padding:1px 6px;border-radius:6px;font-family:ui-monospace,monospace;direction:ltr;display:inline-block}
+</style>
+<script>
+"use strict";
+/* ================================================================
+   وحدة تتبّع المقاومة الهيدروليكية  ·  MN-V1
+   ----------------------------------------------------------------
+   تحسب معامل مانينج المكافئ (n) عكسياً لكل مسافة بين حجزين على
+   المجرى الرئيسى من القراءات اليومية، وتتابع انحرافه عبر الزمن
+   كمؤشر فيزيائى لنمو الحشائش أو الإطماء.
+   وحدة مستقلة تماماً: تسجل نفسها فى TABS / VIEWS / AFTER فقط.
+   ================================================================ */
+(function(){
+  if(typeof TABS==="undefined"||typeof VIEWS==="undefined"||typeof AFTER==="undefined") return;
+
+  var G = 9.81;
+  var MN = {
+    cfg:{ days:90, dh:0.01, qerr:5, win:5, base:"auto" },
+    series:{}, rows:[], chart:null, ready:false, sel:null, showBad:false
+  };
+  window.MN = MN;
+  MN._reachAt = function(rc,day){ return reachAt(rc,day); };
+
+  /* ---------- أدوات ---------- */
+  function num(v){ var x = (v===""||v==null)? null : +v; return (x==null||isNaN(x))? null : x; }
+  function f(v,d){ return (v==null||isNaN(v))? "—" : (+v).toFixed(d==null?3:d); }
+  function median(a){
+    var s = a.slice().sort(function(x,y){return x-y;});
+    if(!s.length) return null;
+    var m = Math.floor(s.length/2);
+    return s.length%2 ? s[m] : (s[m-1]+s[m])/2;
+  }
+  function movMedian(arr,w){
+    var out=[], h=Math.floor(w/2), i, a, b;
+    for(i=0;i<arr.length;i++){
+      a=Math.max(0,i-h); b=Math.min(arr.length,i+h+1);
+      out.push(median(arr.slice(a,b).filter(function(v){return v!=null;})));
+    }
+    return out;
+  }
+  function dkey(d){
+    var p=new Date(d.getTime()-d.getTimezoneOffset()*60000);
+    return p.toISOString().slice(0,10);
+  }
+  function q2cms(mcmd){ return (+mcmd)*1e6/86400; }
+
+  /* ---------- محطات المجرى الرئيسى ---------- */
+  var SEL_KEY = "irrdt.mn.stations.v1";
+  var OTHER_CANAL = /على\s*(ترعة|ترعه|مسقى|مصرف|فرع)/;
+
+  function candidates(){
+    var all = (State.branches||[]).filter(function(b){ return !b.isDalil && num(b.km)!=null; });
+    var st = all.filter(function(b){ return b.admin==="hajz" || b.admin==="fom"; });
+    if(st.length<2){
+      st = all.filter(function(b){
+        var nm=(b.name||"");
+        return nm.indexOf("حجز")>=0 || nm.indexOf("فم")>=0 || nm.indexOf("قنطرة")>=0;
+      });
+    }
+    st.sort(function(a,b){ return num(a.km)-num(b.km); });
+    return st;
+  }
+  /* الاستبعاد الافتراضى: المنشآت الواقعة على ترعة أخرى، وأى نقطة بكيلو صفر */
+  function autoIds(){
+    return candidates().filter(function(b){
+      return num(b.km)>0 && !OTHER_CANAL.test(b.name||"");
+    }).map(function(b){ return b.id; });
+  }
+  function loadSel(){
+    if(MN.sel!=null) return MN.sel;
+    try{
+      var raw=localStorage.getItem(SEL_KEY);
+      MN.sel = raw? JSON.parse(raw) : null;
+    }catch(e){ MN.sel=null; }
+    return MN.sel;
+  }
+  function stations(){
+    var ids = loadSel();
+    if(!ids || !ids.length) ids = autoIds();
+    var byId={};
+    (State.branches||[]).forEach(function(b){ byId[b.id]=b; });
+    var st = ids.map(function(i){ return byId[i]; })
+                .filter(function(b){ return b && num(b.km)!=null; });
+    st.sort(function(a,b){ return num(a.km)-num(b.km); });
+    return st;
+  }
+  function reaches(){
+    var st = stations(), out=[], i;
+    for(i=0;i<st.length-1;i++){
+      if(num(st[i+1].km)-num(st[i].km) <= 0) continue;
+      out.push({ key:st[i].id+"__"+st[i+1].id, up:st[i], dn:st[i+1],
+                 name:(st[i].name||st[i].id)+" ← "+(st[i+1].name||st[i+1].id) });
+    }
+    return out;
+  }
+
+  /* ---------- هندسة القطاع عند محطة ---------- */
+  function geomAt(st, wl){
+    var bl=num(st.bedLevel), b=num(st.bedWidth), z=num(st.sideSlope);
+    if(bl==null||b==null||!(b>0)) return null;
+    if(z==null||z<0) z=0;
+    var y = wl - bl;
+    if(!(y>0.2)) return null;
+    var a=(b+z*y)*y, p=b+2*y*Math.sqrt(1+z*z);
+    return { y:y, a:a, p:p, r:a/p };
+  }
+
+  /* ---------- حساب n لمسافة فى يوم ---------- */
+  function reachAt(rc, day){
+    var A=rc.up, B=rc.dn;
+    var rA=day[A.id], rB=day[B.id];
+    if(!rA||!rB) return { ok:false, why:"قراءة ناقصة" };
+    var wlU=num(rA.back), wlD=num(rB.front);
+    if(wlU==null||wlD==null) return { ok:false, why:"منسوب ناقص" };
+    var L=(num(B.km)-num(A.km))*1000;
+    if(!(L>0)) return { ok:false, why:"مسافة غير صالحة" };
+    var gU=geomAt(A,wlU), gD=geomAt(B,wlD);
+    if(!gU||!gD) return { ok:false, why:"بيانات قطاع ناقصة" };
+
+    var qU = (rA.flow!=null && !isNaN(rA.flow)) ? q2cms(rA.flow) : null;
+    var qD = (rB.flow!=null && !isNaN(rB.flow)) ? q2cms(rB.flow) : null;
+
+    /* مأخوذات الترع الواقعة داخل المسافة */
+    var off=0, kA=num(A.km), kB=num(B.km);
+    (State.branches||[]).forEach(function(x){
+      if(x.isDalil||x.id===A.id||x.id===B.id) return;
+      var k=num(x.km);
+      if(k==null||!(k>kA)||!(k<=kB)) return;
+      var rr=day[x.id];
+      if(rr && rr.flow!=null && !isNaN(rr.flow)) off += q2cms(rr.flow);
+    });
+
+    var q;
+    if(qU!=null && qD!=null) q=(qU+qD)/2;
+    else if(qU!=null) q=qU-off/2;
+    else if(qD!=null) q=qD+off/2;
+    else return { ok:false, why:"تصرف غير متاح" };
+    if(!(q>0.05)) return { ok:false, why:"تصرف صغير جداً" };
+
+    var dh = wlU-wlD;
+    if(Math.abs(dh) < 2*MN.cfg.dh) return { ok:false, why:"فرق المناسيب داخل حدود دقة القياس" };
+    var vU=q/gU.a, vD=q/gD.a;
+    var sf = (dh + (vU*vU-vD*vD)/(2*G))/L;
+    if(!(sf>0)) return { ok:false, why:"انحدار طاقة سالب (ارتداد)" };
+
+    var aM=(gU.a+gD.a)/2, rM=(gU.r+gD.r)/2, yM=(gU.y+gD.y)/2;
+    var n = aM*Math.pow(rM,2/3)*Math.sqrt(sf)/q;
+    if(!(n>0.005) || n>0.30) return { ok:false, why:"ناتج خارج المدى المعقول" };
+    var unc = 0.5*(Math.SQRT2*MN.cfg.dh/Math.abs(dh)) + (MN.cfg.qerr/100);
+    return { ok:true, n:n, sf:sf, q:q, dh:dh, y:yM, a:aM, r:rM, L:L, unc:unc, v:q/aM };
+  }
+
+  /* ---------- المحرك ---------- */
+  function compute(){
+    var rcs=reaches(), all=Object.keys(State.readings||{}).sort();
+    var from=dkey(new Date(Date.now()-MN.cfg.days*864e5));
+    var dates=all.filter(function(d){ return d>=from; });
+    MN.series={}; MN.rows=[]; MN.dates=dates;
+
+    rcs.forEach(function(rc){
+      var vals=[], whys={}, i, day, res;
+      for(i=0;i<dates.length;i++){
+        day=State.readings[dates[i]]||{};
+        res=reachAt(rc,day);
+        vals.push(res.ok? res : null);
+        if(!res.ok) whys[res.why]=(whys[res.why]||0)+1;
+      }
+      var ns=vals.map(function(v){ return v? v.n : null; });
+      var sm=movMedian(ns,MN.cfg.win);
+      var valid=ns.filter(function(v){ return v!=null; });
+      var base=null;
+      if(MN.cfg.base==="design"){
+        var d1=num(rc.up.manningN), d2=num(rc.dn.manningN);
+        var ds=[d1,d2].filter(function(v){ return v!=null && v>0; });
+        base = ds.length? ds.reduce(function(a,b){return a+b;},0)/ds.length : null;
+      }
+      if(base==null){
+        var first=valid.slice(0,Math.min(10,valid.length));
+        base = first.length? median(first) : null;
+      }
+      var lastI=-1, k;
+      for(k=sm.length-1;k>=0;k--){ if(sm[k]!=null){ lastI=k; break; } }
+      var cur = lastI>=0? sm[lastI] : null;
+      var ratio = (base&&cur)? cur/base : null;
+      var uncs = vals.filter(function(v){return v;}).map(function(v){return v.unc;});
+      MN.series[rc.key]={ rc:rc, ns:ns, sm:sm, base:base };
+      MN.rows.push({
+        rc:rc, base:base, cur:cur, ratio:ratio,
+        lastDate: lastI>=0? dates[lastI] : null,
+        validN: valid.length, total: dates.length,
+        unc: uncs.length? median(uncs) : null,
+        last: lastI>=0? vals[lastI] : null,
+        whys: whys
+      });
+    });
+    MN.rows.sort(function(a,b){ return (b.ratio||0)-(a.ratio||0); });
+    MN.ready=true;
+  }
+
+  function statusOf(r){
+    if(r.ratio==null) return { c:"mn-na", t:"لا يوجد" };
+    if(r.ratio<1.05) return { c:"mn-ok",   t:"سليم" };
+    if(r.ratio<1.15) return { c:"mn-note", t:"ملاحظة" };
+    if(r.ratio<1.30) return { c:"mn-warn", t:"تحذير" };
+    return { c:"mn-bad", t:"حرج" };
+  }
+
+  /* ---------- الواجهة ---------- */
+  function stationPicker(){
+    var cand=candidates(), sel=stations().map(function(b){ return b.id; });
+    var h='<details class="mn-pick"><summary>محطات المجرى الرئيسى ('+sel.length+' مختارة من '+cand.length+')</summary>'+
+          '<div class="mn-why" style="margin:6px 0">استُبعدت تلقائياً المنشآت الواقعة على ترع أخرى وأى نقطة بكيلو صفر. عدّل الاختيار لو لزم.</div><div class="mn-grid">';
+    cand.forEach(function(b){
+      var on = sel.indexOf(b.id)>=0;
+      h+='<label><input type="checkbox" class="mnSt" value="'+esc(b.id)+'"'+(on?" checked":"")+'> '+
+         esc(b.name||b.id)+' <span class="mn-why">ك '+f(num(b.km),2)+'</span></label>';
+    });
+    h+='</div><button class="btn btn-ghost btn-sm" id="mnSave">حفظ الاختيار وإعادة الحساب</button></details>';
+    return h;
+  }
+  VIEWS.manning = function(){
+    var c=MN.cfg;
+    var h='<div class="card"><div class="card-head"><div>'+
+      '<div class="card-title">تتبّع المقاومة الهيدروليكية</div>'+
+      '<div class="card-sub">معامل مانينج المكافئ لكل مسافة بين الحجوز · مؤشر فيزيائى لصحة المجرى</div>'+
+      '</div></div><div class="card-body"><div class="mn-tools">'+
+      '<div class="mn-f"><label>المدة (يوم)</label><input type="number" id="mnDays" min="14" max="1460" value="'+c.days+'"></div>'+
+      '<div class="mn-f"><label>دقة قراءة المنسوب (م)</label><input type="number" id="mnDh" step="0.005" min="0.001" value="'+c.dh+'"></div>'+
+      '<div class="mn-f"><label>خطأ التصرف (%)</label><input type="number" id="mnQe" step="1" min="0" max="30" value="'+c.qerr+'"></div>'+
+      '<div class="mn-f"><label>نافذة التنعيم</label><input type="number" id="mnWin" step="2" min="1" max="15" value="'+c.win+'"></div>'+
+      '<div class="mn-f"><label>المرجع</label><select id="mnBase">'+
+        '<option value="auto"'+(c.base==="auto"?" selected":"")+'>أول قراءات صالحة</option>'+
+        '<option value="design"'+(c.base==="design"?" selected":"")+'>n التصميمى</option>'+
+      '</select></div>'+
+      '<button class="btn btn-primary btn-sm" id="mnRun">احسب</button>'+
+      '<button class="btn btn-ghost btn-sm" id="mnCsv">تصدير CSV</button>'+
+      '</div>'+ stationPicker() +'</div></div>'+
+      '<div class="kpi-strip" id="mnKpi"></div>'+
+      '<div class="card"><div class="card-head"><div class="card-title">انحراف n عن المرجع (%)</div></div>'+
+      '<div class="card-body"><canvas id="mnChart" height="230"></canvas></div></div>'+
+      '<div class="card"><div class="card-head"><div class="card-title">تفاصيل المسافات</div>'+
+      '<label class="mn-why" style="cursor:pointer"><input type="checkbox" id="mnBad"'+(MN.showBad?" checked":"")+'> إظهار المسافات غير القابلة للحساب</label></div>'+
+      '<div class="card-body tbl-wrap"><table class="mn-tbl" id="mnTbl"></table></div></div>'+
+      '<div class="card"><div class="card-body mn-meth"><b>طريقة الحساب</b><br>'+
+      'لكل مسافة بين حجزين: المنسوب الخلفى للحجز الأعلى والمنسوب الأمامى للحجز الأدنى يعطيان فرق المنسوب، '+
+      'ويُضاف فرق طاقة السرعة لاستخراج انحدار خط الطاقة <code>Sf = (Δh + (Vu²−Vd²)/2g) / L</code>. '+
+      'القطاع شبه منحرف من عرض القاع وميل الجوانب ومنسوب القاع عند الطرفين، والتصرف من قراءة الحجز '+
+      'مطروحاً منه نصف مأخوذات الترع داخل المسافة. ثم يُحل مانينج عكسياً: '+
+      '<code>n = A·R^(2/3)·√Sf / Q</code>.<br>'+
+      'يُستبعد أى يوم يكون فيه فرق المناسيب أقل من ضعف دقة القياس أو الانحدار سالباً أو العمق أقل من 20 سم. '+
+      'شريط عدم اليقين يُحسب من <code>δn/n ≈ 0.5·(√2·δh/Δh) + δQ/Q</code> — كلما صغر فرق المناسيب زاد عدم اليقين. '+
+      'ارتفاع n عن مرجعه يعنى فقداً فى السعة الاستيعابية مقداره <code>1 − n₀/n</code> عند نفس القطاع والانحدار.'+
+      '</div></div>';
+    return h;
+  };
+
+  function drawKpi(){
+    var host=document.getElementById("mnKpi");
+    if(!host) return;
+    var flagged=MN.rows.filter(function(r){ return r.ratio!=null && r.ratio>=1.15; }).length;
+    var worst=MN.rows.filter(function(r){ return r.ratio!=null; })[0];
+    var tot=0, val=0;
+    MN.rows.forEach(function(r){ tot+=r.total; val+=r.validN; });
+    var pct = tot? Math.round(val/tot*100) : 0;
+    host.innerHTML =
+      '<div class="kpi"><div class="kpi-her-label">مسافات محسوبة</div><div class="kpi-her-value">'+MN.rows.length+'</div></div>'+
+      '<div class="kpi"><div class="kpi-her-label">قراءات صالحة</div><div class="kpi-her-value">'+pct+'<span class="kpi-her-unit">%</span></div></div>'+
+      '<div class="kpi"><div class="kpi-her-label">مسافات تحتاج تدخل</div><div class="kpi-her-value">'+flagged+'</div></div>'+
+      '<div class="kpi"><div class="kpi-her-label">أعلى ارتفاع</div><div class="kpi-her-value">'+
+        (worst&&worst.ratio? Math.round((worst.ratio-1)*100) : 0)+'<span class="kpi-her-unit">%</span></div></div>';
+  }
+
+  function drawTable(){
+    var t=document.getElementById("mnTbl");
+    if(!t) return;
+    var h='<thead><tr><th>المسافة</th><th>من ك</th><th>إلى ك</th><th>الطول (م)</th>'+
+          '<th>n المرجعى</th><th>n الحالى</th><th>التغير %</th><th>فقد السعة %</th>'+
+          '<th>± عدم اليقين</th><th>Sf</th><th>Q م³/ث</th><th>أيام صالحة</th><th>الحالة</th></tr></thead><tbody>';
+    var rows = MN.showBad? MN.rows : MN.rows.filter(function(r){ return r.ratio!=null; });
+    var hidden = MN.rows.length - rows.length;
+    if(!rows.length) h+='<tr><td colspan="13">لا توجد مسافات قابلة للحساب — راجع مناسيب القاع وعرض القاع للحجوز، أو فعّل الخيار أعلاه لعرض الأسباب.</td></tr>';
+    rows.forEach(function(r){
+      var s=statusOf(r);
+      var loss=(r.ratio&&r.ratio>1)? (1-1/r.ratio)*100 : 0;
+      var whyTxt="";
+      if(r.ratio==null){
+        var ks=Object.keys(r.whys).sort(function(a,b){return r.whys[b]-r.whys[a];});
+        if(ks.length) whyTxt='<div class="mn-why">'+ks[0]+'</div>';
+      }
+      h+='<tr><td class="nm">'+r.rc.name+whyTxt+'</td>'+
+         '<td>'+f(num(r.rc.up.km),2)+'</td><td>'+f(num(r.rc.dn.km),2)+'</td>'+
+         '<td>'+(r.last? Math.round(r.last.L) : "—")+'</td>'+
+         '<td>'+f(r.base,4)+'</td><td>'+f(r.cur,4)+'</td>'+
+         '<td><b>'+(r.ratio!=null? ((r.ratio-1)*100).toFixed(1) : "—")+'</b></td>'+
+         '<td>'+(r.ratio!=null? loss.toFixed(1) : "—")+'</td>'+
+         '<td>'+(r.unc!=null? "±"+Math.round(r.unc*100)+"%" : "—")+'</td>'+
+         '<td>'+(r.last? r.last.sf.toExponential(2) : "—")+'</td>'+
+         '<td>'+(r.last? f(r.last.q,2) : "—")+'</td>'+
+         '<td>'+r.validN+" / "+r.total+'</td>'+
+         '<td><span class="mn-pill '+s.c+'">'+s.t+'</span></td></tr>';
+    });
+    if(hidden>0 && !MN.showBad) h+='<tr><td colspan="13" class="mn-why">'+hidden+' مسافة غير قابلة للحساب مخفية</td></tr>';
+    t.innerHTML=h+'</tbody>';
+  }
+
+  function drawChart(){
+    var cv=document.getElementById("mnChart");
+    if(!cv||typeof Chart==="undefined") return;
+    if(MN.chart){ MN.chart.destroy(); MN.chart=null; }
+    var cols=["#0b7285","#b45309","#2f6f3e","#7c3aed","#a32626","#1d4ed8","#8a6d1f","#0f766e","#9d174d","#374151"];
+    var ds=[], i=0;
+    MN.rows.forEach(function(r){
+      var s=MN.series[r.rc.key];
+      if(!s||!s.base) return;
+      ds.push({
+        label:r.rc.name,
+        data:s.sm.map(function(v){ return v==null? null : +(((v/s.base)-1)*100).toFixed(2); }),
+        borderColor:cols[i%cols.length], backgroundColor:"transparent",
+        borderWidth:2, pointRadius:0, tension:.25, spanGaps:true
+      });
+      i++;
+    });
+    MN.chart=new Chart(cv.getContext("2d"),{
+      type:"line",
+      data:{ labels:MN.dates, datasets:ds },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        interaction:{ mode:"index", intersect:false },
+        plugins:{ legend:{ labels:{ boxWidth:12, font:{ size:10 } } } },
+        scales:{
+          y:{ title:{ display:true, text:"انحراف n عن المرجع %" }, ticks:{ font:{ size:10 } } },
+          x:{ ticks:{ font:{ size:9 }, maxTicksLimit:10 } }
+        }
+      }
+    });
+  }
+
+  function exportCsv(){
+    var lines=["reach,date,n,n_base,ratio_pct,Sf,Q_cms,dh_m,depth_m,area_m2,R_m,uncertainty_pct"];
+    MN.rows.forEach(function(r){
+      var s=MN.series[r.rc.key];
+      if(!s) return;
+      s.ns.forEach(function(v,i){
+        if(v==null) return;
+        var res=null, day=State.readings[MN.dates[i]]||{};
+        res=reachAt(r.rc,day);
+        if(!res.ok) return;
+        lines.push('"'+r.rc.name+'",'+MN.dates[i]+","+res.n.toFixed(5)+","+(s.base?s.base.toFixed(5):"")+","+
+          (s.base?(((res.n/s.base)-1)*100).toFixed(2):"")+","+res.sf.toExponential(3)+","+res.q.toFixed(3)+","+
+          res.dh.toFixed(3)+","+res.y.toFixed(3)+","+res.a.toFixed(2)+","+res.r.toFixed(3)+","+Math.round(res.unc*100));
+      });
+    });
+    var blob=new Blob(["\ufeff"+lines.join("\n")],{type:"text/csv;charset=utf-8"});
+    var a=document.createElement("a");
+    a.href=URL.createObjectURL(blob);
+    a.download="manning_tracking.csv";
+    a.click();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); },1500);
+  }
+
+  function run(){
+    var g=function(id){ return document.getElementById(id); };
+    MN.cfg.days = Math.max(14, +((g("mnDays")||{}).value||90));
+    MN.cfg.dh   = Math.max(0.001, +((g("mnDh")||{}).value||0.01));
+    MN.cfg.qerr = Math.max(0, +((g("mnQe")||{}).value||5));
+    MN.cfg.win  = Math.max(1, +((g("mnWin")||{}).value||5));
+    MN.cfg.base = (g("mnBase")||{}).value||"auto";
+    try{
+      compute(); drawKpi(); drawTable(); drawChart();
+      if(typeof toast==="function") toast("تم حساب "+MN.rows.length+" مسافة");
+    }catch(e){
+      if(typeof toast==="function") toast("تعذر الحساب: "+e.message);
+    }
+  }
+
+  AFTER.manning = function(){
+    var r=document.getElementById("mnRun"), c=document.getElementById("mnCsv");
+    var sv=document.getElementById("mnSave"), bd=document.getElementById("mnBad");
+    if(r) r.onclick=run;
+    if(c) c.onclick=exportCsv;
+    if(sv) sv.onclick=function(){
+      var ids=[];
+      Array.prototype.forEach.call(document.querySelectorAll(".mnSt"),function(x){ if(x.checked) ids.push(x.value); });
+      MN.sel=ids;
+      try{ localStorage.setItem(SEL_KEY, JSON.stringify(ids)); }catch(e){}
+      if(typeof toast==="function") toast("تم حفظ "+ids.length+" محطة");
+      run();
+    };
+    if(bd) bd.onchange=function(){ MN.showBad=bd.checked; drawTable(); };
+    run();
+  };
+
+  /* تسجيل التبويب قبل تبويب الإعداد */
+  var icon = (typeof ICON!=="undefined" && ICON.balance) ? ICON.balance : "";
+  var at = TABS.length;
+  TABS.forEach(function(t,i){ if(t.id==="setup" && at===TABS.length) at=i; });
+  TABS.splice(at,0,{ id:"manning", label:"المقاومة الهيدروليكية", icon:icon });
+
+  /* شريط التبويبات قد يكون رُسم قبل تحميل هذه الوحدة — نعيد بناءه عند اللزوم */
+  function ensureTab(){
+    try{
+      var host=document.getElementById("tabsInner");
+      if(!host || !State || !State.config) return;
+      if(host.children.length !== TABS.length && typeof renderShell==="function") renderShell();
+    }catch(e){}
+  }
+  setTimeout(ensureTab,0);
+  setTimeout(ensureTab,1600);
+  setTimeout(ensureTab,3000);
+  if(document.readyState==="loading"){
+    document.addEventListener("DOMContentLoaded",function(){ setTimeout(ensureTab,1800); });
+  }
+})();
+</script>
 </body>
 </html>
