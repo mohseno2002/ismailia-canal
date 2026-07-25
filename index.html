@@ -6446,5 +6446,360 @@ AFTER.weeds = function(){
   TABS.splice(at,0,{ id:"hotspots", label:"بؤر الحشائش المؤكّدة", icon:icon });
 })();
 </script>
+
+<style>
+.sm-tools{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;align-items:end}
+.sm-f{display:flex;flex-direction:column;gap:5px}
+.sm-f label{font-size:.73rem;color:var(--ink-2,#6b5a45);font-weight:700}
+.sm-f input[type=range]{width:100%}
+.sm-f input,.sm-f select{padding:7px 9px;border:1px solid var(--line,#d9cbb2);border-radius:9px;background:var(--paper-1,#fdf8ee);font:inherit;font-size:.82rem}
+.sm-val{font-weight:800;color:var(--brand,#0b7285);font-size:.82rem}
+.sm-gates{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:6px}
+.sm-gates label{display:flex;align-items:center;gap:5px;font-size:.78rem;font-weight:700;color:#5f513c}
+.sm-tbl{width:100%;border-collapse:collapse;font-size:.78rem;min-width:760px}
+.sm-tbl th,.sm-tbl td{padding:7px 8px;border-bottom:1px solid var(--line,#e4d8c2);text-align:center;white-space:nowrap}
+.sm-tbl th{background:var(--paper-2,#f2e8d5);font-weight:800;font-size:.73rem}
+.sm-tbl td.nm{text-align:right;white-space:normal;min-width:140px;font-weight:700}
+.sm-pill{display:inline-block;padding:2px 9px;border-radius:999px;font-size:.7rem;font-weight:800}
+.sm-full{background:#e7f6ec;color:#1d7a44}
+.sm-mild{background:#fdf1dc;color:#9a6712}
+.sm-def{background:#fbe7e7;color:#a32626}
+.sm-dry{background:#4a1010;color:#ffd9d9}
+.sm-bar{height:9px;border-radius:5px;background:#e6ddcc;overflow:hidden;min-width:60px}
+.sm-bar>i{display:block;height:100%}
+#smMap{width:100%;height:210px;border:1px solid var(--line,#e4d8c2);border-radius:12px;background:#0d1b1e;display:block}
+.sm-note{font-size:.75rem;color:#8a7a63;line-height:1.7}
+.sm-eq{background:var(--paper-2,#f2e8d5);border-radius:10px;padding:9px 11px;font-size:.8rem;line-height:1.8;margin-top:6px}
+.sm-eq b{color:#8a4b00}
+.sm-meth{font-size:.8rem;line-height:1.85}
+.sm-meth code{background:var(--paper-2,#f2e8d5);padding:1px 6px;border-radius:6px;font-family:ui-monospace,monospace;direction:ltr;display:inline-block}
+</style>
+<script>
+"use strict";
+/* ================================================================
+   المحاكاة التفاعلية  ·  SIM-V1  (توجيه أمامى بالميزان المائى)
+   ----------------------------------------------------------------
+   عكس اتجاه التطبيق: يبدأ من تصرف الفم ويوزّعه على الأحباس والترع
+   حتى الذيل، فيتنبأ بمن سيحصل على حصته ومن سيتعطّش — قبل حدوثه.
+   يستخدم نفس محرك التطبيق تماماً (dailyZimaamOf · reachStationsDemand
+   · currentMoqannan · lossFactor) فلا مصدر ثانى للحقيقة، والحالة
+   القائمة فى المحاكاة تطابق أرقام تبويب الميزان المائى بالضبط.
+   لا يعدّل أى بيانات — صندوق تجارب للقراءة فقط.
+   ================================================================ */
+(function(){
+  if(typeof TABS==="undefined"||typeof VIEWS==="undefined"||typeof AFTER==="undefined") return;
+
+  var SIM = { cfg:{ fomPct:100, season:"auto", mult:1, dour:null, policy:"upstream", gates:{} },
+              base:null, out:null, ready:false };
+  window.SIM = SIM;
+  SIM._rd = function(from,to,isLast){ return reachDemand(from,to,isLast); };
+  SIM._solve = function(){ solve(); return SIM.out; };
+
+  function n2(v){ return (v==null||v===""||isNaN(+v))? null : +v; }
+  function f(v,d){ return (v==null||isNaN(v))? "—" : (+v).toFixed(d==null?2:d); }
+  function intc(v){ return (v==null||isNaN(v))? "—" : Math.round(v).toLocaleString("en"); }
+
+  /* ---- الموسم والمعاملات (تطابق دوال التطبيق عند الوضع التلقائى) ---- */
+  function seasonIsSummer(){
+    if(SIM.cfg.season==="summer") return true;
+    if(SIM.cfg.season==="winter") return false;
+    var mon=+(((State.readDate||"").split("-")[1])||0);
+    var sm=(State.config&&State.config.summerMonths)||[5,6,7,8,9];
+    return sm.indexOf(mon)>=0;
+  }
+  function moqNow(){
+    var m=(State.config&&State.config.moqannan)||{summer:30,winter:18};
+    return seasonIsSummer()? (+m.summer||0) : (+m.winter||0);
+  }
+  function lfNow(){ return seasonIsSummer()? 0.05 : 0.03; }
+  function activeDour(){ return SIM.cfg.dour || (typeof activeDourNow==="function"? activeDourNow() : (State.activeDour||"أ")); }
+
+  /* ---- الحجوز (بوابات التحكم) والأحباس ---- */
+  function regulators(){
+    return (State.branches||[]).filter(function(b){ return b.admin==="hajz" && (+b.km||0)>0; })
+      .sort(function(a,b){ return (+a.km||0)-(+b.km||0); });
+  }
+  function reachList(){
+    var cfg=(State.config&&State.config.reaches)||[];
+    if(cfg.length){
+      return cfg.map(function(r,i){ return {from:+r.from,to:+r.to,name:r.name||("حبس "+(i+1)),isLast:i===cfg.length-1,regKm:+r.from}; });
+    }
+    /* اشتقاق من الفم + الحجوز + الذيل */
+    var regs=regulators();
+    var maxKm=Math.max.apply(null,(State.branches||[]).map(function(b){return +b.km||0;}).concat([126]));
+    var bounds=[0].concat(regs.map(function(r){return +r.km;})).concat([maxKm]);
+    bounds=bounds.filter(function(v,i,a){return a.indexOf(v)===i;}).sort(function(x,y){return x-y;});
+    var out=[];
+    for(var i=0;i<bounds.length-1;i++){
+      var upName= i===0? "الفم" : (function(){ var g=regs.filter(function(r){return +r.km===bounds[i];})[0]; return g? g.name : ("ك"+bounds[i]); })();
+      out.push({from:bounds[i],to:bounds[i+1],name:"حبس "+(i+1)+" ("+upName+"→)",isLast:i===bounds.length-2,regKm:i===0?null:bounds[i]});
+    }
+    return out;
+  }
+
+  /* ---- طلب الحبس: نفس منطق reachTotalDemand لكن بنطاق كيلومترى وبارامترات السيناريو ---- */
+  function reachDemand(from,to,isLast){
+    var active=activeDour(), moq=moqNow(), mult=SIM.cfg.mult||1;
+    var inReach=(State.branches||[]).filter(function(b){ return !b.isDalil && (+b.km>=from) && (isLast? true : (+b.km<to)); });
+    var dailyZ=inReach.reduce(function(s,b){ return s + (typeof dailyZimaamOf==="function"? dailyZimaamOf(b,active) : 0); },0);
+    var ag=dailyZ*moq/1e6*mult;
+    var st=(typeof reachStationsDemand==="function")? reachStationsDemand({from:from,to:to},isLast) : {drinkQ:0,indQ:0};
+    return { ag:ag, drink:(st.drinkQ||0)/1e6, ind:(st.indQ||0)/1e6,
+             total:ag+(st.drinkQ||0)/1e6+(st.indQ||0)/1e6, branches:inReach, dailyZ:dailyZ, active:active, moq:moq };
+  }
+
+  /* ---- محاكاة حبس-بحبس بنسبة زراعية موحّدة (الشرب/الصناعة أولوية) ---- */
+  function simulate(reaches, fomQ, lf, ratio){
+    var qin=fomQ, res=[], minFulfil=1;
+    for(var i=0;i<reaches.length;i++){
+      var R=reaches[i];
+      if(R._cut) qin=0;
+      var loss=qin*lf, avail=Math.max(0,qin-loss);
+      var ess=Math.min(R.demand.drink+R.demand.ind, avail);
+      var rem=avail-ess;
+      var want=R.demand.ag*ratio;
+      var ag=Math.min(want, rem);
+      var essFulfil=(R.demand.drink+R.demand.ind)>1e-9 ? ess/(R.demand.drink+R.demand.ind) : 1;
+      var agFulfil=R.demand.ag>1e-9 ? ag/R.demand.ag : 1;
+      if(R.demand.ag>1e-9 && agFulfil<minFulfil) minFulfil= (want>1e-9? ag/want : 1);
+      var qout=rem-ag;
+      res.push({loss:loss,ess:ess,essFulfil:essFulfil,ag:ag,agDemand:R.demand.ag,agFulfil:agFulfil,qin:qin,qout:qout});
+      qin=qout;
+    }
+    return { res:res, minFulfil:minFulfil, tailQout:qin };
+  }
+
+  function solve(){
+    var reaches=reachList(), lf=lfNow();
+    reaches.forEach(function(r){ r.demand=reachDemand(r.from,r.to,r.isLast);
+      if(r.regKm!=null && SIM.cfg.gates[r.regKm]===false) r._cut=true; });
+
+    /* الأساس الافتراضى لتصرف الفم */
+    var day=(State.readings[State.readDate]||{}), fomRead=day.fom_ism&&day.fom_ism.flow!=null? +day.fom_ism.flow : null;
+    var essSum=reaches.reduce(function(s,r){return s+r.demand.drink+r.demand.ind;},0);
+    var agSum=reaches.reduce(function(s,r){return s+r.demand.ag;},0);
+    var justEnough=(agSum+essSum)/(1-lf);
+    SIM.base = fomRead!=null? fomRead : justEnough;
+    var fomQ = SIM.base * (SIM.cfg.fomPct/100);
+
+    var ratio=1, out;
+    if(SIM.cfg.policy==="prop"){
+      if(simulate(reaches,fomQ,lf,1).minFulfil>=1-1e-6) ratio=1;
+      else { var lo=0,hi=1,mid; for(var k=0;k<28;k++){ mid=(lo+hi)/2; if(simulate(reaches,fomQ,lf,mid).minFulfil>=1-1e-6) lo=mid; else hi=mid; } ratio=lo; }
+    }
+    out=simulate(reaches,fomQ,lf,ratio);
+
+    /* توزيع داخل الحبس على الترع بنسبة الوفاء الزراعى */
+    var branches=[];
+    reaches.forEach(function(r,i){
+      var fr=out.res[i].agFulfil;
+      r.demand.branches.forEach(function(b){
+        var zt=(typeof dailyZimaamOf==="function")? dailyZimaamOf(b, r.demand.active) : 0;
+        if(zt<=0) return;
+        var dem=zt*r.demand.moq/1e6*(SIM.cfg.mult||1);
+        var deliv=dem*fr;
+        branches.push({ b:b, reach:r.name, ri:i, zToday:zt, demand:dem, deliv:deliv, fulfil:fr });
+      });
+    });
+    branches.sort(function(a,b){ return a.fulfil-b.fulfil || b.zToday-a.zToday; });
+
+    SIM.out={ reaches:reaches, sim:out, fomQ:fomQ, lf:lf, ratio:ratio, branches:branches,
+              agSum:agSum, essSum:essSum, fomRead:fomRead };
+    SIM.ready=true;
+  }
+
+  /* حساب الزمام المتأثر تحت سياستَى التوزيع لإظهار فجوة العدالة */
+  function affectedUnder(policy){
+    var save=SIM.cfg.policy; SIM.cfg.policy=policy; solve();
+    var aff=SIM.out.branches.reduce(function(s,x){ return s + (x.fulfil<0.9? x.zToday : 0); },0);
+    var wdef=SIM.out.branches.reduce(function(s,x){ return s + x.zToday*(1-x.fulfil); },0);
+    SIM.cfg.policy=save;
+    return { aff:aff, wdef:wdef };
+  }
+
+  /* ===================== الواجهة ===================== */
+  function statusOf(fr){
+    if(fr>=0.999) return {c:"sm-full",t:"كامل"};
+    if(fr>=0.90)  return {c:"sm-mild",t:"عجز طفيف"};
+    if(fr>0.02)   return {c:"sm-def", t:"عجز"};
+    return {c:"sm-dry",t:"متعطّش"};
+  }
+  function barColor(fr){ return fr>=0.9? "#1d7a44" : fr>=0.5? "#c07d17" : "#c62828"; }
+
+  VIEWS.simulator = function(){
+    var c=SIM.cfg, curDour=activeDour();
+    var regs=regulators();
+    var gates=regs.map(function(r){
+      var on = c.gates[+r.km]!==false;
+      return '<label><input type="checkbox" class="smGate" data-km="'+(+r.km)+'"'+(on?" checked":"")+'> '+esc(r.name)+'</label>';
+    }).join("") || '<span class="sm-note">لا حجوز معرّفة</span>';
+    var dopt=["أ","ب","ج"].map(function(d){ return '<option value="'+d+'"'+(curDour===d?" selected":"")+'>'+d+'</option>'; }).join("");
+    return '<div class="card"><div class="card-head"><div>'+
+      '<div class="card-title">المحاكاة التفاعلية</div>'+
+      '<div class="card-sub">وزّع تصرف الفم على الشبكة وشاهد من يتعطّش — نموذج توجيه أمامى بمحرك الميزان المائى</div>'+
+      '</div></div><div class="card-body"><div class="sm-tools">'+
+      '<div class="sm-f"><label>تصرف الفم: <span class="sm-val" id="smFomV">'+c.fomPct+'%</span></label>'+
+        '<input type="range" id="smFom" min="20" max="150" step="5" value="'+c.fomPct+'"></div>'+
+      '<div class="sm-f"><label>احتياج المحصول: <span class="sm-val" id="smMultV">'+Math.round(c.mult*100)+'%</span></label>'+
+        '<input type="range" id="smMult" min="80" max="150" step="5" value="'+Math.round(c.mult*100)+'"></div>'+
+      '<div class="sm-f"><label>الموسم</label><select id="smSeason">'+
+        '<option value="auto"'+(c.season==="auto"?" selected":"")+'>تلقائى</option>'+
+        '<option value="summer"'+(c.season==="summer"?" selected":"")+'>صيف (مقنن 30)</option>'+
+        '<option value="winter"'+(c.season==="winter"?" selected":"")+'>شتاء (مقنن 18)</option>'+
+      '</select></div>'+
+      '<div class="sm-f"><label>المناوبة النشطة</label><select id="smDour">'+dopt+'</select></div>'+
+      '<div class="sm-f"><label>سياسة التوزيع عند العجز</label><select id="smPolicy">'+
+        '<option value="upstream"'+(c.policy==="upstream"?" selected":"")+'>أولوية المنبع (جاذبية)</option>'+
+        '<option value="prop"'+(c.policy==="prop"?" selected":"")+'>تناسبى (عدالة)</option>'+
+      '</select></div>'+
+      '</div>'+
+      '<div style="margin-top:10px"><label class="sm-f" style="font-size:.73rem;color:var(--ink-2);font-weight:700">بوابات الحجوز (إلغاء التحديد = غلق)</label>'+
+      '<div class="sm-gates">'+gates+'</div></div>'+
+      '</div></div>'+
+      '<div class="kpi-strip" id="smKpi"></div>'+
+      '<div class="sm-eq" id="smEq"></div>'+
+      '<div class="card"><div class="card-head"><div class="card-title">خريطة العجز على المجرى</div></div>'+
+      '<div class="card-body"><canvas id="smMap"></canvas></div></div>'+
+      '<div class="card"><div class="card-head"><div class="card-title">الأحباس</div></div>'+
+      '<div class="card-body tbl-wrap"><table class="sm-tbl" id="smReach"></table></div></div>'+
+      '<div class="card"><div class="card-head"><div class="card-title">الترع — أولوية التعطّش</div>'+
+        '<button class="btn btn-ghost btn-sm" id="smCsv">تصدير CSV</button></div>'+
+      '<div class="card-body tbl-wrap"><table class="sm-tbl" id="smBranch"></table></div></div>'+
+      '<div class="card"><div class="card-body sm-meth"><b>طريقة المحاكاة</b><br>'+
+      'يبدأ من تصرف الفم ويسير من المنبع للذيل. عند كل حبس: '+
+      '<code>الخارج = الداخل − (زراعى + شرب + صناعة) − الداخل×الفواقد</code> — نفس معادلة الميزان المائى فى التطبيق. '+
+      'الطلب الزراعى = الزمام الذى يشرب اليوم (حسب المناوبة) × المقنن الموسمى × معامل الاحتياج. '+
+      'الشرب والصناعة لهما الأولوية، ثم يُوزّع الباقى على الزراعة. عند نقص الوارد: '+
+      '<b>أولوية المنبع</b> تُشبع الرأس أولاً فيتعطّش الذيل (السلوك الطبيعى بالجاذبية)، و<b>التناسبى</b> '+
+      'يوزّع العجز بنسبة واحدة على الجميع (هدف العدالة). الفرق بينهما يقيس اختلال عدالة الرأس-الذيل. '+
+      'المحاكاة لا تغيّر أى بيانات؛ عند الوضع القائم تطابق أرقام تبويب الميزان المائى تماماً.'+
+      '</div></div>';
+  };
+
+  function kpis(){
+    var host=document.getElementById("smKpi"); if(!host||!SIM.out) return;
+    var br=SIM.out.branches;
+    var affFd=br.reduce(function(s,x){ return s + (x.fulfil<0.9? x.zToday:0); },0);
+    var defN=br.filter(function(x){return x.fulfil<0.9;}).length;
+    var dryN=br.filter(function(x){return x.fulfil<=0.02;}).length;
+    host.innerHTML=
+      '<div class="kpi"><div class="kpi-her-label">تصرف الفم المُحاكى</div><div class="kpi-her-value">'+f(SIM.out.fomQ,2)+'<span class="kpi-her-unit">م.م³</span></div></div>'+
+      '<div class="kpi"><div class="kpi-her-label">ترع فى عجز</div><div class="kpi-her-value">'+defN+(dryN?' <span class="kpi-her-unit">('+dryN+' متعطّشة)</span>':'')+'</div></div>'+
+      '<div class="kpi"><div class="kpi-her-label">زمام متأثر</div><div class="kpi-her-value">'+intc(affFd)+'<span class="kpi-her-unit">فدان</span></div></div>'+
+      '<div class="kpi"><div class="kpi-her-label">فائض للذيل</div><div class="kpi-her-value">'+f(SIM.out.sim.tailQout,2)+'<span class="kpi-her-unit">م.م³</span></div></div>';
+  }
+
+  function eqBox(){
+    var host=document.getElementById("smEq"); if(!host||!SIM.out) return;
+    var up=affectedUnder("upstream"), pr=affectedUnder("prop"); solve();
+    var gap=Math.round(up.aff-pr.aff);
+    var baseTxt = SIM.out.fomRead!=null? "تصرف الفم الحالى "+f(SIM.out.fomRead,2)+" م.م³/يوم" : "لا قراءة للفم — الأساس محسوب على «الاكتفاء» "+f(SIM.base,2)+" م.م³/يوم";
+    var html='📊 '+baseTxt+' · إجمالى الطلب '+f(SIM.out.agSum+SIM.out.essSum,2)+' + فواقد.';
+    if(SIM.cfg.policy==="prop") html+=' نسبة الإشباع الزراعى الموحّدة <b>'+Math.round(SIM.out.ratio*100)+'%</b>.';
+    if(gap>0) html+=' <br>⚖️ فجوة العدالة: أولوية المنبع تُحرم <b>'+intc(up.aff)+'</b> فدان مقابل <b>'+intc(pr.aff)+'</b> فدان بالتناسبى (فرق '+intc(gap)+' فدان يتركّز فى الذيل).';
+    host.innerHTML=html;
+  }
+
+  function reachTable(){
+    var t=document.getElementById("smReach"); if(!t||!SIM.out) return;
+    var h='<thead><tr><th>الحبس</th><th>الداخل</th><th>فواقد</th><th>طلب زراعى</th><th>شرب+صناعة</th><th>مُسلَّم زراعى</th><th>الوفاء</th><th>الخارج</th></tr></thead><tbody>';
+    SIM.out.reaches.forEach(function(r,i){
+      var s=SIM.out.sim.res[i], st=statusOf(s.agFulfil);
+      h+='<tr><td class="nm">'+esc(r.name)+(r._cut?' <span class="sm-pill sm-dry">مغلق</span>':'')+'</td>'+
+        '<td>'+f(s.qin,2)+'</td><td>'+f(s.loss,2)+'</td>'+
+        '<td>'+f(r.demand.ag,2)+'</td><td>'+f(r.demand.drink+r.demand.ind,2)+'</td>'+
+        '<td>'+f(s.ag,2)+'</td>'+
+        '<td><span class="sm-pill '+st.c+'">'+Math.round(s.agFulfil*100)+'%</span></td>'+
+        '<td>'+f(s.qout,2)+'</td></tr>';
+    });
+    t.innerHTML=h+'</tbody>';
+  }
+
+  function branchTable(){
+    var t=document.getElementById("smBranch"); if(!t||!SIM.out) return;
+    var h='<thead><tr><th>الترعة</th><th>الحبس</th><th>زمام اليوم</th><th>الطلب</th><th>المُسلَّم</th><th>العجز</th><th>الوفاء</th><th>الحالة</th></tr></thead><tbody>';
+    if(!SIM.out.branches.length) h+='<tr><td colspan="8">لا ترع بزمام يشرب اليوم فى هذه المناوبة.</td></tr>';
+    SIM.out.branches.forEach(function(x){
+      var st=statusOf(x.fulfil), pctFill=Math.round(x.fulfil*100);
+      h+='<tr><td class="nm">'+esc(x.b.name)+'</td><td class="sm-note">'+esc(x.reach)+'</td>'+
+        '<td>'+intc(x.zToday)+'</td><td>'+f(x.demand,3)+'</td><td>'+f(x.deliv,3)+'</td>'+
+        '<td>'+Math.round((1-x.fulfil)*100)+'%</td>'+
+        '<td><div class="sm-bar"><i style="width:'+pctFill+'%;background:'+barColor(x.fulfil)+'"></i></div></td>'+
+        '<td><span class="sm-pill '+st.c+'">'+st.t+'</span></td></tr>';
+    });
+    t.innerHTML=h+'</tbody>';
+  }
+
+  function drawMap(){
+    var cv=document.getElementById("smMap"); if(!cv||!SIM.out) return;
+    var dpr=Math.min(2,window.devicePixelRatio||1), rect=cv.getBoundingClientRect();
+    cv.width=Math.max(320,Math.round((rect.width||320)*dpr)); cv.height=Math.max(200,Math.round((rect.height||210)*dpr));
+    var ctx=cv.getContext("2d"); ctx.setTransform(dpr,0,0,dpr,0,0);
+    var W=cv.width/dpr,H=cv.height/dpr,pad=26; ctx.clearRect(0,0,W,H);
+    var coord=(typeof WW!=="undefined"&&WW.coordAtKm)? WW.coordAtKm : null;
+    var reaches=SIM.out.reaches;
+    /* محور كيلومترى بسيط أفقى إن لم تتوفر إحداثيات */
+    var maxKm=Math.max.apply(null,reaches.map(function(r){return r.to;}));
+    function segColor(fr){ return fr>=0.9? "#17b3a0" : fr>=0.5? "#d98a1e" : fr>0.02? "#e2543f" : "#7a1f1f"; }
+    if(coord){
+      var pts=[]; reaches.forEach(function(r){ var a=coord(r.from),b=coord(r.to); if(a&&b){pts.push(a);pts.push(b);} });
+      if(pts.length>=2){
+        var lons=pts.map(function(p){return p.lon;}),lats=pts.map(function(p){return p.lat;});
+        var mnx=Math.min.apply(null,lons),mxx=Math.max.apply(null,lons),mny=Math.min.apply(null,lats),mxy=Math.max.apply(null,lats);
+        var sc=Math.min((W-2*pad)/((mxx-mnx)||1e-6),(H-2*pad)/((mxy-mny)||1e-6));
+        var X=function(p){return pad+(p.lon-mnx)*sc;},Y=function(p){return H-pad-(p.lat-mny)*sc;};
+        reaches.forEach(function(r,i){ var a=coord(r.from),b=coord(r.to); if(!a||!b)return;
+          ctx.strokeStyle=segColor(SIM.out.sim.res[i].agFulfil); ctx.lineWidth=7; ctx.lineCap="round";
+          ctx.beginPath(); ctx.moveTo(X(a),Y(a)); ctx.lineTo(X(b),Y(b)); ctx.stroke(); });
+        return;
+      }
+    }
+    /* بديل: شريط أفقى بالكيلومترات */
+    var y=H/2;
+    reaches.forEach(function(r,i){
+      var x0=pad+(r.from/maxKm)*(W-2*pad), x1=pad+(r.to/maxKm)*(W-2*pad);
+      ctx.strokeStyle=segColor(SIM.out.sim.res[i].agFulfil); ctx.lineWidth=12; ctx.lineCap="butt";
+      ctx.beginPath(); ctx.moveTo(x0,y); ctx.lineTo(x1,y); ctx.stroke();
+    });
+    ctx.fillStyle="#9fb0ba"; ctx.font="11px sans-serif"; ctx.textAlign="right"; ctx.fillText("الفم",pad+22,y-14);
+    ctx.textAlign="left"; ctx.fillText("الذيل",W-pad-22,y-14);
+  }
+
+  function exportCsv(){
+    if(!SIM.out) return;
+    var lines=["canal,reach,zimaam_today_fd,demand_mcmd,delivered_mcmd,deficit_pct,fulfil_pct"];
+    SIM.out.branches.forEach(function(x){
+      lines.push(['"'+x.b.name+'"','"'+x.reach+'"',Math.round(x.zToday),f(x.demand,4),f(x.deliv,4),Math.round((1-x.fulfil)*100),Math.round(x.fulfil*100)].join(","));
+    });
+    var blob=new Blob(["\ufeff"+lines.join("\n")],{type:"text/csv;charset=utf-8"});
+    var a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="simulation.csv"; a.click();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); },1500);
+  }
+
+  function render(){ try{ solve(); kpis(); eqBox(); reachTable(); branchTable(); drawMap(); }catch(e){ if(typeof toast==="function") toast("تعذّرت المحاكاة: "+e.message); } }
+
+  AFTER.simulator = function(){
+    var g=function(id){return document.getElementById(id);};
+    var fom=g("smFom"), mult=g("smMult"), season=g("smSeason"), dour=g("smDour"), pol=g("smPolicy"), csv=g("smCsv");
+    if(fom) fom.oninput=function(){ SIM.cfg.fomPct=+fom.value; var v=g("smFomV"); if(v)v.textContent=fom.value+"%"; render(); };
+    if(mult) mult.oninput=function(){ SIM.cfg.mult=(+mult.value)/100; var v=g("smMultV"); if(v)v.textContent=mult.value+"%"; render(); };
+    if(season) season.onchange=function(){ SIM.cfg.season=season.value; render(); };
+    if(dour) dour.onchange=function(){ SIM.cfg.dour=dour.value; render(); };
+    if(pol) pol.onchange=function(){ SIM.cfg.policy=pol.value; render(); };
+    if(csv) csv.onclick=exportCsv;
+    Array.prototype.forEach.call(document.querySelectorAll(".smGate"),function(g){
+      g.onchange=function(){ SIM.cfg.gates[+g.getAttribute("data-km")]=g.checked; render(); };
+    });
+    render();
+    if(!SIM._rb){ SIM._rb=true; window.addEventListener("resize",function(){ if(State.tab==="simulator") drawMap(); }); }
+  };
+
+  /* تسجيل التبويب بعد بؤر الحشائش (أو المقاومة) وقبل الإعداد */
+  var icon=(typeof ICON!=="undefined" && ICON.balance)? ICON.balance : "";
+  var at=TABS.length;
+  for(var i=0;i<TABS.length;i++){ if(TABS[i].id==="hotspots"||TABS[i].id==="manning"){ at=i+1; } if(TABS[i].id==="setup"){ at=i; break; } }
+  TABS.splice(at,0,{ id:"simulator", label:"المحاكاة التفاعلية", icon:icon });
+})();
+</script>
 </body>
 </html>
