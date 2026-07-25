@@ -5985,6 +5985,8 @@ AFTER.weeds = function(){
   function n2(v){ return (v==null||v===""||isNaN(+v))? null : +v; }
 
   /* ====== محرك التحليل الهيدروليكى — يكتب كمهندس رى خبير ======
+     أساسا المقارنة: (1) المقنن المطلوب للفدان صيفاً/شتاءً  (2) نفس اليوم من
+     العام الماضى. لا يُستخدم أى منسوب مرجعى ثابت.
      يرجّع { sev, obs:[], rec:[] }  حيث sev: 0 سليم /1 ملاحظة /2 تحذير /3 حرج */
   function analyze(bid, today, ly, ctx){
     var b=branchOf(bid) || {};
@@ -5996,80 +5998,77 @@ AFTER.weeds = function(){
     var hasReading = (tf!=null || tb!=null || tq!=null);
     if(!hasReading) return { sev:-1, obs:[{s:0,t:"لم تُدخل قراءة اليوم بعد — أدخِلها ليبدأ التحليل."}], rec:[] };
 
-    var refF=n2(b.refFront), refB=n2(b.refBack);
-    var dDepth=n2(b.designDepth), bed=n2(b.bedLevel), zim=n2(b.zimaam);
-    var dFront=n2(b.designFront);
     var isReg=(b.admin==="hajz"||b.admin==="fom");
+    var actv=(ctx&&ctx.activeDour)? String(ctx.activeDour).trim() : "";
 
-    /* 1) المنسوب الأمامى مقابل المرجعى */
-    if(tf!=null && refF!=null){
-      var dR=tf-refF;
-      if(dR<=-0.40){ add(3,"المنسوب الأمامى ("+tf.toFixed(2)+") أقل من المرجعى ("+refF.toFixed(2)+") بـ<b>"+Math.abs(dR).toFixed(2)+"م</b> — نقص حاد فى التغذية."); rec("رفع التغذية عاجلاً ومراجعة أوضاع البوابات العلوية والحصة المخصصة."); }
-      else if(dR<=-0.20){ add(2,"المنسوب الأمامى أقل من المرجعى بـ<b>"+Math.abs(dR).toFixed(2)+"م</b> — تغذية دون المستهدف."); rec("زيادة التغذية أو مراجعة توزيع المناوبة لتأمين المنسوب المرجعى."); }
-      else if(dR<=-0.10){ add(1,"المنسوب الأمامى أقل قليلاً من المرجعى بـ"+Math.abs(dR).toFixed(2)+"م — تحت المتابعة."); }
-      else if(dR>=0.20){ add(1,"المنسوب الأمامى أعلى من المرجعى بـ"+dR.toFixed(2)+"م — احتمال زيادة تغذية."); rec("مراجعة أوضاع البوابة لتفادى الفائض وإغراق أسفل المجرى."); }
+    /* الموسم والمقنن المطلوب حسب تاريخ القراءة */
+    var cfg=(typeof State!=="undefined" && State.config)? State.config : {};
+    var moq=cfg.moqannan || {summer:30, winter:18};
+    var sMonths=cfg.summerMonths || [5,6,7,8,9];
+    var mon=+(((State.readDate||"").split("-")[1])||0);
+    var isSum=sMonths.indexOf(mon)>=0;
+    var duty=isSum? n2(moq.summer): n2(moq.winter);
+    var seasonName=isSum? "الصيف":"الشتاء";
+
+    /* ===== 1) التصرف المُسلَّم مقابل المقنن المطلوب للفدان ===== */
+    var zToday=(typeof dailyZimaamOf==="function")? dailyZimaamOf(b, actv) : (n2(b.zimaam)||0);
+    if(!isReg && duty!=null && zToday>0){
+      var reqQ=zToday*duty/1e6;   /* مليون م³/يوم */
+      var zTxt=Math.round(zToday).toLocaleString("en");
+      var base="المقنن المطلوب لليوم <b>"+reqQ.toFixed(2)+"</b> م.م³/يوم (زمام "+zTxt+" فدان × مقنن "+seasonName+" "+duty+" م³/فدان/يوم)";
+      if(tq!=null && reqQ>0){
+        var ratio=tq/reqQ, pct=Math.round((ratio-1)*100);
+        if(ratio<0.70){ add(3,"التصرف المُسلَّم <b>"+tq.toFixed(2)+"</b> أقل من "+base+" بنسبة "+Math.abs(pct)+"% — عجز حاد فى الحصة."); rec("رفع التصرف إلى نحو "+reqQ.toFixed(2)+" م.م³/يوم لتأمين احتياج الزمام، ومراجعة أوضاع البوابة والمناوبة."); }
+        else if(ratio<0.85){ add(2,"التصرف المُسلَّم <b>"+tq.toFixed(2)+"</b> أقل من "+base+" بنسبة "+Math.abs(pct)+"% — عجز فى الحصة."); rec("زيادة التصرف نحو "+reqQ.toFixed(2)+" م.م³/يوم لتغطية المقنن المطلوب."); }
+        else if(ratio>1.50){ add(2,"التصرف المُسلَّم <b>"+tq.toFixed(2)+"</b> أعلى من "+base+" بـ+"+pct+"% — إهدار كبير للمياه."); rec("خفض التصرف نحو المقنن المطلوب لتوفير المياه للترع المستحقة."); }
+        else if(ratio>1.20){ add(1,"التصرف المُسلَّم "+tq.toFixed(2)+" أعلى من "+base+" بـ+"+pct+"% — احتمال إهدار."); rec("مراجعة أوضاع البوابة لضبط التصرف عند المقنن."); }
+        else { add(0,"التصرف المُسلَّم "+tq.toFixed(2)+" م.م³/يوم يغطى "+base+" — كفاية رى للزمام."); }
+      } else if(tq==null){
+        add(1,"أدخِل التصرف لمقارنته بالمقنن المطلوب ("+reqQ.toFixed(2)+" م.م³/يوم لزمام "+zTxt+" فدان، مقنن "+seasonName+").");
+      }
     }
 
-    /* 2) العمق التشغيلى مقابل التصميمى (للترع) */
-    if(tf!=null && bed!=null && dDepth!=null && dDepth>0){
-      var depth=tf-bed, ratio=depth/dDepth;
-      if(depth<=0){ add(3,"المنسوب الأمامى تحت منسوب القاع — لا يوجد عمود ماء فعّال."); rec("تأكد من صحة القراءة، وإن صحّت فالنقطة متوقفة عن الرى."); }
-      else if(ratio<0.65){ add(3,"العمق التشغيلى ("+depth.toFixed(2)+"م) = "+Math.round(ratio*100)+"% من التصميمى ("+dDepth.toFixed(2)+"م) — تشغيل حرج قد يوقف رى الزمام"+(zim?" ("+Math.round(zim).toLocaleString("en")+" فدان)":"")+"."); rec("رفع منسوب التشغيل لتأمين العمق اللازم لسحب الزمام بالكامل."); }
-      else if(ratio<0.80){ add(2,"العمق التشغيلى = "+Math.round(ratio*100)+"% من التصميمى — النقطة تعمل تحت طاقتها."); rec("مراجعة التغذية لرفع العمق نحو التصميمى وضمان كفاية الرى."); }
-      else if(ratio>1.10){ add(1,"العمق التشغيلى أعلى من التصميمى ("+Math.round(ratio*100)+"%) — احتمال إعاقة تصريف أو ضبط بوابة أسفل."); rec("فحص المنشأ التالى للتأكد من عدم إعاقة السريان."); }
-    }
-
-    /* 3) مقابل نفس اليوم من العام الماضى */
+    /* ===== 2) مقابل نفس اليوم من العام الماضى ===== */
     if(ly){
       if(tf!=null && ly.f!=null){
         var dLf=tf-ly.f;
         if(dLf<=-0.30){ add(2,"المنسوب الأمامى أقل من نفس اليوم العام الماضى بـ<b>"+Math.abs(dLf).toFixed(2)+"م</b> — تراجع واضح."); rec("مقارنة أوضاع التشغيل بالعام الماضى ومعالجة سبب انخفاض المنسوب."); }
         else if(dLf<=-0.15){ add(1,"المنسوب الأمامى أقل من العام الماضى بـ"+Math.abs(dLf).toFixed(2)+"م."); }
+        else if(dLf>=0.30){ add(1,"المنسوب الأمامى أعلى من العام الماضى بـ"+dLf.toFixed(2)+"م."); }
       }
-      /* 4) الهبوط عبر المنشأ مقابل العام الماضى (مؤشر حشائش/إطماء) */
+      if(tb!=null && ly.b!=null){
+        var dLb=tb-ly.b;
+        if(dLb<=-0.20){ add(1,"المنسوب الخلفى أقل من العام الماضى بـ"+Math.abs(dLb).toFixed(2)+"م."); }
+      }
+      /* الهبوط عبر المنشأ مقابل العام الماضى (مؤشر حشائش/إطماء) */
       if(tf!=null && tb!=null && ly.f!=null && ly.b!=null){
         var hT=tf-tb, hL=ly.f-ly.b, dH=hT-hL;
-        var flowNotHigher = (tq==null || ly.q==null || tq<=ly.q*1.05);
+        var flowNotHigher=(tq==null || ly.q==null || tq<=ly.q*1.05);
         if(dH>=0.40 && flowNotHigher){ add(3,"الهبوط عبر المنشأ زاد من "+hL.toFixed(2)+" إلى <b>"+hT.toFixed(2)+"م</b> عند تصرف مماثل أو أقل — مؤشر قوى على نمو حشائش أو إطماء أو ضبط بوابة."); rec("فحص ميدانى عاجل وتطهير المجرى إن لزم؛ راجع تبويب «المقاومة الهيدروليكية»."); }
         else if(dH>=0.20 && flowNotHigher){ add(2,"ازداد الهبوط عبر المنشأ عن العام الماضى بـ"+dH.toFixed(2)+"م عند تصرف غير أعلى — بداية مقاومة (حشائش/إطماء)."); rec("جدولة فحص ميدانى ومتابعة اتجاه الهبوط."); }
       }
-      /* 5) التصرف مقابل العام الماضى والموسم */
+      /* التصرف مقابل العام الماضى والموسم */
       if(tq!=null && ly.q!=null){
         var dq=tq-ly.q;
-        var st=(window.HIST&&HIST.statsAround)? HIST.statsAround(bid, State.readDate, "q", 10):null;
-        var seas = st? (" (المتوسط الموسمى "+st.avg.toFixed(2)+")"):"";
-        if(dq<=-2){ add(2,"التصرف أقل من العام الماضى بـ<b>"+Math.abs(dq).toFixed(2)+" م.م³/يوم</b>"+seas+" — عجز فى التغذية."); rec("مراجعة فتحات البوابة والحصة المخصصة لسد العجز."); }
+        var st=statsAround(bid, State.readDate, "q", 10);
+        var seas=st? (" (متوسط موسمى "+st.avg.toFixed(2)+")"):"";
+        if(dq<=-2){ add(2,"التصرف أقل من العام الماضى بـ<b>"+Math.abs(dq).toFixed(2)+" م.م³/يوم</b>"+seas+"."); rec("مراجعة فتحات البوابة والحصة لسد العجز عن العام الماضى."); }
         else if(dq<=-1){ add(1,"التصرف أقل من العام الماضى بـ"+Math.abs(dq).toFixed(2)+" م.م³/يوم"+seas+"."); }
         else if(dq>=2){ add(1,"التصرف أعلى من العام الماضى بـ"+dq.toFixed(2)+" م.م³/يوم"+seas+"."); }
-      }
-      /* 6) نصيب الفدان (كفاية الحصة) */
-      if(tq!=null && ly.q!=null && zim && zim>0){
-        var dutyT=tq*1e6/zim, dutyL=ly.q*1e6/zim;
-        if(dutyL>0){
-          var pd=(dutyT-dutyL)/dutyL;
-          if(pd<=-0.10){ add(1,"نصيب الفدان اليوم <b>"+dutyT.toFixed(1)+" م³/فدان</b> مقابل "+dutyL.toFixed(1)+" العام الماضى ("+Math.round(pd*100)+"%)."); rec("مراجعة كفاية الحصة لزمام النقطة ("+Math.round(zim).toLocaleString("en")+" فدان)."); }
-        }
       }
     } else {
       add(0,"لا توجد بيانات تاريخية لهذه النقطة للمقارنة بالعام الماضى.");
     }
 
-    /* 7) حالة المناوبة */
+    /* ===== 3) حالة المناوبة ===== */
     var dour=(b.dour||"").trim();
-    var act=(ctx&&ctx.activeDour)? String(ctx.activeDour).trim():"";
-    if(dour && dour!=="مستمر" && act){
-      var onRot=(dour===act);
-      if(!onRot && tq!=null && tq>0.05){ add(2,"الترعة خارج المناوبة اليوم (دورها «"+dour+"»، المناوبة النشطة «"+act+"») ومع ذلك بها تصرف "+tq.toFixed(2)+" — راجع الغلق."); rec("التأكد من غلق النقطة خارج مناوبتها لتوفير المياه للترع المستحقة."); }
+    if(dour && dour!=="مستمر" && actv){
+      var onRot=(dour===actv);
+      if(!onRot && tq!=null && tq>0.05){ add(2,"الترعة خارج المناوبة اليوم (دورها «"+dour+"»، المناوبة النشطة «"+actv+"») ومع ذلك بها تصرف "+tq.toFixed(2)+" — راجع الغلق."); rec("غلق النقطة خارج مناوبتها لتوفير المياه للترع المستحقة."); }
       else if(onRot && tq!=null && tq<0.05){ add(1,"الترعة فى مناوبتها «"+dour+"» لكن بلا تصرف يُذكر — تأكد من الفتح."); rec("فتح النقطة لسحب حصتها فى مناوبتها."); }
     }
 
-    /* 8) هبوط معدوم عبر منشأ تحكم */
-    if(isReg && tf!=null && tb!=null){
-      var h0=tf-tb;
-      if(Math.abs(h0)<0.02){ add(1,"لا يوجد فرق منسوب عبر المنشأ — البوابة مفتوحة بالكامل أو بلا تحكم فعلى."); }
-    }
-
-    if(!O.length) add(0,"جميع المؤشرات ضمن الحدود — الوضع التشغيلى مستقر ومطابق للمرجعى والعام الماضى.");
+    if(!O.length) add(0,"جميع المؤشرات ضمن الحدود — الوضع مطابق للعام الماضى وللمقنن المطلوب.");
     return { sev:sev, obs:O, rec:R };
   }
 
