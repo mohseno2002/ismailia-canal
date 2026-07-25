@@ -5966,6 +5966,7 @@ AFTER.weeds = function(){
   }
   window.HIST.note = { get:noteGet, set:noteSet };
   /* تحليل خبير لنقطة فى تاريخ (متاح لكل التبويبات) */
+  try{ window.HIST_INFO = function(bid){ return infoHTML(bid); }; }catch(e){}
   window.HIST.analyzePoint = function(bid, dateKey){
     var dk=dateKey||State.readDate;
     var day=(State.readings[dk]||{})[bid]||{};
@@ -6021,7 +6022,9 @@ AFTER.weeds = function(){
 
     /* ===== 1) التصرف المُسلَّم مقابل المقنن المطلوب للفدان ===== */
     var zToday=(typeof dailyZimaamOf==="function")? dailyZimaamOf(b, actv) : (n2(b.zimaam)||0);
-    if(!isReg && duty!=null && zToday>0){
+    if(ctx && ctx.flowMethod==="duty"){
+      add(0,"التصرف مقدّر من الزمام × المقنن الموسمى — يُفترض تغطية الاحتياج بالكامل (لا يوجد قياس فعلى للمقارنة). لتقدير هيدروليكى أدق أدخِل المناسيب.");
+    } else if(!isReg && duty!=null && zToday>0){
       var reqQ=zToday*duty/1e6;   /* مليون م³/يوم */
       var zTxt=Math.round(zToday).toLocaleString("en");
       var base="المقنن المطلوب لليوم <b>"+reqQ.toFixed(2)+"</b> م.م³/يوم (زمام "+zTxt+" فدان × مقنن "+seasonName+" "+duty+" م³/فدان/يوم)";
@@ -6105,7 +6108,17 @@ AFTER.weeds = function(){
     } else {
       html+='<div class="hist-line hist-none">لا توجد بيانات تاريخية لهذه النقطة.</div>';
     }
-    var A=analyze(bid, {front:tf,back:tb,flow:tq}, ly, { activeDour: (State.activeDour||"") });
+    var _bfm=null;
+    if(typeof window.BFLOW!=="undefined"){
+      var _b=window.BFLOW.branchOf(bid);
+      if(_b && window.BFLOW.branchHasCommand(_b)){
+        _bfm=window.BFLOW.flowMethod(_b, {back:tb});
+        if(_bfm==="manning") html+='<div class="hist-obs" style="color:#5b3aa6">≈ التصرف تقديرى بمعادلة مانينج (عمق من الخلفى، n='+window.BFLOW.nOf(_b)+') — ليس قياساً مباشراً.</div>';
+        else if(_bfm==="duty") html+='<div class="hist-obs" style="color:#8a4b00">≈ التصرف مُقدَّر من الزمام × المقنن الموسمى (ترعة بدون رخامة، لا مناسيب) — أدخِل المنسوب الخلفى للحساب الهيدروليكى.</div>';
+        else if(_bfm==="pump") html+='<div class="hist-obs" style="color:#1f5b8f">التصرف محسوب من محطة الرفع (عدد الوحدات × تصرف الوحدة م³/ث × ساعات التشغيل).</div>';
+      }
+    }
+    var A=analyze(bid, {front:tf,back:tb,flow:tq}, ly, { activeDour: (State.activeDour||""), flowMethod:_bfm });
     if(A.sev>=0){
       var sc=SEV[A.sev]||SEV[0];
       html+='<div class="hist-anl-head"><span class="hist-lbl">🔎 تحليل المهندس (آلي)</span>'+
@@ -6144,6 +6157,7 @@ AFTER.weeds = function(){
     var tbody=host.querySelector("table tbody");
     if(!tbody) return;
     if(tbody.getAttribute("data-hist")==="1") return; /* أُضيفت بالفعل لهذا الرسم */
+    if(typeof window.BFLOW!=="undefined"){ try{ window.BFLOW.fillBranchFlows(State.readDate); }catch(e){} }
     var rows=Array.prototype.slice.call(tbody.children).filter(function(tr){ return !tr.classList.contains("hist-row"); });
     rows.forEach(function(tr){
       var bid=branchIdOfRow(tr);
@@ -6165,6 +6179,19 @@ AFTER.weeds = function(){
       /* حفظ الملاحظة فوراً */
       var ta=hr.querySelector(".hist-notes");
       if(ta) ta.addEventListener("input", function(){ noteSet(State.readDate, bid, ta.value); });
+      if(typeof window.BFLOW!=="undefined"){
+        var _bb=window.BFLOW.branchOf(bid);
+        if(_bb && window.BFLOW.branchHasCommand(_bb)){
+          var _rec=(State.readings[State.readDate]||{})[bid]||{};
+          var _fin=tr.querySelector("td:last-child input");
+          if(_fin){
+            if(_rec.flow!=null && _fin.value!==String(_rec.flow)) _fin.value=_rec.flow;
+            var _mm=window.BFLOW.flowMethod(_bb, _rec);
+            if(_mm==="manning"){ _fin.title="تصرف تقديرى بمعادلة مانينج (n="+window.BFLOW.nOf(_bb)+")"; _fin.style.color="#5b3aa6"; }
+            else if(_mm==="duty"){ _fin.title="تصرف مُقدَّر من الزمام × المقنن الموسمى (بدون رخامة)"; _fin.style.color="#8a4b00"; }
+          }
+        }
+      }
     });
     tbody.setAttribute("data-hist","1");
   }
@@ -6799,6 +6826,229 @@ AFTER.weeds = function(){
   var at=TABS.length;
   for(var i=0;i<TABS.length;i++){ if(TABS[i].id==="hotspots"||TABS[i].id==="manning"){ at=i+1; } if(TABS[i].id==="setup"){ at=i; break; } }
   TABS.splice(at,0,{ id:"simulator", label:"المحاكاة التفاعلية", icon:icon });
+})();
+</script>
+
+<script>
+"use strict";
+/* ================================================================
+   تصرف الترع — قاعدة متدرجة  ·  BFLOW-V3
+   ----------------------------------------------------------------
+   لكل ترعة لها زمام، بالأولوية:
+     1) معادلة تصريف رسمية (الفم/الصالحية/المنير) — كما هى.
+     2) مانينج للعمق الطبيعى — إن كان لها هندسة كاملة ومنسوب خلفى:
+        Q = (1/n)·A·R^(2/3)·√(الميل الطولى)،  n = بيان الترعة أو 0.025.
+     3) الزمام × المقنن الموسمى — عند عدم وجود مناسيب (بدون رخامات).
+   يمرّ عبر محرك التطبيق (hasRatingCurve + calcDischarge) فيُخزَّن ويُعرض
+   ويغذّى الميزان والمقنن بنفس طريقة باقى النقاط المحسوبة. واجهته يستهلكها
+   موديول القراءات التاريخية (fillBranchFlows/flowMethod).
+   ================================================================ */
+(function(){
+  if(typeof hasRatingCurve!=="function" || typeof calcDischarge!=="function") return;
+  var DEFAULT_N=0.025;
+
+  function branchOf(bid){ var a=(typeof State!=="undefined"&&State.branches)||[]; for(var i=0;i<a.length;i++) if(a[i].id===bid) return a[i]; return null; }
+  function branchHasCommand(b){ return !!(b && b.admin==="branch" && !b.isDalil && (+b.zimaam)>0); }
+  function isBranchManning(b){
+    return branchHasCommand(b) && (+b.bedWidth)>0 && b.bedLevel!=null && b.bedLevel!=="" && isFinite(+b.bedLevel) && (+b.longSlope)>0;
+  }
+  function nOf(b){ return ((+b.manningN)>0)? +b.manningN : DEFAULT_N; }
+
+  function manningQ(b, back){
+    var y=(+back)-(+b.bedLevel);
+    if(!isFinite(y) || y<=0.05) return null;
+    var bw=+b.bedWidth, z=((+b.sideSlope)||0), n=nOf(b), S=+b.longSlope;
+    if(!(bw>0) || !(S>0) || !(n>0)) return null;
+    var A=(bw+z*y)*y, P=bw+2*y*Math.sqrt(1+z*z), R=A/P;
+    var q=(1/n)*A*Math.pow(R,2/3)*Math.sqrt(S);
+    if(!isFinite(q) || q<0) return null;
+    return q*86400/1e6;
+  }
+  function dutyQ(b){
+    var active=(typeof activeDourNow==="function")? activeDourNow() : ((typeof State!=="undefined"&&State.activeDour)||"أ");
+    var z=(typeof dailyZimaamOf==="function")? dailyZimaamOf(b,active) : (+b.zimaam||0);
+    var moq=(typeof currentMoqannan==="function")? currentMoqannan() : 0;
+    var q=z*moq/1e6;
+    return (isFinite(q)&&q>=0)? q : null;
+  }
+
+  /* المحرك الموحّد: يعطى منسوباً خلفياً وتاريخاً اختياريين → {q, method} */
+  function computeFlow(b, back, dateKey){
+    if(!branchHasCommand(b)) return {q:null,method:null};
+    var dk=dateKey || ((typeof State!=="undefined"&&State.readDate)||null);
+    /* (0) محطات الرفع لها الأولوية: عدد الوحدات × تصرف الوحدة × ساعات */
+    if(typeof window.PUMP!=="undefined" && window.PUMP.isPump(b.id)){
+      var pq=window.PUMP.pumpQ(b.id, dk);
+      if(pq!=null) return {q:pq, method:"pump"};
+      return {q:dutyQ(b), method:"duty"};
+    }
+    var haveBack=(back!=null && back!=="" && isFinite(+back));
+    if(isBranchManning(b) && haveBack){
+      var q=manningQ(b,+back);
+      if(q!=null) return {q:q,method:"manning"};
+    }
+    return {q:dutyQ(b),method:"duty"};
+  }
+  function flowMethod(b, rec, dateKey){ return computeFlow(b, rec? rec.back : null, dateKey).method; }
+  function flowValue(b, rec, dateKey){ return computeFlow(b, rec? rec.back : null, dateKey).q; }
+
+  /* ملء تصرف كل ترع الزمام لتاريخ محدّد (يشمل التى بلا مناسيب → زمام×مقنن) */
+  function fillBranchFlows(dateKey){
+    if(typeof State==="undefined" || !State.readings) return 0;
+    var dk=dateKey||State.readDate; if(!dk) return 0;
+    if(!State.readings[dk]) State.readings[dk]={};
+    var day=State.readings[dk], n=0;
+    (State.branches||[]).forEach(function(b){
+      if(!branchHasCommand(b)) return;
+      var rec=day[b.id]||{};
+      var q=flowValue(b, rec, dk);
+      if(q!=null){ if(!day[b.id]) day[b.id]={}; day[b.id].flow=+q.toFixed(3); n++; }
+    });
+    return n;
+  }
+
+  window.BFLOW={ branchOf:branchOf, branchHasCommand:branchHasCommand, isBranchManning:isBranchManning,
+                 manningQ:manningQ, dutyQ:dutyQ, nOf:nOf, computeFlow:computeFlow,
+                 flowMethod:flowMethod, flowValue:flowValue, fillBranchFlows:fillBranchFlows, DEFAULT_N:DEFAULT_N };
+
+  /* توسيع دالتى المحرك — نفس خط أنابيب التطبيق */
+  var _origRating=hasRatingCurve, _origCalc=calcDischarge;
+  window.hasRatingCurve=function(bid){ if(_origRating(bid)) return true; return branchHasCommand(branchOf(bid)); };
+  window.calcDischarge=function(bid, back){
+    if(_origRating(bid)) return _origCalc(bid, back);       /* معادلة رسمية لها الأولوية */
+    var b=branchOf(bid);
+    if(branchHasCommand(b)) return computeFlow(b, back).q;
+    return _origCalc(bid, back);
+  };
+
+  /* تشغيل أولى للقراءات الموجودة مسبقاً */
+  var warmed=false;
+  function warm(){
+    if(warmed) return;
+    if(typeof State==="undefined" || !State.readings){ setTimeout(warm,800); return; }
+    warmed=true;
+    try{ if(typeof recalcAllDischarges==="function") recalcAllDischarges(); }catch(e){}
+    try{ fillBranchFlows(State.readDate); }catch(e){}
+    try{ if(typeof renderView==="function" && State.tab==="readings") renderView(); }catch(e){}
+  }
+  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",function(){ setTimeout(warm,1500); });
+  else setTimeout(warm,1500);
+})();
+</script>
+
+<style>
+.pump-inputs{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.pump-inputs label{display:flex;flex-direction:column;gap:2px;font-size:.64rem;color:var(--ink-2,#6b5a45);font-weight:700;align-items:center}
+.pump-inputs .pump-in{width:74px;padding:6px 6px;border:1px solid var(--line,#d9cbb2);border-radius:8px;background:var(--paper-1,#fdf8ee);font:inherit;font-size:.82rem;text-align:center}
+.pump-tag{display:inline-block;margin-inline-start:6px;padding:1px 7px;border-radius:999px;font-size:.64rem;font-weight:800;background:#e6f0fb;color:#1f5b8f;vertical-align:middle}
+</style>
+<script>
+"use strict";
+/* ================================================================
+   محطات الرفع  ·  PUMP-V1
+   ----------------------------------------------------------------
+   ترع بها محطات رفع (العدلية، الشباب الرئيسية، وأى ترعة تُضاف) لا
+   تُقاس بالمناسيب. تُستبدَل مربعات المنسوب الأمامى/الخلفى بمربعات:
+     عدد الوحدات العاملة · تصرف الوحدة (م³/ث) · ساعات التشغيل
+   والتصرف = العدد × تصرف الوحدة × الساعات × 3600 ÷ مليون (مليون م³/يوم).
+   يمرّ التصرف الناتج عبر محرك التطبيق (window.BFLOW.computeFlow يعطى
+   محطات الرفع الأولوية) فيُخزَّن ويغذّى الميزان والتحليل بنفس الطريقة.
+   بيانات المحطة تُحفظ فى مخزن مستقل (irrdt.pumpdata.v1) والتصرف المحسوب
+   فى قراءات اليوم. عند غياب بيانات المحطة يرجع تلقائياً للزمام×المقنن.
+   ================================================================ */
+(function(){
+  if(typeof AFTER==="undefined") return;
+  var STORE_KEY="irrdt.pumpdata.v1";
+  var PUMP_IDS=["qasm","shabab"];   /* العدلية + الشباب الرئيسية (قابلة للتوسعة) */
+
+  function load(){ try{ return JSON.parse(localStorage.getItem(STORE_KEY)||"{}"); }catch(e){ return {}; } }
+  function saveStore(o){ try{ localStorage.setItem(STORE_KEY, JSON.stringify(o)); }catch(e){} }
+  function get(bid, dk){ dk=dk||(typeof State!=="undefined"&&State.readDate); var a=load(); return (a[dk]&&a[dk][bid])? a[dk][bid] : {}; }
+  function set(bid, dk, obj){ var a=load(); if(!a[dk]) a[dk]={}; if(obj&&Object.keys(obj).length) a[dk][bid]=obj; else { delete a[dk][bid]; if(!Object.keys(a[dk]).length) delete a[dk]; } saveStore(a); }
+  function isPump(bid){ return PUMP_IDS.indexOf(bid)>=0; }
+  function pumpQ(bid, dk){
+    var p=get(bid, dk);
+    var u=+p.units, q=+p.unitQ, h=+p.hours;
+    if(!(u>0) || !(q>0) || !(h>0)) return null;
+    return u*q*h*3600/1e6;   /* م³/ث × ساعات × 3600 ÷ مليون = مليون م³/يوم */
+  }
+  window.PUMP={ isPump:isPump, pumpQ:pumpQ, get:get, set:set, IDS:PUMP_IDS };
+
+  function branchName(bid){
+    var a=(typeof State!=="undefined"&&State.branches)||[];
+    for(var i=0;i<a.length;i++) if(a[i].id===bid) return a[i].name;
+    return bid;
+  }
+
+  /* استبدال خانتَى المنسوب بمربعات محطة الرفع لكل صف محطة */
+  function transform(){
+    var host=document.getElementById("readList"); if(!host) return;
+    var tbody=host.querySelector("table tbody"); if(!tbody) return;
+    var rows=Array.prototype.slice.call(tbody.children).filter(function(tr){ return !tr.classList.contains("hist-row"); });
+    rows.forEach(function(tr){
+      var inp=tr.querySelector('input[oninput*="setReading("], input[onchange*="setReading("]');
+      if(!inp) return;
+      var a=inp.getAttribute("oninput")||inp.getAttribute("onchange")||"";
+      var m=a.match(/setReading\(\s*['"]([^'"]+)['"]/); if(!m) return;
+      var bid=m[1]; if(!isPump(bid)) return;
+      if(tr.getAttribute("data-pump")==="1") return;
+      var tds=tr.querySelectorAll("td"); if(tds.length<4) return;
+      var nameTd=tds[0], frontTd=tds[1], backTd=tds[2], flowTd=tds[3];
+      var p=get(bid, State.readDate);
+      /* شارة محطة رفع بجوار الاسم */
+      if(nameTd && nameTd.querySelectorAll(".pump-tag").length===0){
+        var tag=document.createElement("span"); tag.className="pump-tag"; tag.textContent="محطة رفع"; nameTd.appendChild(tag);
+      }
+      frontTd.colSpan=2;
+      frontTd.innerHTML='<div class="pump-inputs">'+
+        '<label>وحدات عاملة<input type="number" min="0" step="1" class="pump-in" data-f="units" value="'+(p.units!=null?p.units:"")+'"></label>'+
+        '<label>تصرف الوحدة م³/ث<input type="number" min="0" step="0.01" class="pump-in" data-f="unitQ" value="'+(p.unitQ!=null?p.unitQ:"")+'"></label>'+
+        '<label>ساعات التشغيل<input type="number" min="0" max="24" step="0.5" class="pump-in" data-f="hours" value="'+(p.hours!=null?p.hours:"")+'"></label>'+
+      '</div>';
+      backTd.style.display="none";
+      tr.setAttribute("data-pump","1");
+
+      function recompute(){
+        var q=pumpQ(bid, State.readDate);
+        if(!State.readings[State.readDate]) State.readings[State.readDate]={};
+        if(!State.readings[State.readDate][bid]) State.readings[State.readDate][bid]={};
+        if(q!=null) State.readings[State.readDate][bid].flow=+q.toFixed(3);
+        else if(typeof window.BFLOW!=="undefined"){
+          var d=window.BFLOW.dutyQ(window.BFLOW.branchOf(bid));
+          if(d!=null) State.readings[State.readDate][bid].flow=+d.toFixed(3);
+        }
+        var fin=flowTd.querySelector("input");
+        var fv=State.readings[State.readDate][bid].flow;
+        if(fin){ fin.value=(fv!=null?fv:""); fin.readOnly=true; fin.style.color="#1f5b8f";
+                 fin.title=(q!=null?"تصرف محطة الرفع = وحدات × تصرف الوحدة × ساعات":"تقديرى من الزمام × المقنن (لا بيانات محطة)"); }
+        /* حدّث صندوق التحليل أسفل الصف */
+        var hr=tr.nextSibling;
+        if(hr && hr.classList && hr.classList.contains("hist-row") && typeof window.HIST_INFO==="function"){
+          var info=hr.querySelector(".hist-info"); if(info){ try{ info.innerHTML=window.HIST_INFO(bid); }catch(e){} }
+        }
+        try{ if(typeof Store!=="undefined" && Store.save) Store.save(); }catch(e){}
+      }
+
+      Array.prototype.forEach.call(frontTd.querySelectorAll(".pump-in"), function(pin){
+        pin.addEventListener("input", function(){
+          var cur=get(bid, State.readDate);
+          var fkey=pin.getAttribute("data-f"), v=pin.value;
+          if(v==="") delete cur[fkey]; else cur[fkey]=+v;
+          set(bid, State.readDate, cur);
+          recompute();
+        });
+      });
+      recompute();
+    });
+  }
+  window.PUMP.transform=transform;
+
+  /* التفاف حول رسم القراءات — بعد رسم التطبيق وموديولاته */
+  var _orig=AFTER.readings;
+  AFTER.readings=function(){
+    if(typeof _orig==="function"){ try{ _orig.apply(this,arguments); }catch(e){} }
+    try{ transform(); }catch(e){}
+  };
 })();
 </script>
 </body>
