@@ -6229,7 +6229,7 @@ AFTER.weeds = function(){
 (function(){
   if(typeof TABS==="undefined"||typeof VIEWS==="undefined"||typeof AFTER==="undefined") return;
 
-  var HS = { cfg:{ mnStrong:1.15, mnMild:1.08, unitCost:500 }, rows:[], ready:false };
+  var HS = { cfg:{ mnStrong:1.15, mnMild:1.08, unitCost:50 }, rows:[], ready:false };
   window.HS = HS;
 
   function num(v){ return (v==null||v===""||isNaN(+v))? null : +v; }
@@ -6425,7 +6425,7 @@ AFTER.weeds = function(){
     var g=function(id){ return document.getElementById(id); };
     HS.cfg.mnStrong=Math.max(1,+((g("hsStrong")||{}).value||1.15));
     HS.cfg.mnMild=Math.max(1,+((g("hsMild")||{}).value||1.08));
-    HS.cfg.unitCost=Math.max(0,+((g("hsCost")||{}).value||500));
+    HS.cfg.unitCost=Math.max(0,+((g("hsCost")||{}).value||50));
     try{ compute(); kpis(); table(); drawMap();
       if(typeof toast==="function"){ var b=HS.rows.filter(function(r){return r.fu.code==="both";}).length; toast(b+" بؤرة مؤكّدة بدليلين"); }
     }catch(e){ if(typeof toast==="function") toast("تعذّر الدمج: "+e.message); }
