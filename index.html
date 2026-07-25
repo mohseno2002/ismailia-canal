@@ -5444,6 +5444,15 @@ AFTER.weeds = function(){
     series:{}, rows:[], chart:null, ready:false, sel:null, showBad:false
   };
   window.MN = MN;
+  MN.computeNow = function(){ try{ compute(); }catch(e){} return MN.rows||[]; };
+  MN.reachAtKm = function(km){
+    var rows = MN.computeNow();
+    for(var i=0;i<rows.length;i++){
+      var up=+rows[i].rc.up.km, dn=+rows[i].rc.dn.km, lo=Math.min(up,dn), hi=Math.max(up,dn);
+      if(km>=lo && km<=hi) return rows[i];
+    }
+    return null;
+  };
   MN._reachAt = function(rc,day){ return reachAt(rc,day); };
 
   /* ---------- أدوات ---------- */
@@ -6180,6 +6189,261 @@ AFTER.weeds = function(){
     var start=function(){ var h=document.getElementById("readList")||document.body; mo.observe(document.body,{childList:true,subtree:true}); };
     if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",start); else start();
   }catch(e){}
+})();
+</script>
+
+<style>
+.hs-tools{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
+.hs-f{display:flex;flex-direction:column;gap:4px;min-width:130px}
+.hs-f label{font-size:.72rem;color:var(--ink-2,#6b5a45);font-weight:700}
+.hs-f input{padding:7px 9px;border:1px solid var(--line,#d9cbb2);border-radius:9px;background:var(--paper-1,#fdf8ee);font:inherit;font-size:.82rem}
+#hsMap{width:100%;height:230px;border:1px solid var(--line,#e4d8c2);border-radius:12px;background:#0d1b1e;display:block}
+.hs-tbl{width:100%;border-collapse:collapse;font-size:.78rem;min-width:820px}
+.hs-tbl th,.hs-tbl td{padding:7px 8px;border-bottom:1px solid var(--line,#e4d8c2);text-align:center;white-space:nowrap}
+.hs-tbl th{background:var(--paper-2,#f2e8d5);font-weight:800;font-size:.73rem}
+.hs-pill{display:inline-block;padding:2px 9px;border-radius:999px;font-size:.7rem;font-weight:800}
+.hs-both{background:#fbe7e7;color:#a32626}
+.hs-prelim{background:#fdf1dc;color:#9a6712}
+.hs-sat{background:#eef2fb;color:#33518f}
+.hs-hyd{background:#f0eafb;color:#5b3aa6}
+.hs-ok{background:#e7f6ec;color:#1d7a44}
+.hs-na{background:#eeeae2;color:#7a6c58}
+.hs-dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-left:5px;vertical-align:middle}
+.hs-legend{display:flex;flex-wrap:wrap;gap:12px;font-size:.74rem;color:#5f513c;margin:8px 2px 0}
+.hs-legend span{display:inline-flex;align-items:center;gap:5px}
+.hs-note{font-size:.75rem;color:#8a7a63;line-height:1.7}
+.hs-meth{font-size:.8rem;line-height:1.85}
+.hs-meth code{background:var(--paper-2,#f2e8d5);padding:1px 6px;border-radius:6px;font-family:ui-monospace,monospace;direction:ltr;display:inline-block}
+</style>
+<script>
+"use strict";
+/* ================================================================
+   بؤر الحشائش المؤكّدة  ·  HS-V1
+   ----------------------------------------------------------------
+   يدمج دليلين مستقلين على نفس المسافة:
+     (1) القمر الصناعى  — نتائج صحة المجرى (NDVI/Sentinel-2)
+     (2) الهيدروليكا    — انحراف معامل مانينج فى تبويب المقاومة
+   حيث يتفق الاثنان = حشائش مؤكّدة بدليلين، وترتّب أولويات التطهير
+   حسب الطول المتأثر والتكلفة. لا يعدّل أى تبويب — يقرأ منهما فقط.
+   ================================================================ */
+(function(){
+  if(typeof TABS==="undefined"||typeof VIEWS==="undefined"||typeof AFTER==="undefined") return;
+
+  var HS = { cfg:{ mnStrong:1.15, mnMild:1.08, unitCost:500 }, rows:[], ready:false };
+  window.HS = HS;
+
+  function num(v){ return (v==null||v===""||isNaN(+v))? null : +v; }
+  function f(v,d){ return (v==null||isNaN(v))? "—" : (+v).toFixed(d==null?2:d); }
+  function intc(v){ return (v==null||isNaN(v))? "—" : Math.round(v).toLocaleString("en"); }
+
+  /* نتائج القمر الصناعى المحفوظة (من صحة المجرى) */
+  function satResults(){
+    if(typeof WW==="undefined") return [];
+    if(WW.results && WW.results.length) return WW.results;
+    return [];
+  }
+  function ndviLevel(r){
+    if(!r || r.status!=="ok" || !(+r.area>0)) return 0;
+    var c=(r.confidence&&r.confidence.code)||"";
+    if(c==="high") return 3;
+    if(c==="med") return 2;
+    if(c==="low") return 1;
+    return (+r.area>=800)?1:0;
+  }
+  function mnRatioAt(km){
+    if(typeof MN==="undefined"||!MN.reachAtKm) return null;
+    var row=MN.reachAtKm(km);
+    return (row && row.ratio!=null)? { ratio:row.ratio, reach:row.rc.name } : null;
+  }
+
+  /* مصفوفة التأكيد */
+  function fuse(nl, mr){
+    var mStrong = mr!=null && mr.ratio>=HS.cfg.mnStrong;
+    var mMild   = mr!=null && mr.ratio>=HS.cfg.mnMild;
+    if(nl>=2 && mStrong) return {code:"both",  label:"مؤكّد بدليلين", sev:3};
+    if((nl>=2 && mMild) || (nl>=1 && mStrong)) return {code:"prelim", label:"مؤكّد مبدئياً", sev:2};
+    if(nl>=2) return {code:"sat", label:"اشتباه — قمر صناعى فقط", sev:1};
+    if(nl>=1 && mr==null) return {code:"sat", label:"اشتباه — قمر صناعى (لا تغطية هيدروليكا)", sev:1};
+    if(mStrong) return {code:"hyd", label:"اشتباه — هيدروليكا فقط", sev:1};
+    if(nl>=1) return {code:"sat", label:"اشتباه ضعيف — قمر صناعى", sev:1};
+    return {code:"ok", label:"سليم", sev:0};
+  }
+  var COLOR={ both:"#e2543f", prelim:"#d98a1e", sat:"#3f74d6", hyd:"#7c4fd0", ok:"#17b3a0", na:"#6c7a86" };
+  var PILL ={ both:"hs-both", prelim:"hs-prelim", sat:"hs-sat", hyd:"hs-hyd", ok:"hs-ok" };
+
+  function compute(){
+    var sat=satResults();
+    HS.rows=[];
+    sat.forEach(function(r){
+      if(r.status!=="ok") return;
+      var mid = num(r.mid); if(mid==null) mid=(num(r.from)+num(r.to))/2;
+      var nl=ndviLevel(r);
+      var mr=mnRatioAt(mid);
+      var fu=fuse(nl,mr);
+      var lenM = num(r.affectedM);
+      if(lenM==null||lenM<=0) lenM = (num(r.to)-num(r.from))*1000; /* fallback: full segment */
+      var cost = lenM * HS.cfg.unitCost;
+      HS.rows.push({
+        from:num(r.from), to:num(r.to), mid:mid,
+        nl:nl, area:num(r.area), ndvi:num(r.meanNdvi),
+        mr:mr, fu:fu, lenM:lenM, cost:cost,
+        p0:r.p0, p1:r.p1, field:(r.fieldStatus||"unreviewed")
+      });
+    });
+    /* الترتيب: الأعلى تأكيداً أولاً، ثم بالتكلفة */
+    HS.rows.sort(function(a,b){ return (b.fu.sev-a.fu.sev) || (b.cost-a.cost); });
+    HS.ready=true;
+  }
+
+  /* ================= الواجهة ================= */
+  VIEWS.hotspots = function(){
+    var c=HS.cfg;
+    return '<div class="card"><div class="card-head"><div>'+
+      '<div class="card-title">بؤر الحشائش المؤكّدة</div>'+
+      '<div class="card-sub">تقاطع دليل القمر الصناعى (NDVI) مع دليل الهيدروليكا (مانينج) — تأكيد بدليلين مستقلين</div>'+
+      '</div></div><div class="card-body"><div class="hs-tools">'+
+      '<div class="hs-f"><label>عتبة مانينج القوية (نسبة)</label><input type="number" id="hsStrong" step="0.01" min="1" value="'+c.mnStrong+'"></div>'+
+      '<div class="hs-f"><label>عتبة مانينج المبدئية</label><input type="number" id="hsMild" step="0.01" min="1" value="'+c.mnMild+'"></div>'+
+      '<div class="hs-f"><label>تكلفة التطهير (جنيه/متر)</label><input type="number" id="hsCost" step="50" min="0" value="'+c.unitCost+'"></div>'+
+      '<button class="btn btn-primary btn-sm" id="hsRun">حدّث الدمج</button>'+
+      '<button class="btn btn-ghost btn-sm" id="hsCsv">تصدير CSV</button>'+
+      '</div></div></div>'+
+      '<div class="kpi-strip" id="hsKpi"></div>'+
+      '<div class="card"><div class="card-head"><div class="card-title">خريطة البؤر</div></div>'+
+      '<div class="card-body"><canvas id="hsMap"></canvas>'+
+      '<div class="hs-legend">'+
+        '<span><i class="hs-dot" style="background:#e2543f"></i>مؤكّد بدليلين</span>'+
+        '<span><i class="hs-dot" style="background:#d98a1e"></i>مؤكّد مبدئياً</span>'+
+        '<span><i class="hs-dot" style="background:#3f74d6"></i>قمر صناعى فقط</span>'+
+        '<span><i class="hs-dot" style="background:#7c4fd0"></i>هيدروليكا فقط</span>'+
+        '<span><i class="hs-dot" style="background:#17b3a0"></i>سليم</span>'+
+      '</div></div></div>'+
+      '<div class="card"><div class="card-head"><div class="card-title">أولويات التطهير</div></div>'+
+      '<div class="card-body tbl-wrap"><table class="hs-tbl" id="hsTbl"></table>'+
+      '<div class="hs-note" id="hsNote" style="margin-top:8px"></div></div></div>'+
+      '<div class="card"><div class="card-body hs-meth"><b>طريقة الدمج</b><br>'+
+      'لكل مسافة على المجرى: دليل القمر الصناعى من درجة ثقة صحة المجرى (NDVI/Sentinel‑2)، '+
+      'ودليل الهيدروليكا من نسبة ارتفاع معامل مانينج للمسافة المقابلة فى تبويب «المقاومة الهيدروليكية» '+
+      '(<code>n / n₀</code>). عند اتفاق الدليلين — NDVI متوسط فأعلى ومعامل مانينج مرتفع — تُصنَّف المسافة '+
+      '<b>حشائش مؤكّدة بدليلين مستقلين</b>. تُرتَّب البؤر بالأعلى تأكيداً ثم بتكلفة التطهير المقدّرة '+
+      '(الطول المتأثر × تكلفة المتر). الاعتماد على دليلين يقلّل الإنذار الكاذب بشدة مقارنةً بدليل واحد.'+
+      '</div></div>';
+  };
+
+  function kpis(){
+    var host=document.getElementById("hsKpi"); if(!host) return;
+    var both=HS.rows.filter(function(r){ return r.fu.code==="both"; });
+    var susp=HS.rows.filter(function(r){ return r.fu.sev>=1; });
+    var lenBoth=both.reduce(function(a,r){ return a+r.lenM; },0);
+    var costSusp=susp.reduce(function(a,r){ return a+r.cost; },0);
+    var top=HS.rows[0];
+    host.innerHTML=
+      '<div class="kpi"><div class="kpi-her-label">بؤر مؤكّدة بدليلين</div><div class="kpi-her-value">'+both.length+'</div></div>'+
+      '<div class="kpi"><div class="kpi-her-label">إجمالى المشتبهة</div><div class="kpi-her-value">'+susp.length+'</div></div>'+
+      '<div class="kpi"><div class="kpi-her-label">طول التطهير المؤكّد</div><div class="kpi-her-value">'+intc(lenBoth)+'<span class="kpi-her-unit">م</span></div></div>'+
+      '<div class="kpi"><div class="kpi-her-label">تكلفة المشتبهة المقدّرة</div><div class="kpi-her-value">'+intc(costSusp)+'<span class="kpi-her-unit">ج</span></div></div>';
+  }
+
+  function table(){
+    var t=document.getElementById("hsTbl"); if(!t) return;
+    var h='<thead><tr><th>المسافة (ك)</th><th>دليل القمر الصناعى</th><th>مساحة الاشتباه (م²)</th>'+
+          '<th>معامل مانينج</th><th>درجة التأكيد</th><th>الطول المتأثر (م)</th><th>التكلفة المقدّرة (ج)</th><th>الحالة الميدانية</th></tr></thead><tbody>';
+    var shown=HS.rows.filter(function(r){ return r.fu.sev>=1; });
+    if(!shown.length){
+      h+='<tr><td colspan="8">لا توجد بؤر اشتباه — إمّا لا نتائج قمر صناعى محفوظة، أو لا تطابق مع ارتفاع مانينج.</td></tr>';
+    }
+    var ndviName=["—","ضعيف","متوسط","مرتفع"];
+    var fstat={unreviewed:"غير مُعاين",confirmed:"مؤكد ميدانياً",cleared:"ليس حشائش"};
+    shown.forEach(function(r){
+      var mrTxt = r.mr? ((r.mr.ratio>=1? "+":"")+Math.round((r.mr.ratio-1)*100)+"%") : "لا تغطية";
+      h+='<tr>'+
+        '<td>'+f(r.from,2)+' – '+f(r.to,2)+'</td>'+
+        '<td>'+ndviName[r.nl]+(r.ndvi!=null?' <span class="hs-note">('+f(r.ndvi,2)+')</span>':'')+'</td>'+
+        '<td>'+intc(r.area)+'</td>'+
+        '<td>'+mrTxt+'</td>'+
+        '<td><span class="hs-pill '+(PILL[r.fu.code]||"hs-na")+'">'+r.fu.label+'</span></td>'+
+        '<td>'+intc(r.lenM)+'</td>'+
+        '<td>'+intc(r.cost)+'</td>'+
+        '<td>'+(fstat[r.field]||r.field)+'</td>'+
+      '</tr>';
+    });
+    t.innerHTML=h+'</tbody>';
+    var note=document.getElementById("hsNote");
+    if(note){
+      if(typeof WW==="undefined" || !(WW.results&&WW.results.length))
+        note.innerHTML='⚠️ لا توجد نتائج قمر صناعى محفوظة — شغّل تحليلاً من تبويب «صحة المجرى» أولاً ليعمل الدمج.';
+      else if(typeof MN==="undefined")
+        note.innerHTML='⚠️ تبويب المقاومة الهيدروليكية غير متاح.';
+      else note.innerHTML='التكلفة تقديرية = الطول المتأثر × سعر المتر (قابل للتعديل أعلى). المسافات بلا حجوز مرجعية تظهر «لا تغطية» فى عمود مانينج.';
+    }
+  }
+
+  function drawMap(){
+    var cv=document.getElementById("hsMap"); if(!cv) return;
+    var dpr=Math.min(2,window.devicePixelRatio||1);
+    var rect=cv.getBoundingClientRect();
+    cv.width=Math.max(320,Math.round((rect.width||320)*dpr));
+    cv.height=Math.max(220,Math.round((rect.height||230)*dpr));
+    var ctx=cv.getContext("2d"); ctx.setTransform(dpr,0,0,dpr,0,0);
+    var W=cv.width/dpr, H=cv.height/dpr, pad=22;
+    ctx.clearRect(0,0,W,H);
+    var pts=[];
+    HS.rows.forEach(function(r){ if(r.p0&&r.p1){ pts.push(r.p0); pts.push(r.p1); } });
+    if(pts.length<2){ ctx.fillStyle="#6c7a86"; ctx.font="13px sans-serif"; ctx.textAlign="center"; ctx.fillText("لا توجد إحداثيات لعرضها",W/2,H/2); return; }
+    var lons=pts.map(function(p){return p.lon;}), lats=pts.map(function(p){return p.lat;});
+    var minLon=Math.min.apply(0,lons), maxLon=Math.max.apply(0,lons);
+    var minLat=Math.min.apply(0,lats), maxLat=Math.max.apply(0,lats);
+    var sx=(W-2*pad)/((maxLon-minLon)||1e-6), sy=(H-2*pad)/((maxLat-minLat)||1e-6);
+    var sc=Math.min(sx,sy);
+    function X(p){ return pad+(p.lon-minLon)*sc; }
+    function Y(p){ return H-pad-(p.lat-minLat)*sc; }
+    /* المجرى الكامل خلفية */
+    ctx.strokeStyle="rgba(255,255,255,.12)"; ctx.lineWidth=8; ctx.lineCap="round";
+    HS.rows.forEach(function(r){ if(!r.p0||!r.p1)return; ctx.beginPath(); ctx.moveTo(X(r.p0),Y(r.p0)); ctx.lineTo(X(r.p1),Y(r.p1)); ctx.stroke(); });
+    /* المسافات ملوّنة بدرجة التأكيد — الأشد فوق */
+    HS.rows.slice().sort(function(a,b){return a.fu.sev-b.fu.sev;}).forEach(function(r){
+      if(!r.p0||!r.p1)return;
+      ctx.strokeStyle=COLOR[r.fu.code]||COLOR.na;
+      ctx.lineWidth=r.fu.code==="both"?8:(r.fu.sev>=1?6:4);
+      ctx.beginPath(); ctx.moveTo(X(r.p0),Y(r.p0)); ctx.lineTo(X(r.p1),Y(r.p1)); ctx.stroke();
+    });
+  }
+
+  function exportCsv(){
+    var lines=["from_km,to_km,ndvi_level,suspect_area_m2,manning_ratio_pct,confirmation,affected_m,est_cost,field_status"];
+    var ndviName=["none","weak","medium","high"];
+    HS.rows.forEach(function(r){
+      lines.push([f(r.from,2),f(r.to,2),ndviName[r.nl],intc(r.area).replace(/,/g,""),
+        r.mr?Math.round((r.mr.ratio-1)*100):"",r.fu.label,Math.round(r.lenM),Math.round(r.cost),r.field].join(","));
+    });
+    var blob=new Blob(["\ufeff"+lines.join("\n")],{type:"text/csv;charset=utf-8"});
+    var a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="weed_hotspots.csv"; a.click();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); },1500);
+  }
+
+  function run(){
+    var g=function(id){ return document.getElementById(id); };
+    HS.cfg.mnStrong=Math.max(1,+((g("hsStrong")||{}).value||1.15));
+    HS.cfg.mnMild=Math.max(1,+((g("hsMild")||{}).value||1.08));
+    HS.cfg.unitCost=Math.max(0,+((g("hsCost")||{}).value||500));
+    try{ compute(); kpis(); table(); drawMap();
+      if(typeof toast==="function"){ var b=HS.rows.filter(function(r){return r.fu.code==="both";}).length; toast(b+" بؤرة مؤكّدة بدليلين"); }
+    }catch(e){ if(typeof toast==="function") toast("تعذّر الدمج: "+e.message); }
+  }
+
+  AFTER.hotspots = function(){
+    var r=document.getElementById("hsRun"), c=document.getElementById("hsCsv");
+    if(r) r.onclick=run;
+    if(c) c.onclick=exportCsv;
+    run();
+    if(!HS._resizeBound){ HS._resizeBound=true; window.addEventListener("resize",function(){ if(State.tab==="hotspots") drawMap(); }); }
+  };
+
+  /* تسجيل التبويب بعد «المقاومة الهيدروليكية» وقبل «إعداد الشبكة» */
+  var icon=(typeof ICON!=="undefined" && ICON.weeds)? ICON.weeds : "";
+  var at=TABS.length;
+  for(var i=0;i<TABS.length;i++){ if(TABS[i].id==="manning"){ at=i+1; break; } if(TABS[i].id==="setup"){ at=i; break; } }
+  TABS.splice(at,0,{ id:"hotspots", label:"بؤر الحشائش المؤكّدة", icon:icon });
 })();
 </script>
 </body>
